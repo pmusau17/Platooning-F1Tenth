@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find racecar)/launch/teleop.launch"/>
+
+  <node pkg="gap_finding" name="find_gap_node" type="find_gap.py" output="screen"/>
+  <node pkg="gap_finding" name="dead_mans_switch" type="dead_mans_switch.py" output="screen"/>
+
+</launch>

@@ -1,0 +1,7 @@
+image: track_2.pgm
+resolution: 0.050000
+origin: [-4.234560, -3.874948, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

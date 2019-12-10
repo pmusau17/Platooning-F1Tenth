@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+<!--	This launch file uses the true x, y coordinates from Gazebo and maps it to /pf/viz/inferred_pose to insert into pure_pursuit code.-->
+  	<include file="$(find racecar_gazebo)/launch/racecar.launch">
+		  <arg name="world_name" value="track_empty"/>
+  	</include>
+  
+  	<!-- Run map server -->
+	<arg name="map_file" default="$(find localization)/maps/levine.yaml"/>
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+	<node pkg="lab_pure_pursuit" name="remap_gazebo_pose_node" type="remap_gazebo_pose.py" output="screen" />
+  	<node pkg="lab_pure_pursuit" name="pure_pursuit_node" type="pure_pursuit_speed_control.py" output="screen"/> 
+  	<node pkg="lab_pure_pursuit" name="sim_connector_node" type="sim_connector.py" output="screen"/>
+  	<node pkg="lab_pure_pursuit" name="visualize_markers_node" type="visualize_markers.py" output="screen"/>-->
+  	
+  	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find lab_pure_pursuit)/rviz_cfg/pure_pursuit_sim.rviz" output="screen"/>
+
+</launch>
