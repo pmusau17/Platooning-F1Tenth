@@ -197,7 +197,7 @@ python-qt-binding==0.3.4
 python3-xlib==0.14
 pytz==2018.9
 PyWavelets==1.0.2
-PyYAML==3.13
+PyYAML==5.1
 pyzmq==17.1.2
 qt-dotgraph==0.3.11
 qt-gui==0.3.11
