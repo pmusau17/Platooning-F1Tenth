@@ -48,6 +48,9 @@ class follow_lead_pure_pursuit:
         #position_window
         self.position_window=np.zeros([self.window_size,3])
 
+        #prior error for PD controller
+        self.prior_error=0
+
         #create an array that will store the distances 
         self.dist_arr=np.zeros(self.window_size)
 
@@ -130,7 +133,7 @@ class follow_lead_pure_pursuit:
 
 
 
-        goal_arr = np.where((self.dist_arr < self.LOOKAHEAD_DISTANCE+0.3)&(self.dist_arr > self.LOOKAHEAD_DISTANCE-0.3))[0]
+        goal_arr = np.where((self.dist_arr < self.LOOKAHEAD_DISTANCE+0.1)&(self.dist_arr > self.LOOKAHEAD_DISTANCE-0.1))[0]
 
         ##finding the goal point which is the last in the set of points less than the lookahead distance
         ##if the closest points array could not be formed, then the point which is closest to the current position is the goal. 
@@ -161,7 +164,7 @@ class follow_lead_pure_pursuit:
         goal_x_veh_coord = gvcx*np.cos(yaw) + gvcy*np.sin(yaw)
         goal_y_veh_coord = gvcy*np.cos(yaw) - gvcx*np.sin(yaw)
 
-        print(goal_x_veh_coord, goal_y_veh_coord)
+        #print(goal_x_veh_coord, goal_y_veh_coord)
 
         # math: find the curvature and the angle 
 
@@ -172,7 +175,7 @@ class follow_lead_pure_pursuit:
 
         angle = angle_i*2
         angle = np.clip(angle, -0.4189, 0.4189) # 0.4189 radians = 24 degrees because car can only turn 24 degrees max
-        self.const_speed(angle)
+        self.const_speed(angle,distance)
 
 
     
@@ -192,7 +195,7 @@ class follow_lead_pure_pursuit:
             angle=angle
         return angle
 
-    def const_speed(self,angle):
+    def const_speed(self,angle,distance):
         if(self.scan_msg):
             ranges=np.asarray(self.scan_msg.ranges)
 
@@ -210,13 +213,27 @@ class follow_lead_pure_pursuit:
             behind_car_left=ranges[901:]
             angle=self.adjust_turning_for_safety(behind_car_left,behind_car_right,angle)
 
-
+            
             #distance_error
-            error=min(span_thirty)-self.platoon_distance
-            print(angle)
+            error=distance-self.platoon_distance
 
-            desired_speed=1.0+error
-            desired_speed=np.clip(desired_speed,0.9,1.1)
+
+
+
+            #compute the previous error
+            derivative_term=error-self.prior_error
+
+            #PD Gains
+            K_P=1.5
+            K_D=0.3
+            
+            #PID computation
+            desired_speed=K_P*error+K_D*derivative_term+0.2
+            print(desired_speed,(distance,min(span_thirty)))
+            self.prior_error=error
+
+            #We don't want negative speeds and we don't want to move faster than 1.5 m/s
+            desired_speed=np.clip(desired_speed,0,1.5)
 
             self.msg.angle = angle
             self.msg.velocity = desired_speed#self.VELOCITY
