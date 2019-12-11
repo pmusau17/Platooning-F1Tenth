@@ -1,0 +1,8 @@
+prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
+
+Name: particle_filter
+Description: Description of particle_filter
+Version: 0.1.0
+Cflags: 
+Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 
+Requires: message_runtime rospy sensor_msgs std_msgs

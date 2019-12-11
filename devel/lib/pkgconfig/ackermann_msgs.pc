@@ -1,0 +1,8 @@
+prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
+
+Name: ackermann_msgs
+Description: Description of ackermann_msgs
+Version: 1.0.1
+Cflags: -I/home/musaup/Documents/Research/Platooning-F1Tenth/devel/include -I/usr/include
+Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 
+Requires: message_runtime std_msgs
