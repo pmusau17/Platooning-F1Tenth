@@ -6,6 +6,8 @@ sudo apt-get install -y ros-kinetic-ros-control ros-kinetic-ros-controllers ros-
 sudo apt-get install -y ros-kinetic-teb-local-planner ros-kinetic-move-base ros-kinetic-navigation ros-kinetic-hector-slam ros-kinetic-driver-common ros-kinetic-actionlib 
 
 pip install rospkg
+pip install defusedxml
+pip install PySide2
 pip uninstall em
 pip install empy 
 pip install -r requirements.txt
