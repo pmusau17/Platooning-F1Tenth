@@ -16,10 +16,9 @@ from message_filters import ApproximateTimeSynchronizer, Subscriber
 
 #This class will follow the lead car in the same fashion as the pure_pursuit algorithm fingers crossed
 class follow_lead_pure_pursuit:
-    def __init__(self):
+    def __init__(self,lead_car,ego_car):
 
-        self.LOOKAHEAD_DISTANCE = 1.20#1.70 # meters
-        self.VELOCITY = 3.2 # m/s
+       
         self.goal = 0
 
         #self.read_waypoints()
@@ -27,23 +26,24 @@ class follow_lead_pure_pursuit:
         self.msg.velocity = 1.5#1.5
 
         # Publisher for 'drive_parameters' (speed and steering angle)
-        self.pub = rospy.Publisher('drive_parameters2', drive_param, queue_size=1)
+        self.pub = rospy.Publisher(ego_car+'/drive_parameters', drive_param, queue_size=1)
         
 
 
         #subscribe to the first car's position and the ego position and you need to synchronize the messages to calculate the distance
         #between them 
-        self.lead_car_position=Subscriber("racecar_position_gazebo", PoseStamped)
-        self.ego_position=Subscriber("racecar2_position_gazebo", PoseStamped)
-        self.lidar_ego=rospy.Subscriber("scan2",LaserScan,self.scan_callback)
+        self.lead_car_position=Subscriber(lead_car+"_position_gazebo", PoseStamped)
+        self.ego_position=Subscriber(ego_car+"_position_gazebo", PoseStamped)
+        self.lidar_ego=rospy.Subscriber(ego_car+"/scan",LaserScan,self.scan_callback)
         self.scan_msg=None
         
         #safety clearance
-        self.turn_clearance = 0.75
+        self.turn_clearance = 0.25
 
         #position_window_size
         self.window_size=100
         self.window_index=0
+
 
         #position_window
         self.position_window=np.zeros([self.window_size,3])
@@ -59,7 +59,7 @@ class follow_lead_pure_pursuit:
 
         #create a message synchronizer 
         self.sub = ApproximateTimeSynchronizer([self.lead_car_position,self.ego_position],queue_size=20,slop=0.050)
-
+        self.proper_index=None
         #register a callback for the synchronized subscriber
         self.sub.registerCallback(self.sync_callback)
     
@@ -70,6 +70,9 @@ class follow_lead_pure_pursuit:
         #we don't want a massive amount of points from which to choose a goal point so this allows us to rewrite points as we move on
         proper_index=self.window_index%self.window_size
         
+        #store this index so that we can get this point if there's no better option
+        self.proper_index=proper_index
+
         
         #we also need to store the orientation for pure pursuit so perform this calculation
         lead_quaternion=lead.pose.orientation
@@ -132,9 +135,9 @@ class follow_lead_pure_pursuit:
         ##finding the goal point which is the last in the set of points less than the lookahead distance
         ##if the closest points array could not be formed, then the point which is closest to the current position is the goal. 
         if len(goal_arr)==0:
-            goal=self.window_index-1
+            goal=self.proper_index
             print("No goal")
-        goal=self.window_index-1
+        goal=self.proper_index
 
         for idx in goal_arr:
             #line from the point position to the car position
@@ -190,31 +193,34 @@ class follow_lead_pure_pursuit:
         return angle
 
     def const_speed(self,angle):
-        ranges=np.asarray(self.scan_msg.ranges)
+        if(self.scan_msg):
+            ranges=np.asarray(self.scan_msg.ranges)
 
-        #you have to pre_process the lidar data to remove inf values
-        indices=np.where(ranges>=10.0)[0]
-        ranges[indices]=10.0
-        
-        span_thirty=ranges[540-120:540+121]
-        
-        closest_index=np.argmin(span_thirty)+420
-        rospy.logwarn(str(min(span_thirty))+" "+str(closest_index))
-        #the lidar sweeps counterclockwise so right is [0:180] and left is [901:]
-        #behind_car_right=behind_car[0:180]
-        #behind_car_left=behind_car[901:]
-        #angle=self.adjust_turning_for_safety(behind_car_left,behind_car_right,angle)
+            #you have to pre_process the lidar data to remove inf values
+            indices=np.where(ranges>=10.0)[0]
+            ranges[indices]=10.0
+            
+            span_thirty=ranges[540-120:540+121]
+            
+            closest_index=np.argmin(span_thirty)+420
+            rospy.logwarn(str(min(span_thirty))+" "+str(closest_index))
+
+            #the lidar sweeps counterclockwise so right is [0:180] and left is [901:]
+            behind_car_right=ranges[0:180]
+            behind_car_left=ranges[901:]
+            angle=self.adjust_turning_for_safety(behind_car_left,behind_car_right,angle)
 
 
-        #distance_error
-        error=min(span_thirty)-self.platoon_distance
-        print(angle)
+            #distance_error
+            error=min(span_thirty)-self.platoon_distance
+            print(angle)
 
-        desired_speed=1.0+error
-        desired_speed=np.clip(desired_speed,0.8,1.2)
-        self.msg.angle = angle
-        self.msg.velocity = desired_speed#self.VELOCITY
-        self.pub.publish(self.msg)
+            desired_speed=1.0+error
+            desired_speed=np.clip(desired_speed,0.9,1.1)
+
+            self.msg.angle = angle
+            self.msg.velocity = desired_speed#self.VELOCITY
+            self.pub.publish(self.msg)
 
 
 
@@ -223,8 +229,10 @@ if __name__ == '__main__':
 
     #get the arguments from the launch file it should have the lead car and the follower car
     args = rospy.myargv()[1:]
+    lead_car=args[0]
+    ego_car=args[1]
 
-    rospy.init_node('follow_lead')
-    obj=follow_lead_pure_pursuit()
+    rospy.init_node('follow_lead_'+ego_car)
+    obj=follow_lead_pure_pursuit(lead_car,ego_car)
     while not rospy.is_shutdown():
         continue

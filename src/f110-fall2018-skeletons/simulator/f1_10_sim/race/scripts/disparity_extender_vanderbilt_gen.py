@@ -333,7 +333,6 @@ if __name__ == '__main__':
 
     rospy.init_node('disparity_extender', anonymous=True)
     extendObj=DisparityExtenderDriving(racecar_name)
-    #wait three seconds so that the simulation sets up properly
-    rospy.sleep(3)
+   
     rospy.Subscriber(racecar_name+'/scan', LaserScan, extendObj.lidar_callback)
     rospy.spin()
