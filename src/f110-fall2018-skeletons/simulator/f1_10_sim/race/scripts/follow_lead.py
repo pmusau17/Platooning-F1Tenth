@@ -158,12 +158,31 @@ class follow_lead_pure_pursuit:
         goal_x_veh_coord = gvcx*np.cos(yaw) + gvcy*np.sin(yaw)
         goal_y_veh_coord = gvcy*np.cos(yaw) - gvcx*np.sin(yaw)
 
-        print(goal_x_veh_coord, goal_y_veh_coord)
+        print(goal_x_veh_coord, goal_y_veh_coord)    ranges=np.asarray(self.scan_msg.ranges)
 
-        # math: find the curvature and the angle 
+            #you have to pre_process the lidar data to remove inf values
+            indices=np.where(ranges>=10.0)[0]
+            ranges[indices]=10.0
+            
+            span_thirty=ranges[540-120:540+121]
+            
+            closest_index=np.argmin(span_thirty)+420
+            rospy.logwarn(str(min(span_thirty))+" "+str(closest_index))
+            #the lidar sweeps counterclockwise so right is [0:180] and left is [901:]
+            #behind_car_right=behind_car[0:180]
+            #behind_car_left=behind_car[901:]
+            #angle=self.adjust_turning_for_safety(behind_car_left,behind_car_right,angle)
 
 
-        alpha = goal_point[2] - (yaw)
+            #distance_error
+            error=min(span_thirty)-self.platoon_distance
+            print(angle)
+
+            desired_speed=1.0+error
+            desired_speed=np.clip(desired_speed,0.8,1.2)
+            self.msg.angle = angle
+            self.msg.velocity = desired_speed#self.VELOCITY
+            self.pub.publish(self.msg)
         k = 2 * math.sin(alpha)/distance
         angle_i = math.atan(k*0.4)
 
