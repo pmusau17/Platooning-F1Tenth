@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/install
-
-Name: gap_finding
-Description: Description of gap_finding
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/install/lib 
-Requires: 

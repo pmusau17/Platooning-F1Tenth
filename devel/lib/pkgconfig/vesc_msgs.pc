@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
-
-Name: vesc_msgs
-Description: Description of vesc_msgs
-Version: 0.0.1
-Cflags: -I/home/musaup/Documents/Research/Platooning-F1Tenth/devel/include
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 
-Requires: std_msgs message_runtime

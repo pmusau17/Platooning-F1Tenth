@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
-
-Name: ackermann_cmd_mux
-Description: Description of ackermann_cmd_mux
-Version: 0.7.0
-Cflags: -I/home/musaup/Documents/Research/Platooning-F1Tenth/devel/include -I/home/musaup/Documents/Research/Platooning-F1Tenth/src/f110-fall2018-skeletons/system/racecar/ackermann_cmd_mux/include
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib -lackermann_cmd_mux_nodelet -lyaml-cpp
-Requires: roscpp pluginlib nodelet dynamic_reconfigure ackermann_msgs rospy std_msgs

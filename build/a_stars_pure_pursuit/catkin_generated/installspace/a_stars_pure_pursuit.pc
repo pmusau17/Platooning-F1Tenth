@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/install
-
-Name: a_stars_pure_pursuit
-Description: Description of a_stars_pure_pursuit
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/install/lib 
-Requires: 
