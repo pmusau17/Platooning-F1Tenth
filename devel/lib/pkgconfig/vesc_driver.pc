@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
-
-Name: vesc_driver
-Description: Description of vesc_driver
-Version: 0.0.1
-Cflags: -I/home/musaup/Documents/Research/Platooning-F1Tenth/src/f110-fall2018-skeletons/system/vesc/vesc_driver/include
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 
-Requires: nodelet pluginlib roscpp std_msgs vesc_msgs serial

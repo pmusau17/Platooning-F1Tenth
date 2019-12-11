@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/serial_example.dir/examples/serial_example.cc.o  -o /home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib/serial/serial_example -rdynamic /home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib/libserial.so -lrt -lpthread -Wl,-rpath,/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 

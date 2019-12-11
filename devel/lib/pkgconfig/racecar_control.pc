@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
-
-Name: racecar_control
-Description: Description of racecar_control
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 
-Requires: 

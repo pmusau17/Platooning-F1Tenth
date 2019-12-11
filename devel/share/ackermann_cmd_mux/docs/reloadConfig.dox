@@ -1,6 +1,0 @@
-\subsubsection parameters ROS parameters
-
-Reads and maintains the following parameters on the ROS server
-
-- \b "~yaml_cfg_file" : \b [str] Pathname to a yaml file for re-configuration of the mux min: , default: , max: 
-

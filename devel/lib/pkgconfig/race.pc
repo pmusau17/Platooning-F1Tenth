@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
-
-Name: race
-Description: Description of race
-Version: 0.0.0
-Cflags: -I/home/musaup/Documents/Research/Platooning-F1Tenth/devel/include
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 
-Requires: roscpp rospy sensor_msgs std_msgs geometry_msgs

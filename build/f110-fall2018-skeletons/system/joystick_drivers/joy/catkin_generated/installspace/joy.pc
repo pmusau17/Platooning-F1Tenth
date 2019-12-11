@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/install
-
-Name: joy
-Description: Description of joy
-Version: 1.12.0
-Cflags: 
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/install/lib 
-Requires: roscpp diagnostic_updater sensor_msgs

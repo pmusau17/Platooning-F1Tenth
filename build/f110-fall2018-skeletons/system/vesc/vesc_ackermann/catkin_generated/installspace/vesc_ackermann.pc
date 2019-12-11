@@ -1,8 +1,0 @@
-prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/install
-
-Name: vesc_ackermann
-Description: Description of vesc_ackermann
-Version: 0.0.1
-Cflags: -I/home/musaup/Documents/Research/Platooning-F1Tenth/install/include
-Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/install/lib 
-Requires: nodelet pluginlib roscpp nav_msgs std_msgs geometry_msgs tf ackermann_msgs vesc_msgs
