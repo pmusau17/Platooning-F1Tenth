@@ -1,0 +1,8 @@
+prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/devel
+
+Name: lab_pure_pursuit
+Description: Description of lab_pure_pursuit
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/devel/lib 
+Requires: 

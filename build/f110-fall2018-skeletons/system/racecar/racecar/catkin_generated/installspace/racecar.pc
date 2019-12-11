@@ -1,0 +1,8 @@
+prefix=/home/musaup/Documents/Research/Platooning-F1Tenth/install
+
+Name: racecar
+Description: Description of racecar
+Version: 0.0.1
+Cflags: 
+Libs: -L/home/musaup/Documents/Research/Platooning-F1Tenth/install/lib 
+Requires: razor_imu_9dof tf tf2_ros urg_node joy rosbag rostopic rviz gmapping hector_mapping robot_pose_ekf
