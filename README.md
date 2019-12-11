@@ -16,14 +16,10 @@ Once you have ROS-Kinetic installed. Run the following commands:
 
 ```bash
 $ source /opt/ros/kinetic/setup.bash
-$ mkdir catkin_ws
-$ cd catkin_ws
-$ git init
-$ git remote add origin [my-repo]
-$ git fetch
-$ git checkout origin/master -ft
+$ git clone https://github.com/pmusau17/Platooning-F1Tenth
+$ cd Platooning-F1Tenth
 ```
-After everything has been cloned in to catkin_ws (or the folder name of your choosing). Run:
+After everything has been cloned in to Platooning-F1Tenth Run:
 
 ```bash 
 $ chmod u+x setup.bash
