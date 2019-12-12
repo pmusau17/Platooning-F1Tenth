@@ -64,7 +64,7 @@ fi
 
 
 # get opencv downloads going too
-read -p "Do you already have anaconda downloaded? (y/n) " -n 1 -r
+read -p "Do you already have opencv3.2 downloaded? (y/n) " -n 1 -r
 echo    # (optional) move to a new line
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
@@ -171,13 +171,26 @@ then
 	sudo apt-get install -y sublime-text
 fi
 
+
+##### fix protobuf install
+curl -OL https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+unzip protoc-3.2.0-linux-x86_64.zip -d protoc3
+sudo mv protoc3/bin/* /usr/local/bin/
+sudo mv protoc3/include/* /usr/local/include/
+
+
 # next install opencv3.2, 3.4 seems to be problematic with ros for some reason
-
-#### user input to check if opencv is done
-
-
-
-
+# anaconda should be done by now
+read -p "Ensure opencv and opencv_contrib have finished downloading before continuing (y): " -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+	exit 1;
+fi
+unzip opencv.zip
+unzip opencv_contrib.zip 
+mv opencv-3.4.4/ opencv
+mv opencv_contrib-3.4.4/ opencv_contrib
 # sometimes the installations don't link or install in the directory we want
 sudo ln -s /usr/include/lapacke.h /usr/include/x86_64-linux-gnu
 sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so.0 /usr/lib/libopenblas.so.0
@@ -187,6 +200,18 @@ sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so /usr/lib/libopenblas.so
 
 # fix openblas cmake
 
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON -D INSTALL_PYTHON_EXAMPLES=ON \
+-D INSTALL_C_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules -D OPENCV_ENABLE_NONFREE=ON \
+-D WITH_TBB=ON -D WITH_V4L=ON -D WITH_QT=ON -D WITH_OPENGL=ON -D BUILD_EXAMPLES=ON \
+-D PYTHON3_EXECUTABLE=/home/darrahts/anaconda3/bin/python3 -D PYTHON3_PACKAGES_PATH=/home/darrahts/anaconda3/lib/python3.6/site-packages \
+-D PYTHON_EXECUTABLE=/home/darrahts/anaconda3/bin/python -D PYTHON_PACKAGES_PATH=/home/darrahts/anaconda3/lib/python2.7/site-packages \
+-D ENABLE_FAST_MATH=1 -D PROTOBUF_PROTOC_EXECUTABLE=/usr/bin/protoc ..
+
+make -j$(expr $(nproc) - 2)
+sudo make install
+sudo ldconfig
+
+sudo mv /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so cv2.so
 
 # now install ros
 read -p "do you already have ros-kinetic? (y/n): " -n 1 -r
