@@ -321,5 +321,5 @@ dependencies:
     - secretstorage==2.3.1
     - tellopy==0.7.0.dev0
     - toml==0.10.0
-prefix: /home/musaup/anaconda3
+prefix: /home/$USER/anaconda3
 
