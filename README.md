@@ -17,6 +17,7 @@ We are currently working on an end-to-end interactive script to install the foll
 - sublime
 - anaconda
 - custom anaconda environment
+
 Coming soon!
 
 We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
