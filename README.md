@@ -10,6 +10,16 @@
 
 # Installation 
 
+We are currently working on an end-to-end interactive script to install the folloing:
+- opencv
+- ros-kinetic
+- cuda
+- sublime
+- anaconda
+- custom anaconda environment
+
+Coming soon!
+
 We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
 
 Once you have ROS-Kinetic installed. Run the following commands:
@@ -64,4 +74,3 @@ To run a node to tele-operate the car via the keyboard run the following in a ne
 
 'racecar1' can be replaced with 'racecar' 'racecar2' as well. 
 
-test update
