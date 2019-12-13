@@ -162,9 +162,18 @@ chmod +x Anaconda3-2019.10-Linux-x86_64.sh
 cd $BASE_DIR
 echo 'enter the name for your ros/python2.7 anaconda environment: '
 read ROS_ENV_NAME
-conda env create -n ros -f environment.yml python=2.7
-conda activate ros
+conda env create -n $ROS_ENV_NAME -f environment.yml python=2.7
 
+
+echo 'enter the name for your deep learning / python3.6 anaconda environment: '
+read DL_ENV_NAME
+echo 'we will reinstall python=3.6 after the environment is created'
+echo 'we use 3.6 because it is known to work with cuda+tf+keras+pytorch'
+conda env create -n $DL_ENV_NAME -f dl36.yml 
+conda activate $DL_ENV_NAME
+conda install python=3.6
+conda deactivate
+conda deactivate
 
 #install sublime, will need to open some files for editing during installation
 read -p "Do you already have sublime? (y/n): " -n 1 -r
@@ -186,6 +195,7 @@ curl -OL https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.
 unzip protoc-3.2.0-linux-x86_64.zip -d protoc3
 sudo mv protoc3/bin/* /usr/local/bin/
 sudo mv protoc3/include/* /usr/local/include/
+sudo mv protoc3 /usr/local/include/google
 
 
 # next install opencv3.2, 3.4 seems to be problematic with ros for some reason
@@ -218,14 +228,36 @@ fi
 # to verify
 # ldconfig -p | grep libopenblas
 
-# fix openblas cmake
+cd opencv
+mkdir build 
+cd build
 
-cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON -D INSTALL_PYTHON_EXAMPLES=ON \
--D INSTALL_C_EXAMPLES=ON -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules -D OPENCV_ENABLE_NONFREE=ON \
--D WITH_TBB=ON -D WITH_V4L=ON -D WITH_QT=ON -D WITH_OPENGL=ON -D BUILD_EXAMPLES=ON \
--D PYTHON3_EXECUTABLE=/home/darrahts/anaconda3/bin/python3 -D PYTHON3_PACKAGES_PATH=/home/darrahts/anaconda3/lib/python3.6/site-packages \
--D PYTHON_EXECUTABLE=/home/darrahts/anaconda3/bin/python -D PYTHON_PACKAGES_PATH=/home/darrahts/anaconda3/lib/python2.7/site-packages \
--D ENABLE_FAST_MATH=1 -D PROTOBUF_PROTOC_EXECUTABLE=/usr/bin/protoc ..
+PY2_PATH=/home/$USER/anaconda3/envs/$ROS_ENV_NAME
+PY3_PATH=/home/$USER/anaconda3/envs/$DL_ENV_NAME
+
+# the "warning"
+#ptxas /tmp/tmpxft_00001d62_00000000-11_pyrlk.compute_30.ptx, line 875718; warning : Instruction 'shfl' without '.sync' is deprecated since PTX ISA version 6.0 and will be discontinued in a future PTX ISA version
+
+########################3
+########################
+# TIM
+# stackoverflow 36814673 python.h no such file or directory
+
+#fix some compilation errors, HACK!!!!! NEED BETTER FIX!
+#mv common.hpp /modules/cudev/include/opencv2/cudev/common.hpp
+#mv FindCUDA.cmake /cmake/FindCUDA.cmake
+#mv OpenCVDetectCUDA.cmake /cmake/OpenCVDetectCUDA.cmake
+
+#cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON -D INSTALL_PYTHON_EXAMPLES=ON \
+#-D OPENCV_EXTRA_MODULES_PATH=~/Downloads/opencv_contrib/modules -D OPENCV_ENABLE_NONFREE=ON \
+#-D WITH_TBB=ON -D WITH_V4L=ON -D WITH_QT=ON -D WITH_OPENGL=ON -D BUILD_EXAMPLES=ON -D WITH_CUBLAS=ON -D CUDA_FAST_MATH=1 \
+#-D PYTHON3_EXECUTABLE=$PY3_PATH/bin/python3 -D PYTHON3_PACKAGES_PATH=$PY3_PATH/lib/python3.6/site-packages \
+#-D PYTHON2_EXECUTABLE=$PY2_PATH/bin/python -D PYTHON2_PACKAGES_PATH=$PY2_PATH/lib/python2.7/site-packages \
+#-D PYTHON2_INCLUDE_DIR=$PY2_PATH/include/python2.7 -D PYTHON3_INCLUDE_DIR=$PY3_PATH/include/python3.6 \
+#-D PYTHON2_NUMPY_INCLUDE_DIRS=$PY2_PATH/lib/python2.7/dist-packages/numpy/core/include \
+#-D PYTHON3_NUMPY_INCLUDE_DIRS=$PY3_PATH/lib/python3.6/dist-packages/numpy/core/include \
+#-D PYTHON2_LIBRARY=$PY2_PATH/lib/libpython2.7.so -D PYTHON3_LIBRARY=$PY3_PATH/lib/libpython3.6m.so \
+#-D PYTHON_DEFAULT_EXECUTABLE=$PY3_PATH/bin/python3 -D ENABLE_FAST_MATH=1 -D BUILD_SHARED_LIBS=ON -D PROTOBUF_PROTOC_EXECUTABLE=/usr/bin/protoc .. 
 
 make -j$(expr $(nproc) - 2)
 sudo make install
