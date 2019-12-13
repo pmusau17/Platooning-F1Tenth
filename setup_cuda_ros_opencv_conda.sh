@@ -194,8 +194,8 @@ then
 fi
 unzip opencv.zip
 unzip opencv_contrib.zip 
-mv opencv-3.4.4/ opencv
-mv opencv_contrib-3.4.4/ opencv_contrib
+mv opencv-3.2.0/ opencv
+mv opencv_contrib-3.2.0/ opencv_contrib
 # sometimes the installations don't link or install in the directory we want
 sudo ln -s /usr/include/lapacke.h /usr/include/x86_64-linux-gnu
 sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so.0 /usr/lib/libopenblas.so.0
