@@ -3,7 +3,7 @@
 
 ### NOTE! READ THIS FIRST
 # also note, read through the script before executing, there are other notes
-<<'NVIDIA-DRIVERS' (this is a comment block)
+<<'NVIDIA-DRIVERS'
 
 	this will vary depending on your system and install
 	(1) in a terminal execute the command: nvidia-smi
@@ -56,7 +56,7 @@ NVIDIA-DRIVERS
 # first get anaconda downloading in the background
 # valid as of Dec 12 2019
 read -p "Do you already have anaconda downloaded? (y/n) " -n 1 -r
-echo    # (optional) move to a new line
+echo    
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
     nohup wget -O anaconda_installer.sh https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh > /dev/null 2>&1 &
@@ -65,7 +65,7 @@ fi
 
 # get opencv downloads going too
 read -p "Do you already have opencv3.2 downloaded? (y/n) " -n 1 -r
-echo    # (optional) move to a new line
+echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
     nohup wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.2.0.zip & > /dev/null 2>&1 &
@@ -75,7 +75,7 @@ fi
 # get cuda downloads going. Note, to download cudnn, you must have an nvidia account. 
 # you want cuda9.2 and cudnn7.6 (it will also specify for 9.2)
 read -p "Please download cuda 9.2 and cudnn7.6 (the one that works with 9.2). (y to continue) " -n 1 -r
-echo    # (optional) move to a new line
+echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	exit 1;
@@ -110,7 +110,7 @@ sudo apt-get install -y openjdk-8-jdk openjdk-8-jre
 ### user input to check if cuda is done
 
 read -p "verify the files 'cuda_9.2.148_396.37_linux.run' and 'cudnn-9.2-linux-x64-v7.6.4.38.tgz' are in the Downloads folder." -n 1 -r
-echo    # (optional) move to a new line
+echo   
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	exit 1;
@@ -130,7 +130,7 @@ sudo make
 
 
 read -p "Results == pass? (y/n): " -n 1 -r
-echo    # (optional) move to a new line
+echo   
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	echo "consult one of the many install guides on google."; exit 1;
@@ -147,7 +147,7 @@ sudo cp -P include/* /usr/local/cuda/include/
 
 # anaconda should be done by now
 read -p "Ensure anaconda has finished downloading before continuing (y): " -n 1 -r
-echo    # (optional) move to a new line
+echo 
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	exit 1;
@@ -162,7 +162,7 @@ chmod +x Anaconda3-2019.10-Linux-x86_64.sh
 
 #install sublime, will need to open some files for editing during installation
 read -p "Do you already have sublime? (y/n): " -n 1 -r
-echo    # (optional) move to a new line
+echo 
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
@@ -182,7 +182,7 @@ sudo mv protoc3/include/* /usr/local/include/
 # next install opencv3.2, 3.4 seems to be problematic with ros for some reason
 # anaconda should be done by now
 read -p "Ensure opencv and opencv_contrib have finished downloading before continuing (y): " -n 1 -r
-echo    # (optional) move to a new line
+echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	exit 1;
@@ -215,7 +215,7 @@ sudo mv /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so cv2
 
 # now install ros
 read -p "do you already have ros-kinetic? (y/n): " -n 1 -r
-echo    # (optional) move to a new line
+echo   
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
