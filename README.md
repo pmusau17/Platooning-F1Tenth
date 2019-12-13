@@ -35,8 +35,9 @@ After everything has been cloned in to Platooning-F1Tenth Run:
 
 ```bash 
 $ chmod u+x setup.bash
-$ ./setup.bash
+$ ./setup.sh
 $ catkin_make
+$ source devel/setup.bash
 ```
 
 # Algorithms
