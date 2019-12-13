@@ -1,4 +1,6 @@
-l# Car-Platooning
+# Car-Platooning
+
+![Three_Car_Sim](./images/three_car_platoon.gif "Three Car Simulation")
 
 # Repository Organization
 
