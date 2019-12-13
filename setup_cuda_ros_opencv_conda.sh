@@ -198,8 +198,19 @@ mv opencv-3.2.0/ opencv
 mv opencv_contrib-3.2.0/ opencv_contrib
 # sometimes the installations don't link or install in the directory we want
 sudo ln -s /usr/include/lapacke.h /usr/include/x86_64-linux-gnu
-sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so.0 /usr/lib/libopenblas.so.0
-sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so /usr/lib/libopenblas.so
+FILE=/usr/lib/libopenblas.so
+if [[ -f "$FILE" ]]; then
+	echo 'openblas libraries good to go.'
+else
+	FILE=/usr/lib/x86_64-linux-gnu/libopenblas.so
+	if [[ -f "$FILE" ]]; then
+		sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so.0 /usr/lib/libopenblas.so.0
+		sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so /usr/lib/libopenblas.so
+	else
+		echo 'libopenblas did not install correctly. consult google.'
+		exit 1;
+	fi
+fi
 # to verify
 # ldconfig -p | grep libopenblas
 
