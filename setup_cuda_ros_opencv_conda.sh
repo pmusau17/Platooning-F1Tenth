@@ -52,6 +52,7 @@ NVIDIA-DRIVERS
 
 ##################################################################################################
 
+BASE_DIR=$(pwd)
 
 # first get anaconda downloading in the background
 # valid as of Dec 12 2019
@@ -157,7 +158,11 @@ fi
 cd ~/Downloads
 chmod +x Anaconda3-2019.10-Linux-x86_64.sh 
 ./Anaconda3-2019.10-Linux-x86_64.sh 
-
+cd $BASE_DIR
+echo 'enter the name for your ros/python2.7 anaconda environment: '
+read ROS_ENV_NAME
+conda env create -n ros -f environment.yml python=2.7
+conda activate ros
 
 
 #install sublime, will need to open some files for editing during installation
@@ -189,8 +194,8 @@ then
 fi
 unzip opencv.zip
 unzip opencv_contrib.zip 
-mv opencv-3.4.4/ opencv
-mv opencv_contrib-3.4.4/ opencv_contrib
+mv opencv-3.2.0/ opencv
+mv opencv_contrib-3.2.0/ opencv_contrib
 # sometimes the installations don't link or install in the directory we want
 sudo ln -s /usr/include/lapacke.h /usr/include/x86_64-linux-gnu
 sudo cp /usr/lib/x86_64-linux-gnu/libopenblas.so.0 /usr/lib/libopenblas.so.0
