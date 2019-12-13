@@ -52,6 +52,7 @@ NVIDIA-DRIVERS
 
 ##################################################################################################
 
+BASE_DIR=$(pwd)
 
 # first get anaconda downloading in the background
 # valid as of Dec 12 2019
@@ -157,7 +158,11 @@ fi
 cd ~/Downloads
 chmod +x Anaconda3-2019.10-Linux-x86_64.sh 
 ./Anaconda3-2019.10-Linux-x86_64.sh 
-
+cd $BASE_DIR
+echo 'enter the name for your ros/python2.7 anaconda environment: '
+read ROS_ENV_NAME
+conda env create -n ros -f environment.yml python=2.7
+conda activate ros
 
 
 #install sublime, will need to open some files for editing during installation
