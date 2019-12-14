@@ -54,6 +54,19 @@ NVIDIA-DRIVERS
 
 BASE_DIR=$(pwd)
 
+read -p "have you verified the configuration of your nvidia drivers?" -n 1 -r 
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+	echo 'read the notes at the top of this script and confirm your configuraiton'
+	exit 1;
+fi
+
+echo
+echo 'ensure all downloads necessary for this script are placed in the ~/Downloads folder'
+echo 'press any key to continue.'
+read KEY
+
 # first get anaconda downloading in the background
 # valid as of Dec 12 2019
 read -p "Do you already have anaconda downloaded? (y/n) " -n 1 -r
@@ -119,6 +132,13 @@ then
 	exit 1;
 fi
 
+read -p "select no when the installer asks to install the driver. (y to acknowledge and continue)" -n 1 -r
+echo   
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+	exit 1;
+fi
+
 
 chmod +x cuda_9.2.148_396.37_linux.run
 sudo ./cuda_9.2.148_396.37_linux.run
@@ -136,11 +156,10 @@ echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	echo "consult one of the many install guides on google."; 
+	cd $BASE_DIR
 	exit 1;
 fi
 
-
-##### get user input here #####
 cd ~/Downloads
 tar -zxf cudnn-9.2-linux-x64-v7.6.4.38.tgz
 cd cuda/
@@ -156,7 +175,7 @@ then
 	exit 1;
 fi
 
-#NOTE generally select y to all default options
+cd ~/Downloads
 chmod +x Anaconda3-2019.10-Linux-x86_64.sh 
 ./Anaconda3-2019.10-Linux-x86_64.sh 
 cd $BASE_DIR
@@ -168,14 +187,14 @@ conda env create -n $ROS_ENV_NAME -f environment.yml python=2.7
 echo 'enter the name for your deep learning / python3.6 anaconda environment: '
 read DL_ENV_NAME
 echo 'we will reinstall python=3.6 after the environment is created'
-echo 'we use 3.6 because it is known to work with cuda+tf+keras+pytorch'
+echo 'we use 3.6 because of the cuda+tf+keras+pytorch stack'
 conda env create -n $DL_ENV_NAME -f dl36.yml 
 conda activate $DL_ENV_NAME
 conda install python=3.6
 conda deactivate
 conda deactivate
 
-#install sublime, will need to open some files for editing during installation
+
 read -p "Do you already have sublime? (y/n): " -n 1 -r
 echo 
 if [[ ! $REPLY =~ ^[Yy]$ ]]
@@ -199,8 +218,7 @@ sudo mv protoc3 /usr/local/include/google
 
 
 # next install opencv3.2, 3.4 seems to be problematic with ros for some reason
-# anaconda should be done by now
-read -p "Ensure opencv and opencv_contrib have finished downloading before continuing (y): " -n 1 -r
+read -p "Ensure opencv.zip and opencv_contrib.zip have finished downloading before continuing (y): " -n 1 -r
 echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
@@ -228,48 +246,68 @@ fi
 # to verify
 # ldconfig -p | grep libopenblas
 
+PY2_PATH=/home/$USER/anaconda3/envs/$ROS_ENV_NAME
+PY3_PATH=/home/$USER/anaconda3/envs/$DL_ENV_NAME
+
+echo
+echo 'there will be several warnings about shfl and sync, disregard them.'
+echo 'if you have a better cuda+opencv build for both python2 and 3,'
+echo 'please contribute and submit a pull request!'
+echo 'press any key to continue: '
+read TMP
+
+#fix some compilation errors, HACK!!!!! NEED BETTER FIX!
+mv $BASE_DIR/tmp/common.hpp opencv/modules/cudev/include/opencv2/cudev/common.hpp
+mv $BASE_DIR/tmp/FindCUDA.cmake opencv/cmake/FindCUDA.cmake
+mv $BASE_DIR/tmp/OpenCVDetectCUDA.cmake opencv/cmake/OpenCVDetectCUDA.cmake
+mv $BASE_DIR/tmp/CMakeLists.txt opencv_contrib/modules/freetype/CMakeLists.txt
+
 cd opencv
 mkdir build 
 cd build
 
-PY2_PATH=/home/$USER/anaconda3/envs/$ROS_ENV_NAME
-PY3_PATH=/home/$USER/anaconda3/envs/$DL_ENV_NAME
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON -D INSTALL_PYTHON_EXAMPLES=ON \
+-D OPENCV_EXTRA_MODULES_PATH=~/Downloads/opencv_contrib/modules -D OPENCV_ENABLE_NONFREE=ON \
+-D WITH_TBB=ON -D WITH_V4L=ON -D WITH_QT=ON -D WITH_OPENGL=ON -D BUILD_EXAMPLES=ON -D WITH_CUBLAS=ON -D CUDA_FAST_MATH=1 \
+-D PYTHON3_EXECUTABLE=$PY3_PATH/bin/python3 -D PYTHON3_PACKAGES_PATH=$PY3_PATH/lib/python3.6/site-packages \
+-D PYTHON2_EXECUTABLE=$PY2_PATH/bin/python -D PYTHON2_PACKAGES_PATH=$PY2_PATH/lib/python2.7/site-packages \
+-D PYTHON2_INCLUDE_DIR=$PY2_PATH/include -D PYTHON3_INCLUDE_DIR=$PY3_PATH/include \
+-D PYTHON2_NUMPY_INCLUDE_DIRS=$PY2_PATH/lib/python2.7/dist-packages/numpy/core/include \
+-D PYTHON3_NUMPY_INCLUDE_DIRS=$PY3_PATH/lib/python3.6/dist-packages/numpy/core/include \
+-D PYTHON2_LIBRARY=$PY2_PATH/lib/libpython2.7.so -D PYTHON3_LIBRARY=$PY3_PATH/lib/libpython3.6m.so \
+-D PYTHON_DEFAULT_EXECUTABLE=$PY3_PATH/bin/python3 -D ENABLE_FAST_MATH=1 -D BUILD_SHARED_LIBS=ON -D PROTOBUF_PROTOC_EXECUTABLE=/usr/bin/protoc .. 
 
-# the "warning"
-#ptxas /tmp/tmpxft_00001d62_00000000-11_pyrlk.compute_30.ptx, line 875718; warning : Instruction 'shfl' without '.sync' is deprecated since PTX ISA version 6.0 and will be discontinued in a future PTX ISA version
-
-########################3
-########################
-# TIM
-# stackoverflow 36814673 python.h no such file or directory
-
-#fix some compilation errors, HACK!!!!! NEED BETTER FIX!
-#mv common.hpp /modules/cudev/include/opencv2/cudev/common.hpp
-#mv FindCUDA.cmake /cmake/FindCUDA.cmake
-#mv OpenCVDetectCUDA.cmake /cmake/OpenCVDetectCUDA.cmake
-
-#cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=ON -D INSTALL_PYTHON_EXAMPLES=ON \
-#-D OPENCV_EXTRA_MODULES_PATH=~/Downloads/opencv_contrib/modules -D OPENCV_ENABLE_NONFREE=ON \
-#-D WITH_TBB=ON -D WITH_V4L=ON -D WITH_QT=ON -D WITH_OPENGL=ON -D BUILD_EXAMPLES=ON -D WITH_CUBLAS=ON -D CUDA_FAST_MATH=1 \
-#-D PYTHON3_EXECUTABLE=$PY3_PATH/bin/python3 -D PYTHON3_PACKAGES_PATH=$PY3_PATH/lib/python3.6/site-packages \
-#-D PYTHON2_EXECUTABLE=$PY2_PATH/bin/python -D PYTHON2_PACKAGES_PATH=$PY2_PATH/lib/python2.7/site-packages \
-#-D PYTHON2_INCLUDE_DIR=$PY2_PATH/include/python2.7 -D PYTHON3_INCLUDE_DIR=$PY3_PATH/include/python3.6 \
-#-D PYTHON2_NUMPY_INCLUDE_DIRS=$PY2_PATH/lib/python2.7/dist-packages/numpy/core/include \
-#-D PYTHON3_NUMPY_INCLUDE_DIRS=$PY3_PATH/lib/python3.6/dist-packages/numpy/core/include \
-#-D PYTHON2_LIBRARY=$PY2_PATH/lib/libpython2.7.so -D PYTHON3_LIBRARY=$PY3_PATH/lib/libpython3.6m.so \
-#-D PYTHON_DEFAULT_EXECUTABLE=$PY3_PATH/bin/python3 -D ENABLE_FAST_MATH=1 -D BUILD_SHARED_LIBS=ON -D PROTOBUF_PROTOC_EXECUTABLE=/usr/bin/protoc .. 
 
 make -j$(expr $(nproc) - 2)
 sudo make install
 sudo ldconfig
 
-sudo mv /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so cv2.so
+cd $BASE_DIR
+echo 'lets test our opencv builds... (any key to continue): '
+read KEY
+conda activate $ROS_ENV_NAME
+python tmp/test_cv_py2.py
+
+conda deactivate
+conda activate $DL_ENV_NAME
+python tmp/test_cv_py3.py
+
+read -p "did both tests print out <CV2-VERSION>?" -n 1 -r
+echo   
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+	echo 'great! moving on to ros, the last step.'
+	rm -rf tmp
+fi
+
+#sudo mv /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so cv2.so
 
 # now install ros
 read -p "do you already have ros-kinetic? (y/n): " -n 1 -r
 echo   
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
+	conda activate ros
 	sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 	sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 	sudo apt-get update
