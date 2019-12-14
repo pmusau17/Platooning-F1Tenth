@@ -12,17 +12,16 @@
 
 # Installation 
 
-We are currently working on an end-to-end interactive script to install the folloing:
-- opencv
-- ros-kinetic
-- cuda
-- sublime
-- anaconda
-- custom anaconda environment
+### Install Necessary Environments
+ 
+ This interactive script will set up cuda (you'll need to download cuda 9.2 and cudnn7.6 (9.2), build opencv with cuda bindings for both python2.7 and 3.6, create two anaconda environments, and install ros-kinetic. This is your best choice for a fresh ubuntu16.04 install. Not tested with ubuntu18. 
 
-Coming soon!
+`chmod +x setup_cuda_ros_opencv_conda.sh`
+`./setup_cuda_ros_opencv_conda.sh`
 
-We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
+### Install the Repo
+
+If you already have these environments set up, then go with this choice. We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
 
 Once you have ROS-Kinetic installed. Run the following commands:
 
