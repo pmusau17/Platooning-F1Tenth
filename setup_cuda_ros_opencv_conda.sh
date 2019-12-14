@@ -1,8 +1,7 @@
 #!/bin/bash
 
 
-### NOTE! READ THIS FIRST
-# also note, read through the script before executing, there are other notes
+### NOTE! READ THIS FIRST ABOUT NVIDIA DRIVERS
 <<'NVIDIA-DRIVERS'
 
 	this will vary depending on your system and install
@@ -256,11 +255,11 @@ echo 'please contribute and submit a pull request!'
 echo 'press any key to continue: '
 read TMP
 
-#fix some compilation errors, HACK!!!!! NEED BETTER FIX!
-mv $BASE_DIR/tmp/common.hpp opencv/modules/cudev/include/opencv2/cudev/common.hpp
-mv $BASE_DIR/tmp/FindCUDA.cmake opencv/cmake/FindCUDA.cmake
-mv $BASE_DIR/tmp/OpenCVDetectCUDA.cmake opencv/cmake/OpenCVDetectCUDA.cmake
-mv $BASE_DIR/tmp/CMakeLists.txt opencv_contrib/modules/freetype/CMakeLists.txt
+#fix some compilation errors, need better fix. 
+cp $BASE_DIR/tmp/common.hpp opencv/modules/cudev/include/opencv2/cudev/common.hpp
+cp $BASE_DIR/tmp/FindCUDA.cmake opencv/cmake/FindCUDA.cmake
+cp $BASE_DIR/tmp/OpenCVDetectCUDA.cmake opencv/cmake/OpenCVDetectCUDA.cmake
+cp $BASE_DIR/tmp/CMakeLists.txt opencv_contrib/modules/freetype/CMakeLists.txt
 cp $PY2_PATH/include/python2.7/* $PY2_PATH/include/
 cp $PY3_PATH/include/python3.6m/* $PY3_PATH/include/
 
@@ -299,8 +298,21 @@ read -p "did both tests print out <CV2-VERSION>?" -n 1 -r
 echo   
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
-	echo 'great! moving on to ros, the last step.'
-	rm -rf tmp
+	echo 'hmmm, something went wrong.';
+	exit 1;
+fi
+
+rm -rf tmp
+
+read -p "would you like to remove the files associated with the opencv install?" -n 1 -r
+echo   
+if [[ ! $REPLY =~ ^[Nn]$ ]]
+then
+	cd ~/Downloads
+	rm opencv.zip
+	rm opencv_contrib.zip
+	rm -rf opencv
+	rm -rf opencv_contrib
 fi
 
 #sudo mv /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so cv2.so
