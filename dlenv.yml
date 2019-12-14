@@ -1,0 +1,25 @@
+name: deep-learning-env
+channels:
+  - anaconda
+  - conda-forge
+
+dependencies:
+  - numpy
+  - matplotlib
+  - scipy
+  - scikit-learn
+  - seaborn
+  - statsmodels
+  - jupyter
+  - spyder
+  - scikit-image
+  - nltk
+  - pydot
+  - mkl
+  - pandas
+  - tensorflow-gpu
+  - keras-gpu
+  - pytorch-gpu
+  - theano
+  - pygpu
+  - torchvision
