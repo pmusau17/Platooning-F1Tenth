@@ -261,6 +261,9 @@ mv $BASE_DIR/tmp/common.hpp opencv/modules/cudev/include/opencv2/cudev/common.hp
 mv $BASE_DIR/tmp/FindCUDA.cmake opencv/cmake/FindCUDA.cmake
 mv $BASE_DIR/tmp/OpenCVDetectCUDA.cmake opencv/cmake/OpenCVDetectCUDA.cmake
 mv $BASE_DIR/tmp/CMakeLists.txt opencv_contrib/modules/freetype/CMakeLists.txt
+cp $PY2_PATH/include/python2.7/* $PY2_PATH/include/
+cp $PY3_PATH/include/python3.6m/* $PY3_PATH/include/
+
 
 cd opencv
 mkdir build 
