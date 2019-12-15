@@ -89,12 +89,17 @@ fi
 
 # get cuda downloads going. Note, to download cudnn, you must have an nvidia account. 
 # you want cuda9.2 and cudnn7.6 (it will also specify for 9.2)
-read -p "Please download cuda 9.2, the patch for 9.2, and cudnn7.6 (the one that works with 9.2). (y to continue) " -n 1 -r
+read -p "Have you already downloaded cuda9.2 run file and the patch? (y/n): " -n 1 -r
 echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
-	exit 1;
+	nohup wget https://developer.nvidia.com/compute/cuda/9.2/Prod2/local_installers/cuda_9.2.148_396.37_linux & > /dev/null 2>&1 &
+	nohup wget https://developer.nvidia.com/compute/cuda/9.2/Prod2/patches/1/cuda_9.2.148.1_linux & > /dev/null 2>&1 &
 fi
+
+echo 'please go to developer.nvidia.com/rdp/cudnn-download and download cudnn7.6.5(9.2) "cuDNN Library for Linux" to the ~/Downloads folder.'
+echo 'press any key to continue.'
+read KEY
 
 
 
@@ -211,17 +216,6 @@ then
 fi
 
 
-##### removed in script v2.0
-#cd ~/Downloads
-#wget -q https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Protobuf/3.10.0/build_protobuf.sh
-#chmod +x build_protobuf.sh
-#./build_protobuf.sh
-# curl -OL https://github.com/google/protobuf/releases/download/v3.6.0/protoc-3.6.0-linux-x86_64.zip
-# unzip protoc-3.6.0-linux-x86_64.zip -d protoc3
-# sudo mv protoc3/bin/* /usr/local/bin/
-# sudo mv protoc3/include/* /usr/local/include/
-# sudo mv protoc3 /usr/local/include/google
-
 read -p "Ensure opencv.zip and opencv_contrib.zip have finished downloading before continuing (y): " -n 1 -r
 echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
@@ -261,20 +255,6 @@ PY2_PATH=/home/$USER/anaconda3/envs/$ROS_ENV_NAME
 PY3_PATH=/home/$USER/anaconda3/envs/$DL_ENV_NAME
 
 
-# fixed in v2.0
-# echo
-# echo 'there will be several warnings about shfl and sync, disregard them.'
-# echo 'if you have a better cuda+opencv build for both python2 and 3,'
-# echo 'please contribute and submit a pull request!'
-# echo 'press any key to continue: '
-# read TMP
-#  cp $BASE_DIR/tmp_build_files/common.hpp opencv/modules/cudev/include/opencv2/cudev/common.hpp
-#  cp $BASE_DIR/tmp_build_files/FindCUDA.cmake opencv/cmake/FindCUDA.cmake
-#  cp $BASE_DIR/tmp_build_files/OpenCVDetectCUDA.cmake opencv/cmake/OpenCVDetectCUDA.cmake
-#  cp $BASE_DIR/tmp_build_files/CMakeLists.txt opencv_contrib/modules/freetype/CMakeLists.txt
-#  cp $PY2_PATH/include/python2.7/* $PY2_PATH/include/
-#  cp $PY3_PATH/include/python3.6m/* $PY3_PATH/include/
-
 
 cd opencv
 mkdir build 
@@ -309,10 +289,10 @@ echo 'lets test our opencv builds... (any key to continue): '
 read KEY
 conda activate $ROS_ENV_NAME
 python tmp_build_files/test_cv_py2.py
-
 conda deactivate
 conda activate $DL_ENV_NAME
 python tmp_build_files/test_cv_py3.py
+conda deactivate
 
 read -p "did both tests print out <CV2-VERSION>?" -n 1 -r
 echo   
@@ -342,7 +322,7 @@ read -p "do you already have ros-kinetic? (y/n): " -n 1 -r
 echo   
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
-	conda activate ros
+	conda activate $ROS_ENV_NAME
 	sudo apt-get install -y python-rosinstall python-rosinstall-generator python-wstool
 	sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 	sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
