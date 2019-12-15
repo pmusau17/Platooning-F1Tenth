@@ -78,13 +78,13 @@ fi
 
 
 # get opencv downloads going too
-read -p "Do you already have opencv3.3 downloaded? (y/n) " -n 1 -r
+read -p "Do you already have opencv3.4 downloaded? (y/n) " -n 1 -r
 echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	cd ~/Downloads
-    nohup wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.3.0.zip & > /dev/null 2>&1 &
-    nohup wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.3.0.zip & > /dev/null 2>&1 &
+    nohup wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.4.4.zip & > /dev/null 2>&1 &
+    nohup wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.4.4.zip & > /dev/null 2>&1 &
 fi
 
 # get cuda downloads going. Note, to download cudnn, you must have an nvidia account. 
@@ -211,28 +211,35 @@ then
 fi
 
 
-##### fix protobuf install
-cd ~/Downloads
-curl -OL https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.3.0-linux-x86_64.zip
-unzip protoc-3.3.0-linux-x86_64.zip -d protoc3
-sudo mv protoc3/bin/* /usr/local/bin/
-sudo mv protoc3/include/* /usr/local/include/
-sudo mv protoc3 /usr/local/include/google
+##### removed in script v2.0
+#cd ~/Downloads
+#wget -q https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Protobuf/3.10.0/build_protobuf.sh
+#chmod +x build_protobuf.sh
+#./build_protobuf.sh
+# curl -OL https://github.com/google/protobuf/releases/download/v3.6.0/protoc-3.6.0-linux-x86_64.zip
+# unzip protoc-3.6.0-linux-x86_64.zip -d protoc3
+# sudo mv protoc3/bin/* /usr/local/bin/
+# sudo mv protoc3/include/* /usr/local/include/
+# sudo mv protoc3 /usr/local/include/google
 
-
-# next install opencv3.2, 3.4 seems to be problematic with ros for some reason
 read -p "Ensure opencv.zip and opencv_contrib.zip have finished downloading before continuing (y): " -n 1 -r
 echo  
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	exit 1;
 fi
+cd ~/Downloads
 unzip opencv.zip
 unzip opencv_contrib.zip 
-mv opencv-3.2.0/ opencv
-mv opencv_contrib-3.2.0/ opencv_contrib
+mv opencv-3.4.4/ opencv
+mv opencv_contrib-3.4.4/ opencv_contrib
 # sometimes the installations don't link or install in the directory we want
-sudo ln -s /usr/include/lapacke.h /usr/include/x86_64-linux-gnu
+FILE=/usr/include/x86_64-linux-gnu/lapacke.h
+if [[ -f "$FILE" ]]; then
+	echo 'lapack check yes.'
+else
+	sudo ln -s /usr/include/lapacke.h /usr/include/x86_64-linux-gnu
+fi
 FILE=/usr/lib/libopenblas.so
 if [[ -f "$FILE" ]]; then
 	echo 'openblas libraries good to go.'
@@ -246,26 +253,27 @@ else
 		exit 1;
 	fi
 fi
+sudo cp /usr/include/lapacke* /usr/include/openblas/
 # to verify
 # ldconfig -p | grep libopenblas
 
 PY2_PATH=/home/$USER/anaconda3/envs/$ROS_ENV_NAME
 PY3_PATH=/home/$USER/anaconda3/envs/$DL_ENV_NAME
 
-echo
-echo 'there will be several warnings about shfl and sync, disregard them.'
-echo 'if you have a better cuda+opencv build for both python2 and 3,'
-echo 'please contribute and submit a pull request!'
-echo 'press any key to continue: '
-read TMP
 
-#fix some compilation errors, need better fix. 
-# cp $BASE_DIR/tmp_build_files/common.hpp opencv/modules/cudev/include/opencv2/cudev/common.hpp
-# cp $BASE_DIR/tmp_build_files/FindCUDA.cmake opencv/cmake/FindCUDA.cmake
-# cp $BASE_DIR/tmp_build_files/OpenCVDetectCUDA.cmake opencv/cmake/OpenCVDetectCUDA.cmake
-# cp $BASE_DIR/tmp_build_files/CMakeLists.txt opencv_contrib/modules/freetype/CMakeLists.txt
-# cp $PY2_PATH/include/python2.7/* $PY2_PATH/include/
-# cp $PY3_PATH/include/python3.6m/* $PY3_PATH/include/
+# fixed in v2.0
+# echo
+# echo 'there will be several warnings about shfl and sync, disregard them.'
+# echo 'if you have a better cuda+opencv build for both python2 and 3,'
+# echo 'please contribute and submit a pull request!'
+# echo 'press any key to continue: '
+# read TMP
+#  cp $BASE_DIR/tmp_build_files/common.hpp opencv/modules/cudev/include/opencv2/cudev/common.hpp
+#  cp $BASE_DIR/tmp_build_files/FindCUDA.cmake opencv/cmake/FindCUDA.cmake
+#  cp $BASE_DIR/tmp_build_files/OpenCVDetectCUDA.cmake opencv/cmake/OpenCVDetectCUDA.cmake
+#  cp $BASE_DIR/tmp_build_files/CMakeLists.txt opencv_contrib/modules/freetype/CMakeLists.txt
+#  cp $PY2_PATH/include/python2.7/* $PY2_PATH/include/
+#  cp $PY3_PATH/include/python3.6m/* $PY3_PATH/include/
 
 
 cd opencv
@@ -278,11 +286,10 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUD
 -D PYTHON3_EXECUTABLE=$PY3_PATH/bin/python3 -D PYTHON3_PACKAGES_PATH=$PY3_PATH/lib/python3.6/site-packages \
 -D PYTHON2_EXECUTABLE=$PY2_PATH/bin/python -D PYTHON2_PACKAGES_PATH=$PY2_PATH/lib/python2.7/site-packages \
 -D PYTHON2_INCLUDE_DIR=$PY2_PATH/include -D PYTHON3_INCLUDE_DIR=$PY3_PATH/include \
--D PYTHON2_NUMPY_INCLUDE_DIRS=$PY2_PATH/lib/python2.7/dist-packages/numpy/core/include \
--D PYTHON3_NUMPY_INCLUDE_DIRS=$PY3_PATH/lib/python3.6/dist-packages/numpy/core/include \
+-D PYTHON2_NUMPY_INCLUDE_DIRS=$PY2_PATH/lib/python2.7/site-packages/numpy/core/include \
+-D PYTHON3_NUMPY_INCLUDE_DIRS=$PY3_PATH/lib/python3.6/site-packages/numpy/core/include \
 -D PYTHON2_LIBRARY=$PY2_PATH/lib/libpython2.7.so -D PYTHON3_LIBRARY=$PY3_PATH/lib/libpython3.6m.so \
--D PYTHON_DEFAULT_EXECUTABLE=$PY3_PATH/bin/python3 -D ENABLE_FAST_MATH=1 -D BUILD_SHARED_LIBS=ON -D PROTOBUF_PROTOC_EXECUTABLE=/usr/bin/protoc .. 
-
+-D PYTHON_DEFAULT_EXECUTABLE=$PY3_PATH/bin/python3 -D ENABLE_FAST_MATH=1 -D BUILD_SHARED_LIBS=ON ..
 
 make -j$(expr $(nproc) - 2)
 sudo make install
