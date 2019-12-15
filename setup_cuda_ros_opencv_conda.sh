@@ -295,6 +295,15 @@ make -j$(expr $(nproc) - 2)
 sudo make install
 sudo ldconfig
 
+sudo cp /usr/local/python/cv2/python-2.7/cv2.so $PY2_PATH/lib/python2.7/cv2.so
+sudo cp /usr/local/python/cv2/python-2.7/cv2.so ~/py27_cv2_backup.so
+sudo cp /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so $PY3_PATH/lib/python3.6/cv2.so
+sudo cp /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so ~/py36_cv2_backup.so
+
+echo 'opencv backups for python2.7 and python3.6 have been placed in your home folder'
+echo 'press any key to continue'
+read KEY
+
 cd $BASE_DIR
 echo 'lets test our opencv builds... (any key to continue): '
 read KEY
