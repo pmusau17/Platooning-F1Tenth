@@ -2,6 +2,7 @@ name: deep-learning-env
 channels:
   - anaconda
   - conda-forge
+  - pytorch
 
 dependencies:
   - numpy
@@ -19,7 +20,7 @@ dependencies:
   - pandas
   - tensorflow-gpu
   - keras-gpu
-  - pytorch-gpu
   - theano
   - pygpu
+  - pytorch
   - torchvision
