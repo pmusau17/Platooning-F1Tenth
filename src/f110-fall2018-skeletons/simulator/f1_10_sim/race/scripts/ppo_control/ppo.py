@@ -33,6 +33,8 @@ Remaining Tasks:
 from numpy.core.multiarray import ndarray
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
+from std_srvs.srv import Empty
 import time
 import rospy
 import math
@@ -67,7 +69,7 @@ def calculate_entropy(std_devs):
     # Compute the constant
     c = 0.5 * np.log((2 * np.pi * np.e))
 
-    entropy = c + logstds.sum().numpy()
+    entropy = c + logstds.sum().detach().numpy()
 
     return entropy
 
@@ -84,6 +86,9 @@ def calculate_log_probability(x, mu, std_devs):
 
     :return log_prob:   (float)
     """
+    # Make sure nothing is attached
+    mu = mu.detach()
+    std_devs = std_devs.detach()
 
     # Compute first term
     logstds = torch.log(std_devs)
@@ -91,7 +96,7 @@ def calculate_log_probability(x, mu, std_devs):
 
     # Compute second term
     x = torch.FloatTensor(x)
-    b = torch.sum(torch.square((x - mu) / std_devs)).numpy()
+    b = torch.sum(torch.pow(((x - mu) / std_devs), 2)).numpy()
 
     # Compute third term
     c = np.log(2*np.pi)
@@ -147,6 +152,7 @@ def reset_env():
     #TODO: write this
     reset_world = rospy.ServiceProxy('/gazebo/reset_world', Empty)
     reset_world()
+    print("The world has been reset")
     return
 
 
@@ -202,8 +208,8 @@ class PPO(object):
             self.load_models(self.load_path)
 
         # Initialize global variables used by subscribers
-        self.ego_pos = None  # (x, y, yaw, speed)
-        self.lead_pos = None  # (x, y, yaw, speed)
+        self.ego_pos = [0.0, 0.0, 0.0, 0.0]  # (x, y, yaw, speed)
+        self.lead_pos = [(max_dist - min_dist)/2, 0.0, 0.0, 0.0]   # (x, y, yaw, speed)
         self.lidar_done = 0
 
     def calculate_reward(self, curr_state):
@@ -226,28 +232,47 @@ class PPO(object):
         """
 
         """
-        qx = data.orientation.x
-        qy = data.orientation.y
-        qz = data.orientation.z
-        qw = data.orientation.w
+        qx = data.pose.pose.orientation.x
+        qy = data.pose.pose.orientation.y
+        qz = data.pose.pose.orientation.z
+        qw = data.pose.pose.orientation.w
 
         quaternion = (qx, qy, qz, qw)
         euler = euler_from_quaternion(quaternion)
         yaw = euler[2]
 
-        x = data.position.x
-        y = data.position.y
+        x = data.pose.pose.position.x
+        y = data.pose.pose.position.y
 
-        self.ego_pos = [x, y, yaw]
+        dx = data.twist.twist.linear.x
+        dy = data.twist.twist.linear.y
+        speed = math.sqrt(dx**2 + dy**2)
+
+        self.ego_pos = [x, y, yaw, speed]
+        # print('ego_pos updated')
 
     def callback_leader_odom(self, data):
         """
 
         """
-        x = data.position.x
-        y = data.position.y
+        qx = data.pose.pose.orientation.x
+        qy = data.pose.pose.orientation.y
+        qz = data.pose.pose.orientation.z
+        qw = data.pose.pose.orientation.w
 
-        self.lead_pos = [x, y]
+        quaternion = (qx, qy, qz, qw)
+        euler = euler_from_quaternion(quaternion)
+        yaw = euler[2]
+
+        x = data.pose.pose.position.x
+        y = data.pose.pose.position.y
+
+        dx = data.twist.twist.linear.x
+        dy = data.twist.twist.linear.y
+        speed = math.sqrt(dx**2 + dy**2)
+
+        self.lead_pos = [x, y, yaw, speed]
+        # print('lead_pos updated')
 
     def callback_lidar(self, data):
         """
@@ -276,6 +301,8 @@ class PPO(object):
         indices = np.where(clipped_ranges <= self.min_dist)
         if len(indices) >= self.crash_threshold:
             self.lidar_done = 1
+        
+        # print('Lidar updated')
 
     def get_action_and_value(self, state):
         """
@@ -295,16 +322,19 @@ class PPO(object):
         means = means.cpu()
         stds = stds.cpu()
         val = val.cpu()
+        # print('means size ' + str(means.size()))
+        # print('stds size ' + str(stds.size()))
+        # print('val size ' + str(val.size()))
 
         # Choose a random action according to the distribution
         random_val = torch.FloatTensor(np.random.rand(2)).cpu()
-        action = (means + stds * random_val).numpy()
+        action = (means + stds * random_val).detach().numpy()
 
         # Calculate entropy
         entropy = calculate_entropy(stds)
 
         # Convert value to numpy compatible version
-        value = val.detach().numpy()[0, 0]
+        value = val.detach().numpy()
 
         return action, means, stds, entropy, value
 
@@ -453,6 +483,8 @@ class PPO(object):
         # Make sure the environment starts fresh if in simulation
         if self.env == 'sim':
             reset_env()
+            self.rate.sleep()
+            self.rate.sleep()
             self.lidar_done = 0
 
         # Play through episodes and record the results until the horizon has been played through
@@ -477,6 +509,8 @@ class PPO(object):
             if done == 1:
                 if self.env == 'sim':
                     reset_env()
+                    self.rate.sleep()
+                    self.rate.sleep()
                     self.lidar_done = 0
 
         return states, actions, log_probs, returns, values
@@ -691,8 +725,8 @@ if __name__ == '__main__':
                          learning_rate=params['learning_rate'],
                          rl_clip_range=params['rl_clip_range'])
     rospy.Subscriber(params['lidar_name'], LaserScan, PPO_Controller.callback_lidar)
-    rospy.Subscriber(params['ego_odom_name'], PoseStamped, PPO_Controller.callback_ego_odom)
-    rospy.Subscriber(params['lead_odom_name'], PoseStamped, PPO_Controller.callback_leader_odom)
+    rospy.Subscriber(params['ego_odom_name'], Odometry, PPO_Controller.callback_ego_odom)
+    rospy.Subscriber(params['lead_odom_name'], Odometry, PPO_Controller.callback_leader_odom)
     PPO_Controller.rate.sleep()
     if params['test_or_train'] == 'train':
         # Train the network
