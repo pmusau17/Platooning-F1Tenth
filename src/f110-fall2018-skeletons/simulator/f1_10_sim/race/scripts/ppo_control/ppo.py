@@ -693,5 +693,11 @@ if __name__ == '__main__':
     rospy.Subscriber(params['lidar_name'], LaserScan, PPO_Controller.callback_lidar)
     rospy.Subscriber(params['ego_odom_name'], PoseStamped, PPO_Controller.callback_ego_odom)
     rospy.Subscriber(params['lead_odom_name'], PoseStamped, PPO_Controller.callback_leader_odom)
-    time.sleep(10)
-    PPO_Controller.test(-1)
+    PPO_Controller.rate.sleep()
+    if params['test_or_train'] == 'train':
+        # Train the network
+        PPO_Controller.learn(horizon_length=params['horizon_length'],
+                             num_epochs=params['num_epochs'],
+                             minibatch_length=params['minibatch_length'])
+    else:
+        PPO_Controller.test(-1)
