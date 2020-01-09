@@ -27,5 +27,6 @@ ppo_params: {
   total_steps: int(1e9),
   horizon_length: 8192,
   num_epochs: 4,
-  minibatch_length: 8192
+  minibatch_length: 8192,
+  test_or_train: 'train',
 }
