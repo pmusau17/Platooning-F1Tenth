@@ -76,7 +76,9 @@ One of the ways that we can switch from the following controller to the disparit
 
 To run a node to tele-operate the car via the keyboard run the following in a new terminal:
 
-``rosrun race keyboard_gen.py racecar1``
+```bash
+$ rosrun race keyboard_gen.py racecar1
+```
 
 'racecar1' can be replaced with 'racecar' 'racecar2' as well. 
 
@@ -89,26 +91,35 @@ Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/ins
 
 To build the docker image use the Dockerfile located in this repository. 
 
-```docker build -t platoon_test .```
+```bash
+$ docker build -t platoon_test .
+```
 
 Test if the image builds correctly by running: 
 
-```docker container run --rm --runtime=nvidia -it -e DISPLAY  --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test```
+```bash
+$ docker container run --rm --runtime=nvidia -it -e DISPLAY  --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
+```
 
 In order to  enable the use of graphical user interfaces within Docker containers such as Gazebo and Rviz give docker the rights to access the X-Server with:
 
-```xhost +local:root``` 
+```bash
+$ xhost +local:root
+``` 
 
 This command allows one to connect a container to a host's X server for display **but it is not secure.** It compromises the access control to X server on your host. So with a little effort, someone could display something on your screen, capture user input, in addition to making it easier to exploit other vulnerabilities that might exist in X.
  
 **So When you are done run :** 
 
-```xhost -local:root ``` 
+```bash
+$ xhost -local:root 
+``` 
 
 to return the access controls that were disabled with the previous command
 
 To run the simulation: 
 
-```docker-compose up```
+```bash
+$ docker-compose up```
 
 
