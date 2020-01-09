@@ -4,18 +4,18 @@
 
 <!--uncomment for three car experiments-->
 
-<!--  This is the main launch file that launches the world, plugins, controllers -->
+<!--  This is the main launch file that launches the world, plugins, controllers 
   <include file="$(find racecar_gazebo)/launch/many_car.launch">
     <arg name="world_name" value="track_porto"/>
   </include>
   
-  <arg name='number_of_cars' value='3'/>
+  <arg name='number_of_cars' value='3'/>-->
 
 
-  <!--<include file="$(find racecar_gazebo)/launch/two_car.launch">
+  <!----><include file="$(find racecar_gazebo)/launch/two_car.launch">
     <arg name="world_name" value="track_porto"/>
   </include>
-  <arg name='number_of_cars' value='2'/>-->
+  <arg name='number_of_cars' value='2'/>
 
   <!--Launch the nodes for the disparity extender NOTE: THESE NAMES SHOULD CORRESPOND TO THOSE LAUNCHED IN many_car.launch-->
   

@@ -62,7 +62,9 @@ class BodyNN(nn.Module):
         :return x:          (tensor)    The result after executing a forward pass through the network.
         """
         # Convert input into a Tensor and add an extra dimension
-        x = Variable(nn_input.view(-1, nn_input.size(0), nn_input.size(1)))
+        #print('input size: ' + str(nn_input.size()))
+        #x = Variable(nn_input.view(-1, self.input_size, 1))
+        x = Variable(nn_input)
 
         # Pass the input through all the layers
         x = self.body(x)
@@ -238,14 +240,14 @@ class ActorCriticNN(nn.Module):
         :return value:                  (tensor)    An estimate of the value of the input state.
         """
         # Don't need to modify the input state because that is already handled by the body's forward
-        x = self.nature.forward(state)
+        x = self.body.forward(state)
 
         # Take the result of the Body NN and pass it through the control layer
         distribution = self.fc_control(x)
 
         # Break apart the output into means and standard deviations
-        means = x[0:1:1]
-        standard_deviations = x[2:]
+        means = x[0:(self.output_size/2):1]
+        standard_deviations = x[(self.output_size/2):self.output_size:1]
 
         # Take the result of the Body NN and pass it through the value layer
         value = self.fc_value_function(x)
