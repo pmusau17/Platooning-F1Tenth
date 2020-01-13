@@ -54,6 +54,23 @@ services:
       - ./src:/home/catkin_ws/src/
       - gazebo-files:/root/.gazebo/
     command: /bin/bash -c 'source devel/setup.bash && rviz'
+
+
+
+  #create a container for keyboard simulations and running experiments
+  keyboard: 
+    image: ros_test
+    build: .
+    container_name: keyboard
+    depends_on: 
+      - "rosmaster"
+      - "f1tenth"
+    stdin_open: true
+    tty: true
+    environment:
+      - "ROS_HOSTNAME=keyboard"
+      - "ROS_MASTER_URI=http://rosmaster:11311"
+    command: /bin/bash -c 'source devel/setup.bash && bash' 
   
     
 #declare names for the gazebo log files and ros log files which will be handled by docker
