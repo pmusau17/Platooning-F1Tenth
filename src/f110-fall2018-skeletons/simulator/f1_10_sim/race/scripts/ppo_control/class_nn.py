@@ -16,6 +16,8 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
+# Set the random seed
+np.random.seed(8)
 
 def init_weights(m):
     if type(m) == nn.Linear:
