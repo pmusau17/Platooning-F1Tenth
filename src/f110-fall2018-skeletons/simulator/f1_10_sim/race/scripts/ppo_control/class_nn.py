@@ -16,11 +16,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-<<<<<<< HEAD
 # Set the random seed
-=======
-#set the random seed
->>>>>>> 0f7b44ca393f741cb31120c898c1d7838bc2b6c6
 np.random.seed(8)
 
 def init_weights(m):
