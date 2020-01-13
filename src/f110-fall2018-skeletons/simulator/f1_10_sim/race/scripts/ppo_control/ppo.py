@@ -50,6 +50,9 @@ from class_nn import *
 from race.msg import drive_param # For simulator
 # from racecar.msg import drive_param # For actual car
 
+# Set the random seed
+np.random.seed(8)
+
 
 def calculate_entropy(std_devs):
     """
@@ -159,7 +162,7 @@ def reset_env():
 class PPO(object):
     def __init__(self, control_pub_name, car_width=0.5, scan_width=270.0, lidar_range=10.0, turn_clearance=0.35,
                  max_turn_angle=34.0, min_speed=0.5, max_speed=4.0, min_dist=0.1, max_dist=3.0, no_obst_dist=10.0,
-                 crash_threshold=10, env='sim', rate=20, load_path=None, save_interval=10, save_path='.',
+                 crash_threshold=10, env='sim', rate=20, load_path=None, log_path='./', save_interval=10, save_path='./',
                  episode_length=8192, gamma=0.99, lam=0.95, learning_rate=2e-4, rl_clip_range=0.1):
         """
 
@@ -180,6 +183,7 @@ class PPO(object):
         self.env = env
         self.rate = rospy.Rate(rate)  # TODO: Look into this. might want to be a constant wait time
         self.load_path = load_path
+        self.log_path = log_path
         self.save_intv = save_interval
         self.save_path = save_path
         self.episode_length = episode_length
@@ -405,13 +409,44 @@ class PPO(object):
         # Make sure the Neural Net is in train mode
         self.ac_nn.train()
 
+        # Create the log files
+        if not os.path.isdir(self.log_path):
+            os.mkdir(self.log_path)
+        episode_performance_save_string = self.log_path + '/episode_performance.csv'
+        f = open(episode_performance_save_string, "w+")
+        f.write("simulated steps, episode reward, done \n")
+        f.close()
+
         # Iterate through a sufficient number of steps broken into horizons
         step_count = 0
         save_count = 0
         while step_count < total_steps:
             h_length = min(horizon_length, (total_steps - step_count))
             # Execute the horizon
-            h_states, h_actions, h_log_probs, h_returns, h_values = self.play_horizon(h_length)
+            h_states, h_actions, h_log_probs, h_returns, h_values, ep_steps, ep_rewards, ep_dones = self.play_horizon(h_length)
+
+            # Record the episode information for logging
+            if self.log_path is None:
+                for i in range(len(ep_steps)):
+                    # Print to the console if no log path is specified
+                    print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
+                          'Done: ' + str(ep_dones[i]))
+            else:
+                with open(episode_performance_save_string, "a") as myfile:
+                    for i in range(len(ep_steps)):
+                        myfile.write(
+                            str(step_count + ep_steps[i]) + ', ' + str(ep_rewards[i]) + ', ' + str(ep_dones[i]) + '\n'
+                        )
+                        # Print to the console if no log path is specified
+                        print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
+                              'Done: ' + str(ep_dones[i]))
+
+                for i in range(len(ep_steps)):
+                    # Print to the console if no log path is specified
+                    print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
+                          'Done: ' + str(ep_dones[i]))
+
+            # Increment the step counter
             step_count += h_length
 
             # Iterate through the number of epochs, running updates on shuffled minibatches
@@ -480,11 +515,13 @@ class PPO(object):
         returns = []
         values = []
 
+        ep_steps = []
+        ep_rewards = []
+        ep_dones = []
+
         # Make sure the environment starts fresh if in simulation
         if self.env == 'sim':
             reset_env()
-            self.rate.sleep()
-            self.rate.sleep()
             self.lidar_done = 0
 
         # Play through episodes and record the results until the horizon has been played through
@@ -503,17 +540,18 @@ class PPO(object):
             returns.append(ep_returns)
             values.append(ep_values)
 
-            #TODO: do something with the ep_reward...
+            # Record information about the episode for logging
+            ep_steps.append(steps_taken)
+            ep_rewards.append(ep_reward)
+            ep_dones.append(done)
 
             # Only reset the environment if a terminal state has been reached
             if done == 1:
                 if self.env == 'sim':
                     reset_env()
-                    self.rate.sleep()
-                    self.rate.sleep()
                     self.lidar_done = 0
 
-        return states, actions, log_probs, returns, values
+        return states, actions, log_probs, returns, values, ep_steps, ep_rewards, ep_dones
 
     def publish_cmd(self, velocity, steering_angle):
         """
@@ -717,6 +755,7 @@ if __name__ == '__main__':
                          env=params['env'],
                          rate=params['rate'],
                          load_path=params['load_path'],
+                         log_path=params['log_path'],
                          save_interval=params['save_interval'],
                          save_path=params['save_path'],
                          episode_length=params['episode_length'],
