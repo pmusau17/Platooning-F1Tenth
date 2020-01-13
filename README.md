@@ -120,6 +120,13 @@ to return the access controls that were disabled with the previous command
 To run the simulation: 
 
 ```bash
-$ docker-compose up```
+$ docker-compose up
+
+
+To teleoperate the car or run experiments run the following:
+
+```docker container exec -it keyboard bash ```
+
+Then run: ```source devel/setup.bash && rosrun race keyboard.py ``````
 
 
