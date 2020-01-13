@@ -50,6 +50,8 @@ from class_nn import *
 from race.msg import drive_param # For simulator
 # from racecar.msg import drive_param # For actual car
 
+#set the random seed
+np.random.seed(8)
 
 def calculate_entropy(std_devs):
     """
