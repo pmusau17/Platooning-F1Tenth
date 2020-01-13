@@ -19,7 +19,11 @@ ppo_params: {
   load_path: None,
   log_path: './',
   save_interval: 10,
+<<<<<<< HEAD
   save_path: './',
+=======
+  save_path: '.',
+>>>>>>> 0f7b44ca393f741cb31120c898c1d7838bc2b6c6
   episode_length: 1200,
   gamma: 0.99,
   lam: 0.95,
