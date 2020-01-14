@@ -551,6 +551,7 @@ class PPO(object):
                 if self.env == 'sim':
                     reset_env()
                     self.rate.sleep()
+                    print(steps_taken)
                     self.lidar_done = 0
 
         # print(len(states))

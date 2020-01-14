@@ -16,7 +16,7 @@ ppo_params: {
   crash_threshold: 10,
   env: 'sim',
   rate: 10,
-  load_path: None,
+  load_path: './models/step_379800_model.pth',
   log_path: './',
   save_interval: 10,
   save_path: './models/',
@@ -29,5 +29,5 @@ ppo_params: {
   horizon_length: 1800,
   num_epochs: 4,
   minibatch_length: 1800,
-  test_or_train: 'train',
+  test_or_train: 'test',
 }

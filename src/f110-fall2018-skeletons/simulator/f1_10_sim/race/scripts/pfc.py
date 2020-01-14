@@ -24,7 +24,7 @@ from race.msg import drive_param # For simulator
 
 class PotentialFieldController(object):
     def __init__(self, car_width=0.5, scan_width=270.0, lidar_range=10.0, turn_clearance=0.35, max_turn_angle=34.0,
-                 min_speed=0.5, max_speed=3.77, min_dist=0.1, max_dist=3.0, no_obst_dist=5.0):
+                 min_speed=0.1, max_speed=1, min_dist=0.1, max_dist=3.0, no_obst_dist=5.0):
         """
         Todo: explanation of what is
 
@@ -47,7 +47,7 @@ class PotentialFieldController(object):
         self.force_scale_x = 0.3
         self.force_scale_y = 0.1
         self.force_offset_x = 100.0
-        self.force_offset_y = 0.0
+        self.force_offset_y = 20.0
         self.steering_p_gain = 1.0
         self.steering_d_gain = 0.1
 
@@ -64,10 +64,10 @@ class PotentialFieldController(object):
         self.no_obstacles_distance = no_obst_dist
 
         # Initialize publisher for speed and angle commands
-        self.pub_drive_param = rospy.Publisher('drive_parameters', drive_param, queue_size=5)
+        self.pub_drive_param = rospy.Publisher('racecar/drive_parameters', drive_param, queue_size=5)
 
         # Initialize subscriber for the Lidar
-        rospy.Subscriber('scan', LaserScan, self.lidar_callback)
+        rospy.Subscriber('racecar/scan', LaserScan, self.lidar_callback)
 
         # Initialize angle forces in order to use a PD controller
         self.last_angle_force = 0.0
@@ -134,7 +134,7 @@ class PotentialFieldController(object):
 
         # Compute the angle force and speed force
         angle_force = np.arctan2(net_force_y, self.force_offset_x) # net_force_x)
-        speed_force = net_force_x*abs(net_force_x) - abs(net_force_y) # Note: y forces are subtractive. If the car is close to a wall or turning, we want to go slower
+        speed_force = max((net_force_x*abs(net_force_x) - abs(net_force_y)), 0) # Note: y forces are subtractive. If the car is close to a wall or turning, we want to go slower
         speed_force = (speed_force / abs(speed_force)) * math.sqrt(abs(speed_force))
 
         return speed_force, angle_force
