@@ -53,6 +53,7 @@ from race.msg import drive_param # For simulator
 # Set the random seed
 np.random.seed(8)
 
+
 def calculate_entropy(std_devs):
     """
     Entropy of a multivariate Gaussian is calculated as 0.5ln(det(2*pi*e*Var)). Given that the covariance matrix of the
@@ -788,4 +789,9 @@ if __name__ == '__main__':
                              num_epochs=params['num_epochs'],
                              minibatch_length=params['minibatch_length'])
     else:
-        PPO_Controller.test(-1)
+        if params['env'] == 'sim':
+            reset_env()
+            PPO_Controller.rate.sleep()
+            PPO_Controller.test(-1)
+        else:
+            PPO_Controller.test(-1)
