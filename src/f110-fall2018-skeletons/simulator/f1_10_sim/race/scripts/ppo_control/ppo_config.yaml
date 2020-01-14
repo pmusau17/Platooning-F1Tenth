@@ -19,7 +19,7 @@ ppo_params: {
   load_path: None,
   log_path: './',
   save_interval: 10,
-  save_path: './',
+  save_path: './models/',
   episode_length: 1200,
   gamma: 0.99,
   lam: 0.95,
@@ -28,6 +28,6 @@ ppo_params: {
   total_steps: int(1e6),
   horizon_length: 1800,
   num_epochs: 4,
-  minibatch_length: 1200,
+  minibatch_length: 1800,
   test_or_train: 'train',
 }
