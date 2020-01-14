@@ -154,7 +154,7 @@ def reset_env():
     #TODO: write this
     reset_world = rospy.ServiceProxy('/gazebo/reset_world', Empty)
     reset_world()
-    print("The world has been reset")
+    # print("The world has been reset")
     return
 
 
@@ -211,8 +211,8 @@ class PPO(object):
             self.load_models(self.load_path)
 
         # Initialize global variables used by subscribers
-        self.ego_pos = [0.0, 0.0, 0.0, 0.0]  # (x, y, yaw, speed)
-        self.lead_pos = [(max_dist - min_dist)/2, 0.0, 0.0, 0.0]   # (x, y, yaw, speed)
+        self.ego_pos = None #[0.0, 0.0, 0.0, 0.0]  # (x, y, yaw, speed)
+        self.lead_pos = None #[(max_dist - min_dist)/2, 0.0, 0.0, 0.0]   # (x, y, yaw, speed)
         self.lidar_done = 0
 
     def calculate_reward(self, curr_state):
@@ -225,9 +225,13 @@ class PPO(object):
         goal_state = np.array([0.5, 0.0, 0.0, 0.0])
         mask = np.ndarray([1, 1, 1, 1])
 
-        diff = np.absolute(goal_state - curr_state)
+        diff = goal_state - curr_state
         diff = np.multiply(diff, mask)
-        reward = -np.sum(diff)
+        diff = np.absolute(diff)
+        reward = 10 - np.sum(diff)
+
+        # print(curr_state)
+        # print(reward)
 
         return reward
 
@@ -436,14 +440,11 @@ class PPO(object):
                         myfile.write(
                             str(step_count + ep_steps[i]) + ', ' + str(ep_rewards[i]) + ', ' + str(ep_dones[i]) + '\n'
                         )
-                        # Print to the console if no log path is specified
-                        print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
-                              'Done: ' + str(ep_dones[i]))
 
-                for i in range(len(ep_steps)):
-                    # Print to the console if no log path is specified
-                    print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
-                          'Done: ' + str(ep_dones[i]))
+                # for i in range(len(ep_steps)):
+                #     # Print to the console if no log path is specified
+                #     print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
+                #           'Done: ' + str(ep_dones[i]))
 
             # Increment the step counter
             step_count += h_length
@@ -456,17 +457,17 @@ class PPO(object):
 
                 # Update each shuffled minibatch (mb)
                 for mb_start in range(0, h_length, minibatch_length):
-
+                    
                     # Single out each minibatch from the recorded horizon
                     mb_end = min((mb_start + minibatch_length), h_length)
-                    mb_indices = indices[mb_start:mb_end]
+                    mb_indices = indices[mb_start:mb_end:1]
                     mb_states = h_states[mb_indices]
                     mb_actions = h_actions[mb_indices]
                     mb_log_probs = h_log_probs[mb_indices]
                     mb_returns = h_returns[mb_indices]
                     mb_values = h_values[mb_indices]
 
-                    # print('updating...')
+                    print('updating...')
                     actor_loss, critic_loss = self.update(mb_states, mb_actions, mb_log_probs, mb_returns, mb_values)
 
             # Save the model at the desired rate
@@ -521,6 +522,7 @@ class PPO(object):
         # Make sure the environment starts fresh if in simulation
         if self.env == 'sim':
             reset_env()
+            self.rate.sleep()
             self.lidar_done = 0
 
         # Play through episodes and record the results until the horizon has been played through
@@ -533,11 +535,11 @@ class PPO(object):
 
             # Update the records
             steps_taken += steps
-            states.append(ep_states)
-            actions.append(ep_actions)
-            log_probs.append(ep_log_probs)
-            returns.append(ep_returns)
-            values.append(ep_values)
+            states.extend(ep_states)
+            actions.extend(ep_actions)
+            log_probs.extend(ep_log_probs)
+            returns.extend(ep_returns)
+            values.extend(ep_values)
 
             # Record information about the episode for logging
             ep_steps.append(steps_taken)
@@ -548,7 +550,17 @@ class PPO(object):
             if done == 1:
                 if self.env == 'sim':
                     reset_env()
+                    self.rate.sleep()
                     self.lidar_done = 0
+
+        # print(len(states))
+
+        states = np.asarray(states)
+        # print(len(states))
+        actions = np.asarray(actions)
+        log_probs = np.asarray(log_probs)
+        returns = np.asarray(returns)
+        values = np.asarray(values)
 
         return states, actions, log_probs, returns, values, ep_steps, ep_rewards, ep_dones
 
@@ -618,7 +630,7 @@ class PPO(object):
 
         :inputs:
             :param max_steps:   (int)   Maximum number of steps to execute in the training cycle. If -1, then there is
-                                        no maximum. Default=-1
+                                        no maximum. Default=-1extend
         """
 
         # Initialize
@@ -662,6 +674,8 @@ class PPO(object):
         _, _, _, _, next_value = self.get_action_and_value(state)
         returns.extend(compute_returns(next_value, rewards, values, self.gamma, self.lam))
 
+        # print('From test: ' + str(len(states)))
+
         return states, actions, log_probs, returns, values, step, total_reward, done
 
     def update(self, states, actions, old_log_probs, returns, old_values):
@@ -696,14 +710,14 @@ class PPO(object):
         # Convert arrays into tensors and send them to the GPU to speed up calculations
         # frames = Variable(torch.FloatTensor(frames)).to(self.device)
         old_values = torch.FloatTensor(old_values).detach().to(self.device)
-        new_values = Variable(torch.FloatTensor(new_values)).to(self.device)
+        new_values = Variable(torch.FloatTensor(new_values), requires_grad=True).to(self.device)
         returns = torch.FloatTensor(returns).to(self.device)
-        old_log_probs = torch.stack(old_log_probs).detach().to(self.device)
-        new_log_probs = torch.stack(new_log_probs).to(self.device)
+        old_log_probs = torch.FloatTensor(old_log_probs).detach().to(self.device)
+        new_log_probs = Variable(torch.FloatTensor(new_log_probs), requires_grad=True).to(self.device)
 
         # Calculate the advantage
         advantages = returns - old_values
-        # advantages = Variable(advantages)
+        advantages = Variable(advantages, requires_grad=True)
 
         # Compute the actor loss function with clipping
         ratio = (new_log_probs - old_log_probs).exp()
@@ -720,6 +734,7 @@ class PPO(object):
 
         # Combine for a total loss
         total_loss = actor_loss + critic_loss
+        total_loss = Variable(total_loss, requires_grad=True)
 
         # Update optimizer
         self.ac_optimizer.zero_grad()
