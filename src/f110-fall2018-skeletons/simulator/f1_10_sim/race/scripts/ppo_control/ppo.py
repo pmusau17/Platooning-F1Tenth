@@ -438,13 +438,13 @@ class PPO(object):
                             str(step_count + ep_steps[i]) + ', ' + str(ep_rewards[i]) + ', ' + str(ep_dones[i]) + '\n'
                         )
                         # Print to the console if no log path is specified
-                        print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
-                              'Done: ' + str(ep_dones[i]))
+                        print('Step Count: ' + str(step_count + ep_steps[i]) + 'Avg reward per step: ' +
+                              str(ep_rewards[i]) + 'Done: ' + str(ep_dones[i]))
 
                 for i in range(len(ep_steps)):
                     # Print to the console if no log path is specified
-                    print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
-                          'Done: ' + str(ep_dones[i]))
+                    print('Step Count: ' + str(step_count + ep_steps[i]) + 'Avg reward per step: ' + str(ep_rewards[i])
+                          + 'Done: ' + str(ep_dones[i]))
 
             # Increment the step counter
             step_count += h_length
@@ -663,7 +663,10 @@ class PPO(object):
         _, _, _, _, next_value = self.get_action_and_value(state)
         returns.extend(compute_returns(next_value, rewards, values, self.gamma, self.lam))
 
-        return states, actions, log_probs, returns, values, step, total_reward, done
+        # Compute the average reward
+        avg_reward = total_reward / step
+
+        return states, actions, log_probs, returns, values, step, avg_reward, done
 
     def update(self, states, actions, old_log_probs, returns, old_values):
         """
@@ -697,10 +700,10 @@ class PPO(object):
         # Convert arrays into tensors and send them to the GPU to speed up calculations
         # frames = Variable(torch.FloatTensor(frames)).to(self.device)
         old_values = torch.FloatTensor(old_values).detach().to(self.device)
-        new_values = Variable(torch.FloatTensor(new_values)).to(self.device)
+        new_values = Variable(torch.FloatTensor(new_values), requires_grad=True).to(self.device)
         returns = torch.FloatTensor(returns).to(self.device)
         old_log_probs = torch.stack(old_log_probs).detach().to(self.device)
-        new_log_probs = torch.stack(new_log_probs).to(self.device)
+        new_log_probs = Variable(torch.stack(new_log_probs), requires_grad=True).to(self.device)
 
         # Calculate the advantage
         advantages = returns - old_values
