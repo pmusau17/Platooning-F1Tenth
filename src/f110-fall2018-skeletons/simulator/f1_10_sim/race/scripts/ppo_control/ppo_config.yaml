@@ -17,9 +17,9 @@ ppo_params: {
   env: 'sim',
   rate: 10,
   load_path: './models/step_379800_model.pth',
-  log_path: './',
+  log_path: './models_scale_down_10/',
   save_interval: 10,
-  save_path: './models_2/',
+  save_path: './models_scale_down_10/',
   episode_length: 1200,
   gamma: 0.99,
   lam: 0.95,
@@ -29,5 +29,5 @@ ppo_params: {
   horizon_length: 1800,
   num_epochs: 4,
   minibatch_length: 1800,
-  test_or_train: 'test',
+  test_or_train: 'train',
 }
