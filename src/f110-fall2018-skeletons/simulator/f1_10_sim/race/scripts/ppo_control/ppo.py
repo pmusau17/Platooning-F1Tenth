@@ -796,6 +796,7 @@ if __name__ == '__main__':
         if params['env'] == 'sim':
             reset_env()
             PPO_Controller.rate.sleep()
+            # PPO_Controller.ac_nn.eval()
             PPO_Controller.test(-1)
         else:
             PPO_Controller.test(-1)
