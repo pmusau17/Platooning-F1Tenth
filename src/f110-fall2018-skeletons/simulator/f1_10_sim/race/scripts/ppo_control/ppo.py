@@ -680,7 +680,10 @@ class PPO(object):
         returns.extend(compute_returns(next_value, rewards, values, self.gamma, self.lam))
 
         # Compute the average reward
-        avg_reward = total_reward / step
+        if step == 0:
+            avg_reward = 0
+        else:
+            avg_reward = total_reward / step
 
         return states, actions, log_probs, returns, values, step, avg_reward, done
 
