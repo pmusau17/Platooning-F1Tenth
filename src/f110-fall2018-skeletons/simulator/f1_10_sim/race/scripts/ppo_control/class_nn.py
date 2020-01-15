@@ -255,4 +255,4 @@ class ActorCriticNN(nn.Module):
         value = self.fc_value_function(x)
 
         # Return the result
-        return means, standard_deviations, value
+        return means/10, standard_deviations/10, value
