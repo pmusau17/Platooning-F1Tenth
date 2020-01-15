@@ -66,7 +66,7 @@ class BodyNN(nn.Module):
         # Convert input into a Tensor and add an extra dimension
         #print('input size: ' + str(nn_input.size()))
         #x = Variable(nn_input.view(-1, self.input_size, 1))
-        x = Variable(nn_input)
+        x = Variable(nn_input, requires_grad=True)
 
         # Pass the input through all the layers
         x = self.body(x)
