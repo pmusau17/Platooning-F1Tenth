@@ -224,7 +224,7 @@ class PPO(object):
         """
 
         goal_state = np.array([0.5, 0.0, 0.0, 0.0])
-        mask = np.ndarray([1, 1, 1, 1])
+        mask = np.array([2.0, 1.0, 0.0, 0.0])
 
         diff = goal_state - curr_state
         diff = np.multiply(diff, mask)
@@ -433,22 +433,19 @@ class PPO(object):
             if self.log_path is None:
                 for i in range(len(ep_steps)):
                     # Print to the console if no log path is specified
-                    print('Step Count: ' + str(step_count + ep_steps[i]) + 'Reward: ' + str(ep_rewards[i]) +
-                          'Done: ' + str(ep_dones[i]))
+                    print('Step Count: ' + str(step_count + ep_steps[i]) + ' Avg reward per step: ' + str(ep_rewards[i]) +
+                          ' Done: ' + str(ep_dones[i]))
             else:
                 with open(episode_performance_save_string, "a") as myfile:
                     for i in range(len(ep_steps)):
                         myfile.write(
                             str(step_count + ep_steps[i]) + ', ' + str(ep_rewards[i]) + ', ' + str(ep_dones[i]) + '\n'
                         )
-                        # Print to the console if no log path is specified
-                        print('Step Count: ' + str(step_count + ep_steps[i]) + 'Avg reward per step: ' +
-                              str(ep_rewards[i]) + 'Done: ' + str(ep_dones[i]))
 
                 for i in range(len(ep_steps)):
                     # Print to the console if no log path is specified
-                    print('Step Count: ' + str(step_count + ep_steps[i]) + 'Avg reward per step: ' + str(ep_rewards[i])
-                          + 'Done: ' + str(ep_dones[i]))
+                    print('Step Count: ' + str(step_count + ep_steps[i]) + ' Avg reward per step: ' + str(ep_rewards[i])
+                          + ' Done: ' + str(ep_dones[i]))
 
             # Increment the step counter
             step_count += h_length
@@ -527,6 +524,7 @@ class PPO(object):
         if self.env == 'sim':
             reset_env()
             self.rate.sleep()
+            print('New Horizon')
             self.lidar_done = 0
 
         # Play through episodes and record the results until the horizon has been played through
@@ -800,6 +798,7 @@ if __name__ == '__main__':
             reset_env()
             PPO_Controller.rate.sleep()
             # PPO_Controller.ac_nn.eval()
-            PPO_Controller.test(-1)
+            _, _, _, _, _, _, avg_reward, _ = PPO_Controller.test(-1)
+            print('Average Reward per Step: ' + str(avg_reward))
         else:
             PPO_Controller.test(-1)
