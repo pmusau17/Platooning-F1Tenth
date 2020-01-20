@@ -51,7 +51,10 @@ from race.msg import drive_param # For simulator
 # from racecar.msg import drive_param # For actual car
 
 # Set the random seed
-np.random.seed(8)
+seed_number = 8
+np.random.seed(seed_number)
+torch.manual_seed(seed_number)
+torch.cuda.manual_seed_all(seed_number)
 
 
 def calculate_entropy(std_devs):
