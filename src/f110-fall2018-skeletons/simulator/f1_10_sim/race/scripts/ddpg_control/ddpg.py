@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-File:   ppo.py
+File:   ddpg.py
 Author: Nathaniel Hamilton
 
 Description: blah
@@ -12,12 +12,11 @@ Description: blah
 Usage:  blah
 
 Class Functions:
-    * calculate_reward(ndarray, ndarray) (not done)
-    * get_action_and_value(ndarray)
-    * get_state()  (not done)
+    * calculate_reward(array, array)
+    * get_action_and_value(array)
+    * get_state()
     * learn(int, int, int, int) (kinda done)
     * publish_command(float, float)
-    * reset (not done)
     * step(int)
     * test(int)
     * update(list, list, list, list, list)
@@ -30,13 +29,13 @@ Remaining Tasks:
     * Writing everything
     * add logging points
 """
-from numpy.core._multiarray_umath import ndarray
 from numpy.core.multiarray import ndarray
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from std_srvs.srv import Empty
 import time
+import gc
 import rospy
 import math
 import os
@@ -45,11 +44,10 @@ import torch
 import torch.optim as optim
 from torch.autograd import Variable
 from tf.transformations import euler_from_quaternion
-from typing import List
 
 from class_nn import *
 
-from race.msg import drive_param # For simulator
+from race.msg import drive_param  # For simulator
 # from racecar.msg import drive_param # For actual car
 
 # Set the random seed
@@ -82,108 +80,96 @@ def calculate_entropy(std_devs):
     return entropy
 
 
-def calculate_log_probability(x, mu, std_devs):
-    """
-    The log likelihood of a multivariate Gaussian is computed using the following formula:
-        ln(L) = -0.5(ln(det(Var) + (x-mu)'*Var^(-1)*(x-mu) + kln(2*pi))
-        ln(L) = -0.5(2*sum(ln(std_i)) + sum(((x_i - mu_i)/std_i)^2) + ln(2*pi))
-
-    :param x:           (ndarray)
-    :param mu:          (FloatTensor)
-    :param std_devs:    (FloatTensor)
-
-    :return log_prob:   (float)
-    """
-    # Make sure nothing is attached
-    mu = mu.detach()
-    std_devs = std_devs.detach()
-
-    # Compute first term
-    logstds = torch.log(std_devs)
-    a = 2 * torch.sum(logstds).numpy()
-
-    # Compute second term
-    x = torch.FloatTensor(x)
-    b = torch.sum(torch.pow(((x - mu) / std_devs), 2)).numpy()
-
-    # Compute third term
-    c = np.log(2*np.pi)
-
-    # Combine the terms
-    log_prob = -0.5 * (a + b + c)
-
-    return log_prob
-
-
 def compute_returns(next_value, rewards, values, gamma, lam):
-        """
-        This function computes the returns after an episode has been completed. returns are the estimated state-action
-        value, i.e. Q-value
+    """
+    This function computes the returns after an episode has been completed. returns are the estimated state-action
+    value, i.e. Q-value
 
-        :input:
-            :param next_value:  (float)     The estimated value of the next state from the critic.
-            :param rewards:     (list)      The rewards collected during the episode.
-            :param values:      (list)      The estimated values during the episode from the critic.
-            :param gamma:       (float)
-            :param lam:         (float)
-        :output:
-            :return returns:    (ndarray)   The computed returns for the episode.
-        """
+    :input:
+        :param next_value:  (float)     The estimated value of the next state from the critic.
+        :param rewards:     (list)      The rewards collected during the episode.
+        :param values:      (list)      The estimated values during the episode from the critic.
+        :param gamma:       (float)
+        :param lam:         (float)
+    :output:
+        :return returns:    (ndarray)   The computed returns for the episode.
+    """
 
-        """
-        Implementation without GAE. Old.
-        return_ = next_value
-        returns = np.zeros_like(values)
-        for t in reversed(range(len(rewards))):
-            return_ = rewards[t] + gamma * return_
-            returns[t] = return_
+    """
+    Implementation without GAE. Old.
+    return_ = next_value
+    returns = np.zeros_like(values)
+    for t in reversed(range(len(rewards))):
+        return_ = rewards[t] + gamma * return_
+        returns[t] = return_
 
-        return returns
-        """
+    return returns
+    """
 
-        future_val = next_value
-        gae = 0
-        returns = np.zeros_like(values)
-        for t in reversed(range(len(rewards))):
-            delta = rewards[t] + gamma * future_val - values[t]
-            gae = delta + gamma * lam * gae
-            future_val = values[t]
-            returns[t] = gae
+    future_val = next_value
+    gae = 0
+    returns = np.zeros_like(values)
+    for t in reversed(range(len(rewards))):
+        delta = rewards[t] + gamma * future_val - values[t]
+        gae = delta + gamma * lam * gae
+        future_val = values[t]
+        returns[t] = gae
 
-        return returns
+    return returns
+
+
+def soft_update(target, source, tau):
+    """
+    TODO
+    :param target:
+    :param source:
+    :param tau:
+    :return:
+    """
+
+    for target_param, param in zip(target.parameters(), source.parameters()):
+        target_param.data.copy_(target_param.data * (1.0 - tau) + param.data * tau)
+
+
+def hard_update(target, source):
+    """
+    TODO
+    :param target:
+    :param source:
+    :return:
+    """
+
+    for target_param, param in zip(target.parameters(), source.parameters()):
+        target_param.data.copy_(param.data)
 
 
 def reset_env():
     """
 
     """
-    #TODO: write this
+    # TODO: write this
     reset_world = rospy.ServiceProxy('/gazebo/reset_world', Empty)
     reset_world()
     # print("The world has been reset")
     return
 
 
-class PPO(object):
-    def __init__(self, control_pub_name, car_width=0.5, scan_width=270.0, lidar_range=10.0, turn_clearance=0.35,
-                 max_turn_angle=34.0, min_speed=0.5, max_speed=4.0, min_dist=0.1, max_dist=3.0, no_obst_dist=10.0,
-                 crash_threshold=10, env='sim', rate=20, load_path=None, log_path='./', save_interval=10, save_path='./',
-                 episode_length=8192, gamma=0.99, lam=0.95, learning_rate=2e-4, rl_clip_range=0.1):
+class DDPG(object):
+    def __init__(self, control_pub_name,
+                 max_turn_angle=34.0, min_speed=0.5, max_speed=4.0, min_dist=0.1, max_dist=3.0,
+                 crash_threshold=10, env='sim', rate=20, load_path=None, log_path='./', save_interval=10,
+                 save_path='./',
+                 episode_length=8192, actor_learning_rate=1e-4, critic_learning_rate=1e-3, weight_decay=1e-2):
         """
 
         """
 
         # Save the input parameters
-        self.car_width = car_width
-        self.scan_width = scan_width
-        self.lidar_range = lidar_range
-        self.turn_clearance = turn_clearance
         self.max_turn_angle = max_turn_angle
         self.min_speed = min_speed
         self.max_speed = max_speed
         self.min_dist = min_dist
-        self. max_dist = max_dist
-        self.no_obst_dist = no_obst_dist
+        self.max_dist = max_dist
         self.crash_threshold = crash_threshold
         self.env = env
         self.rate = rospy.Rate(rate)  # TODO: Look into this. might want to be a constant wait time
@@ -192,10 +178,9 @@ class PPO(object):
         self.save_intv = save_interval
         self.save_path = save_path
         self.episode_length = episode_length
-        self.gamma = gamma
-        self.lam = lam
-        self.lr = learning_rate
-        self.clip_range = rl_clip_range
+        self.actor_lr = actor_learning_rate
+        self.critic_lr = critic_learning_rate
+        self.weight_decay = weight_decay
 
         # Initialize publishers
         self.pub_drive_param = rospy.Publisher(control_pub_name, drive_param, queue_size=5)
@@ -205,20 +190,34 @@ class PPO(object):
         self.device = torch.device("cuda" if use_cuda else "cpu")
 
         # Create the actor and critic neural network
-        self.ac_nn = ActorCriticNN().to(self.device)
+        self.actor_nn = ActorNN().to(self.device)
+        self.critic_nn = CriticNN().to(self.device)
+
+        # Create the target networks
+        self.actor_target_nn = ActorNN().to(self.device)
+        self.critic_target_nn = CriticNN().to(self.device)
 
         # Create the optimizers for the actor and critic neural networks
-        self.ac_optimizer = optim.Adam(self.ac_nn.parameters(), lr=self.lr)
+        self.actor_optimizer = optim.Adam(self.actor_nn.parameters(), lr=self.actor_lr)
+        self.critic_optimizer = optim.Adam(self.critic_nn.parameters(), lr=self.critic_lr,
+                                           weight_decay=self.weight_decay)
 
-        # Initialize the NN and optimizer
+        # Initialize the NNs and optimizer
         if load_path is None or load_path == 'None':
-            self.ac_nn.initialize_orthogonal()
+            # Actor and Critic are initialized orthogonally
+            self.actor_nn.initialize_orthogonal()
+            self.critic_nn.initialize_orthogonal()
+
+            # Targets are copied with a hard update
+            hard_update(self.actor_target_nn, self.actor_nn)
+            hard_update(self.critic_target_nn, self.critic_nn)
+
         else:
             self.load_models(self.load_path)
 
         # Initialize global variables used by subscribers
-        self.ego_pos = None #[0.0, 0.0, 0.0, 0.0]  # (x, y, yaw, speed)
-        self.lead_pos = None #[(max_dist - min_dist)/2, 0.0, 0.0, 0.0]   # (x, y, yaw, speed)
+        self.ego_pos = None  # [0.0, 0.0, 0.0, 0.0]  # (x, y, yaw, speed)
+        self.lead_pos = None  # [(max_dist - min_dist)/2, 0.0, 0.0, 0.0]   # (x, y, yaw, speed)
         self.lidar_done = 0
 
     def calculate_reward(self, curr_state):
@@ -259,7 +258,7 @@ class PPO(object):
 
         dx = data.twist.twist.linear.x
         dy = data.twist.twist.linear.y
-        speed = math.sqrt(dx**2 + dy**2)
+        speed = math.sqrt(dx ** 2 + dy ** 2)
 
         self.ego_pos = [x, y, yaw, speed]
         # print('ego_pos updated')
@@ -282,7 +281,7 @@ class PPO(object):
 
         dx = data.twist.twist.linear.x
         dy = data.twist.twist.linear.y
-        speed = math.sqrt(dx**2 + dy**2)
+        speed = math.sqrt(dx ** 2 + dy ** 2)
 
         self.lead_pos = [x, y, yaw, speed]
         # print('lead_pos updated')
@@ -314,7 +313,7 @@ class PPO(object):
         indices = np.where(clipped_ranges <= self.min_dist)
         if len(indices) >= self.crash_threshold:
             self.lidar_done = 1
-        
+
         # print('Lidar updated')
 
     def get_action_and_value(self, state):
@@ -432,14 +431,16 @@ class PPO(object):
         while step_count < total_steps:
             h_length = min(horizon_length, (total_steps - step_count))
             # Execute the horizon
-            h_states, h_actions, h_log_probs, h_returns, h_values, ep_steps, ep_rewards, ep_dones = self.play_horizon(h_length)
+            h_states, h_actions, h_log_probs, h_returns, h_values, ep_steps, ep_rewards, ep_dones = self.play_horizon(
+                h_length)
 
             # Record the episode information for logging
             if self.log_path is None:
                 for i in range(len(ep_steps)):
                     # Print to the console if no log path is specified
-                    print('Step Count: ' + str(step_count + ep_steps[i]) + ' Avg reward per step: ' + str(ep_rewards[i]) +
-                          ' Done: ' + str(ep_dones[i]))
+                    print(
+                        'Step Count: ' + str(step_count + ep_steps[i]) + ' Avg reward per step: ' + str(ep_rewards[i]) +
+                        ' Done: ' + str(ep_dones[i]))
             else:
                 with open(episode_performance_save_string, "a") as myfile:
                     for i in range(len(ep_steps)):
@@ -463,7 +464,6 @@ class PPO(object):
 
                 # Update each shuffled minibatch (mb)
                 for mb_start in range(0, h_length, minibatch_length):
-                    
                     # Single out each minibatch from the recorded horizon
                     mb_end = min((mb_start + minibatch_length), h_length)
                     mb_indices = indices[mb_start:mb_end:1]
@@ -500,11 +500,21 @@ class PPO(object):
             checkpoint = torch.load(load_path)
 
             # Store the saved models
-            self.ac_nn.load_state_dict(checkpoint['actor_critic_model'])
-            self.ac_optimizer.load_state_dict(checkpoint['ac_optimizer'])
+            self.start_time = checkpoint['time_step'] + 1
+            self.actor_nn.load_state_dict(checkpoint['actor'])
+            self.critic_nn.load_state_dict(checkpoint['critic'])
+            self.actor_target_nn.load_state_dict(checkpoint['actor_target'])
+            self.critic_target_nn.load_state_dict(checkpoint['critic_target'])
+            self.actor_optimizer.load_state_dict(checkpoint['actor_optimizer'])
+            self.critic_optimizer.load_state_dict(checkpoint['critic_optimizer'])
+            self.replay_buffer = ReplayBuffer(checkpoint['replay_buffer'])
 
             # Evaluate the neural network to ensure the weights were properly loaded
-            self.ac_nn.eval()
+            self.actor_nn.eval()
+            self.critic_nn.eval()
+
+        # Clean up any garbage that's accrued
+        gc.collect()
 
         return
 
@@ -615,20 +625,31 @@ class PPO(object):
 
         return next_state, actual_action, reward, done
 
-    def save_models(self, save_path='models.pth'):
+    def save_models(self, time_step, replay_buffer, save_path='models.pth'):
         """
         This function save the neural network models and optimizers for both the actor and the critic in one file. For
         more examples on how to save/load models, visit
         https://pytorch.org/tutorials/beginner/saving_loading_models.html
 
-        :param save_path:   (string) The file name that the models will be saved to. default='models.pth'
+        :param time_step:     (int)
+        :param replay_buffer: (idk)
+        :param save_path:     (string) The file name that the models will be saved to. default='models.pth'
         """
 
         # Save all aspects of the learner in one file
         torch.save({
-            'actor_critic_model':   self.ac_nn.state_dict(),
-            'ac_optimizer':         self.ac_optimizer.state_dict()
-                    }, save_path)
+            'time_step': time_step,
+            'actor': self.actor_nn.state_dict(),
+            'critic': self.critic_nn.state_dict(),
+            'actor_target': self.actor_target_nn.state_dict(),
+            'critic_target': self.critic_target_nn.state_dict(),
+            'actor_optimizer': self.actor_optimizer.state_dict(),
+            'critic_optimizer': self.critic_optimizer.state_dict(),
+            'replay_buffer': replay_buffer,
+        }, save_path)
+
+        # Clean up any garbage that's accrued
+        gc.collect()
 
         return
 
@@ -638,7 +659,7 @@ class PPO(object):
 
         :inputs:
             :param max_steps:   (int)   Maximum number of steps to execute in the training cycle. If -1, then there is
-                                        no maximum. Default=-1extend
+                                        no maximum. Default=-1
         """
 
         # Initialize
