@@ -16,7 +16,7 @@ import math
 
 
 class ReplayBuffer(object):
-    def __init__(self, prev_buffer=None):
+    def __init__(self, capacity, prev_buffer=None):
         """
         TODO
         """
@@ -27,15 +27,18 @@ class ReplayBuffer(object):
             self.rewards = []
             self.dones = []
             self.next_states = []
-            self.length = 0
+            self.position = 0
+            self.capacity = float(capacity)
 
         else:
-            self.states = prev_buffer.states
-            self.actions = prev_buffer.actions
-            self.rewards = prev_buffer.rewards
-            self.dones = prev_buffer.dones
-            self.next_states = prev_buffer.next_states
-            self.length = prev_buffer.length
+            fill = min(capacity, prev_buffer.capacity)
+            self.states = prev_buffer.states[-fill:]
+            self.actions = prev_buffer.actions[-fill:]
+            self.rewards = prev_buffer.rewards[-fill:]
+            self.dones = prev_buffer.dones[-fill:]
+            self.next_states = prev_buffer.next_states[-fill:]
+            self.position = int(prev_buffer.position % capacity)
+            self.capacity = float(capacity)
 
     def add_memory(self, state, action, reward, done, next_state):
         """
@@ -47,39 +50,47 @@ class ReplayBuffer(object):
         :param next_state:
         :return:
         """
-        # Append the new memory to the end and increase the length
-        self.states.append(state)
-        self.actions.append(action)
-        self.rewards.append(reward)
-        self.dones.append(done)
-        self.next_states.append(next_state)
-        self.length += 1.0
+        # If the buffer is not full, append it
+        if len(self.rewards) < self.capacity:
+            self.states.append(state)
+            self.actions.append(action)
+            self.rewards.append(reward)
+            self.dones.append(done)
+            self.next_states.append(next_state)
+        # Otherwise, replace old memories
+        else:
+            self.states[self.position] = state
+            self.actions[self.position] = action
+            self.rewards[self.position] = reward
+            self.dones[self.position] = done
+            self.next_states[self.position] = next_state
+
+        # Increment the position
+        self.position = int((self.position + 1) % self.capacity)
 
     def sample_batch(self, batch_length):
         """
         TODO
+        Assumes the buffer is full
         :param batch_length:
         :return:
         """
-        # Convert fuck all
+        # Convert lists to arrays
         states = np.asarray(self.states)
         actions = np.asarray(self.actions)
         rewards = np.asarray(self.rewards)
         dones = np.asarray(self.dones)
         next_states = np.asarray(self.next_states)
 
-        # Determine the sample size (cannot sample more than the length)
-        sample_size = min(self.length, batch_length)
-
         # Randomize the order of the buffer to eliminate TODO
-        indeces = np.arange(self.length)
-        np.random.shuffle(indeces)
+        indices = np.arange(self.capacity)
+        np.random.shuffle(indices)
 
-        # Collect the sample from the middle of the randomized indeces
-        batch_start = int(max((math.floor(self.length / 2.0) - math.floor(sample_size / 2.0)), 0))
-        batch_end = int(min((math.floor(self.length / 2.0) + math.ceil(sample_size / 2.0)), self.length))
-        batch_indeces = np.asarray(indeces[batch_start:batch_end:1], dtype=int)
-        np.random.shuffle(batch_indeces)  # Shuffle the selected indices again to further randomize
+        # Collect the sample from the middle of the randomized indices
+        batch_start = int(max((math.floor(self.capacity / 2.0) - math.floor(batch_length / 2.0)), 0))
+        batch_end = int(min((math.floor(self.capacity / 2.0) + math.ceil(batch_length / 2.0)), self.capacity))
+        batch_indeces = np.asarray(indices[batch_start:batch_end:1], dtype=int)
+        # np.random.shuffle(batch_indeces)  # Shuffle the selected indices again to further randomize
 
         batch_states = states[batch_indeces]
         batch_actions = actions[batch_indeces]
@@ -91,7 +102,7 @@ class ReplayBuffer(object):
 
 
 if __name__ == '__main__':
-    replay_buffer = ReplayBuffer()
+    replay_buffer = ReplayBuffer(10)
     s = np.asarray([0, 0, 0, 0])
     a = np.asarray([0, 0])
     r = 0
@@ -103,8 +114,9 @@ if __name__ == '__main__':
     b_states, b_actions, b_rewards, b_dones, b_next_states = replay_buffer.sample_batch(19)
     print(b_rewards)
 
-    new_buffer = ReplayBuffer(replay_buffer)
-    b_states, b_actions, b_rewards, b_dones, b_next_states = new_buffer.sample_batch(50)
+    new_buffer = ReplayBuffer(5, replay_buffer)
+    new_buffer.add_memory(s, a, r, d, s)
+    b_states, b_actions, b_rewards, b_dones, b_next_states = new_buffer.sample_batch(5)
     print('New Sample')
     print(b_rewards)
 
