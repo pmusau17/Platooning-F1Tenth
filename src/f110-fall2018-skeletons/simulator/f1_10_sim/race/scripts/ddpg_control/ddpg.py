@@ -7,13 +7,12 @@ Description: blah
     State is an array with the following information:
         [forward distance to lead vehicle, sideways distance to lead vehicle, speed_lead - speed_ego, yaw_lead - yaw_ego]
     Action is an array with the following information:
-        [acceleration, steering adjustment]
+        [desired speed, desired steering angle]
 
 Usage:  blah
 
 Class Functions:
-    * calculate_reward(array, array)
-    * get_action_and_value(array)
+    * get_action(array)
     * get_state()
     * learn(int, int, int, int) (kinda done)
     * publish_command(float, float)
@@ -45,7 +44,9 @@ import torch.optim as optim
 from torch.autograd import Variable
 from tf.transformations import euler_from_quaternion
 
-from class_nn import *
+from nn_ddpg import *
+from replay_buffer import *
+from noise_OU import *
 
 from race.msg import drive_param  # For simulator
 # from racecar.msg import drive_param # For actual car
@@ -55,29 +56,6 @@ seed_number = 8
 np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 torch.cuda.manual_seed_all(seed_number)
-
-
-def calculate_entropy(std_devs):
-    """
-    Entropy of a multivariate Gaussian is calculated as 0.5ln(det(2*pi*e*Var)). Given that the covariance matrix of the
-    action is diagonal and 2x2, this equation can be simplified to 0.5*(ln(2*pi*e)+ln(var1)+ln(var2)). Simplifying
-    further to utilize the standard deviations used as input, the equation becomes:
-        entropy = 0.5*ln(2*pi*e) + ln(std) + ln(std2)
-
-    :param std_devs:    (FloatTensor)
-
-    :return entropy:    (float)
-    """
-
-    # Compute the natural log of the standard deviations
-    logstds = torch.log(std_devs)
-
-    # Compute the constant
-    c = 0.5 * np.log((2 * np.pi * np.e))
-
-    entropy = c + logstds.sum().detach().numpy()
-
-    return entropy
 
 
 def compute_returns(next_value, rewards, values, gamma, lam):
@@ -118,6 +96,27 @@ def compute_returns(next_value, rewards, values, gamma, lam):
     return returns
 
 
+def calculate_reward(curr_state):
+    """
+
+    :param curr_state:  (ndarray)   Current state of the agent
+    :return reward:     (float)     The reward associated with the state information.
+    """
+
+    goal_state = np.array([0.5, 0.0, 0.0, 0.0])
+    mask = np.array([2.0, 1.0, 0.0, 0.0])
+
+    diff = goal_state - curr_state
+    diff = np.multiply(diff, mask)
+    diff = np.absolute(diff)
+    reward = 10 - np.sum(diff)
+
+    # print(curr_state)
+    # print(reward)
+
+    return reward
+
+
 def soft_update(target, source, tau):
     """
     TODO
@@ -145,9 +144,8 @@ def hard_update(target, source):
 
 def reset_env():
     """
-
+    TODO: write this
     """
-    # TODO: write this
     reset_world = rospy.ServiceProxy('/gazebo/reset_world', Empty)
     reset_world()
     # print("The world has been reset")
@@ -156,10 +154,10 @@ def reset_env():
 
 class DDPG(object):
     def __init__(self, control_pub_name,
-                 max_turn_angle=34.0, min_speed=0.5, max_speed=4.0, min_dist=0.1, max_dist=3.0,
-                 crash_threshold=10, env='sim', rate=20, load_path=None, log_path='./', save_interval=10,
-                 save_path='./',
-                 episode_length=8192, actor_learning_rate=1e-4, critic_learning_rate=1e-3, weight_decay=1e-2):
+                 max_turn_angle=34.0, min_speed=0.5, max_speed=4.0, min_dist=0.1, max_dist=3.0, crash_threshold=10,
+                 env='sim', rate=20, load_path=None, log_path='./', save_interval=10, save_path='./',
+                 episode_length=8192, replay_capacity=8192, batch_size=100, actor_learning_rate=1e-4, critic_learning_rate=1e-3,
+                 weight_decay=1e-2, gamma=0.99, tau=0.001):
         """
 
         """
@@ -178,9 +176,13 @@ class DDPG(object):
         self.save_intv = save_interval
         self.save_path = save_path
         self.episode_length = episode_length
+        self.capacity = replay_capacity
+        self.batch_size = batch_size
         self.actor_lr = actor_learning_rate
         self.critic_lr = critic_learning_rate
         self.weight_decay = weight_decay
+        self.gamma = gamma
+        self.tau = tau
 
         # Initialize publishers
         self.pub_drive_param = rospy.Publisher(control_pub_name, drive_param, queue_size=5)
@@ -202,12 +204,8 @@ class DDPG(object):
         self.critic_optimizer = optim.Adam(self.critic_nn.parameters(), lr=self.critic_lr,
                                            weight_decay=self.weight_decay)
 
-        # Initialize the NNs and optimizer
+        # Initialize the target NNs or load models
         if load_path is None or load_path == 'None':
-            # Actor and Critic are initialized orthogonally
-            self.actor_nn.initialize_orthogonal()
-            self.critic_nn.initialize_orthogonal()
-
             # Targets are copied with a hard update
             hard_update(self.actor_target_nn, self.actor_nn)
             hard_update(self.critic_target_nn, self.critic_nn)
@@ -215,30 +213,18 @@ class DDPG(object):
         else:
             self.load_models(self.load_path)
 
-        # Initialize global variables used by subscribers
+        # Initialize variables used by subscribers
         self.ego_pos = None  # [0.0, 0.0, 0.0, 0.0]  # (x, y, yaw, speed)
         self.lead_pos = None  # [(max_dist - min_dist)/2, 0.0, 0.0, 0.0]   # (x, y, yaw, speed)
         self.lidar_done = 0
 
-    def calculate_reward(self, curr_state):
-        """
-
-        :param curr_state:  (ndarray)   Current state of the agent
-        :return reward:     (float)     The reward associated with the state information.
-        """
-
-        goal_state = np.array([0.5, 0.0, 0.0, 0.0])
-        mask = np.array([2.0, 1.0, 0.0, 0.0])
-
-        diff = goal_state - curr_state
-        diff = np.multiply(diff, mask)
-        diff = np.absolute(diff)
-        reward = 10 - np.sum(diff)
-
-        # print(curr_state)
-        # print(reward)
-
-        return reward
+        # Initialize variables used by the learner
+        self.start_time = 0
+        self.replay_buffer = ReplayBuffer(self.capacity)
+        self.noise = OrnsteinUhlenbeckActionNoise(mu=np.asarray([0, 0]), sigma=self.sigma, theta=self.theta,
+                                                  dt=(1.0/float(rate)))
+        self.scale_mult = np.asarray([((self.max_speed - self.min_speed) / 2.0), self.max_turn_angle], dtype=float)
+        self.scale_add = np.asarray([((self.max_speed - self.min_speed) / 2.0), 0.0], dtype=float)
 
     def callback_ego_odom(self, data):
         """
@@ -316,39 +302,30 @@ class DDPG(object):
 
         # print('Lidar updated')
 
-    def get_action_and_value(self, state):
+    def get_action(self, state, noise=np.asarray[0, 0]):
         """
-        This function uses the CNN to determine which action to take next and the estimated value of the current state.
-        The action is randomly selected given the output distribution.
+        This function calculates the desired output using the NN and the exploration noise.
 
         :input:
-            :param state:           (ndarray)   Input image to determine which action to take
+            :param state:       (ndarray)   Input state to determine which action to take
+            :param noise:       (ndarray)   The exploration noise. Default=[0, 0] (no noise)
         :outputs:
-            :return distribution:   (np.array)  The action distribution used to determine the next action
-            :return action:         (ndarray)     The chosen action to take
+            :return action:     (ndarray)   The chosen action to take
         """
 
         # Forward pass the network
         state = torch.FloatTensor(state).to(self.device)
-        means, stds, val = self.ac_nn.forward(state)
-        means = means.cpu()
-        stds = stds.cpu()
-        val = val.cpu()
-        # print('means size ' + str(means.size()))
-        # print('stds size ' + str(stds.size()))
-        # print('val size ' + str(val.size()))
+        action = self.actor_nn.forward(state)
+        action = action.cpu()
 
-        # Choose a random action according to the distribution
-        random_val = torch.FloatTensor(np.random.rand(2)).cpu()
-        action = (means + stds * random_val).detach().numpy()
+        # Add the process noise to the action
+        action = action + torch.FloatTensor(noise).cpu()
+        action = action.clamp(-1.0, 1.0)  # Make sure action cannot exceed limits
 
-        # Calculate entropy
-        entropy = calculate_entropy(stds)
+        # Convert to numpy array
+        action.detach().numpy()
 
-        # Convert value to numpy compatible version
-        value = val.detach().numpy()
-
-        return action, means, stds, entropy, value
+        return action
 
     def get_state(self):
         """
@@ -589,50 +566,42 @@ class DDPG(object):
         :param steering_angle:  (float)
         """
 
-        angle = max(min(steering_angle, self.max_turn_angle), -self.max_turn_angle)
-        vel = max(min(velocity, self.max_speed), self.min_speed)
-
         msg = drive_param()
-        msg.angle = angle
-        msg.velocity = vel
+        msg.angle = steering_angle
+        msg.velocity = velocity
         self.pub_drive_param.publish(msg)
 
-        return vel, angle
+        return
 
-    def step(self, curr_state, action):
+    def step(self, action):
         """
-
-        :param curr_state:  (ndarray)
+        TODO
         :param action:      (ndarray)
         """
+        # Scale the action
+        action = np.multiply(action, self.scale_mult) + self.scale_add
 
         # Publish action
-        vel_cmd = curr_state[2] + action[0]
-        steer_cmd = curr_state[3] + action[1]
-        vel, angle = self.publish_cmd(vel_cmd, steer_cmd)
-
-        # Catch discrepancies between desired and executed actions
-        actual_action = action
-        actual_action[0] = vel - curr_state[2]
-        actual_action[1] = angle - curr_state[3]
+        vel_cmd = action[0]
+        steer_cmd = action[1]
+        self.publish_cmd(vel_cmd, steer_cmd)
 
         # Wait specified time
         self.rate.sleep()
 
         # Collect new state
         next_state, done = self.get_state()
-        reward = self.calculate_reward(next_state)
+        reward = calculate_reward(next_state)
 
-        return next_state, actual_action, reward, done
+        return next_state, reward, done
 
-    def save_models(self, time_step, replay_buffer, save_path='models.pth'):
+    def save_models(self, time_step, save_path='models.pth'):
         """
         This function save the neural network models and optimizers for both the actor and the critic in one file. For
         more examples on how to save/load models, visit
         https://pytorch.org/tutorials/beginner/saving_loading_models.html
 
         :param time_step:     (int)
-        :param replay_buffer: (idk)
         :param save_path:     (string) The file name that the models will be saved to. default='models.pth'
         """
 
@@ -645,7 +614,7 @@ class DDPG(object):
             'critic_target': self.critic_target_nn.state_dict(),
             'actor_optimizer': self.actor_optimizer.state_dict(),
             'critic_optimizer': self.critic_optimizer.state_dict(),
-            'replay_buffer': replay_buffer,
+            'replay_buffer': self.replay_buffer,
         }, save_path)
 
         # Clean up any garbage that's accrued
