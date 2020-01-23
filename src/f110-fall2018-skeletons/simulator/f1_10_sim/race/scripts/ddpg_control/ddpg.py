@@ -96,20 +96,23 @@ def compute_returns(next_value, rewards, values, gamma, lam):
     return returns
 
 
-def calculate_reward(curr_state):
+def calculate_reward(curr_state, done):
     """
 
     :param curr_state:  (ndarray)   Current state of the agent
-    :return reward:     (float)     The reward associated with the state information.
+    :param done:        (int)       Variable determining if the vehicle crashed or not
+    :return reward:     (float)     The reward associated with the state information
     """
+    if done == 1:
+        reward = 0
+    else:
+        goal_state = np.array([0.5, 0.0, 0.0, 0.0])
+        mask = np.array([2.0, 1.0, 0.0, 0.0])
 
-    goal_state = np.array([0.5, 0.0, 0.0, 0.0])
-    mask = np.array([2.0, 1.0, 0.0, 0.0])
-
-    diff = goal_state - curr_state
-    diff = np.multiply(diff, mask)
-    diff = np.absolute(diff)
-    reward = 10 - np.sum(diff)
+        diff = goal_state - curr_state
+        diff = np.multiply(diff, mask)
+        diff = np.absolute(diff)
+        reward = 10 - np.sum(diff)
 
     # print(curr_state)
     # print(reward)
@@ -312,10 +315,11 @@ class DDPG(object):
         :outputs:
             :return action:     (ndarray)   The chosen action to take
         """
-
         # Forward pass the network
         state = torch.FloatTensor(state).to(self.device)
+        self.actor_nn.eval()  # Must be in eval mode to execute a forward pass
         action = self.actor_nn.forward(state)
+        self.actor_nn.train()  # Must be in train mode to record gradients
         action = action.cpu()
 
         # Add the process noise to the action
@@ -386,72 +390,50 @@ class DDPG(object):
 
         return state, done
 
-    def learn(self, total_steps=int(1e9), horizon_length=8192, num_epochs=4, minibatch_length=8192):
+    def learn(self, total_steps=int(1e9), test_length=8192, num_tests=4):
         """
 
         """
 
-        # Make sure the Neural Net is in train mode
-        self.ac_nn.train()
+        # Make sure the Neural Nets are in train mode
+        self.set_nns_to_train()
 
         # Create the log files
         if not os.path.isdir(self.log_path):
             os.mkdir(self.log_path)
         episode_performance_save_string = self.log_path + '/episode_performance.csv'
         f = open(episode_performance_save_string, "w+")
-        f.write("simulated steps, episode reward, done \n")
+        f.write("training steps, average reward per step, chance to crash \n")
         f.close()
 
         # Iterate through a sufficient number of steps broken into horizons
         step_count = 0
         save_count = 0
         while step_count < total_steps:
-            h_length = min(horizon_length, (total_steps - step_count))
-            # Execute the horizon
-            h_states, h_actions, h_log_probs, h_returns, h_values, ep_steps, ep_rewards, ep_dones = self.play_horizon(
-                h_length)
+            ep_length = min(self.episode_length, (total_steps - step_count))
+            # Train through exploration
+            self.play_through_training(ep_length)
+
+            # Evaluate performance periodically
+            avg_ep_reward, chance_to_crash = self.test(test_length, num_tests)
 
             # Record the episode information for logging
             if self.log_path is None:
-                for i in range(len(ep_steps)):
-                    # Print to the console if no log path is specified
-                    print(
-                        'Step Count: ' + str(step_count + ep_steps[i]) + ' Avg reward per step: ' + str(ep_rewards[i]) +
-                        ' Done: ' + str(ep_dones[i]))
+                # Print to the console if no log path is specified
+                print(
+                    'Step Count: ' + str(step_count) + ' Avg reward per step: ' + str(avg_ep_reward) +
+                    ' Chance to Crash: ' + str(chance_to_crash))
             else:
+                # Write the performance after testing to a file
                 with open(episode_performance_save_string, "a") as myfile:
-                    for i in range(len(ep_steps)):
-                        myfile.write(
-                            str(step_count + ep_steps[i]) + ', ' + str(ep_rewards[i]) + ', ' + str(ep_dones[i]) + '\n'
-                        )
+                    myfile.write(str(step_count) + ', ' + str(avg_ep_reward) + ', ' + str(chance_to_crash) + '\n')
 
-                for i in range(len(ep_steps)):
-                    # Print to the console if no log path is specified
-                    print('Step Count: ' + str(step_count + ep_steps[i]) + ' Avg reward per step: ' + str(ep_rewards[i])
-                          + ' Done: ' + str(ep_dones[i]))
+                # Print to the console
+                print('Step Count: ' + str(step_count) + ' Avg reward per step: ' + str(avg_ep_reward)
+                      + ' Chance to Crash: ' + str(chance_to_crash))
 
             # Increment the step counter
-            step_count += h_length
-
-            # Iterate through the number of epochs, running updates on shuffled minibatches
-            indices = np.arange(h_length)
-            for e in range(num_epochs):
-                # Shuffle the frames in the horizon
-                np.random.shuffle(indices)
-
-                # Update each shuffled minibatch (mb)
-                for mb_start in range(0, h_length, minibatch_length):
-                    # Single out each minibatch from the recorded horizon
-                    mb_end = min((mb_start + minibatch_length), h_length)
-                    mb_indices = indices[mb_start:mb_end:1]
-                    mb_states = h_states[mb_indices]
-                    mb_actions = h_actions[mb_indices]
-                    mb_log_probs = h_log_probs[mb_indices]
-                    mb_returns = h_returns[mb_indices]
-                    mb_values = h_values[mb_indices]
-
-                    print('updating...')
-                    actor_loss, critic_loss = self.update(mb_states, mb_actions, mb_log_probs, mb_returns, mb_values)
+            step_count += ep_length
 
             # Save the model at the desired rate
             if ((save_count % self.save_intv == 0) or (step_count >= total_steps)) and (self.save_path is not None):
@@ -495,7 +477,7 @@ class DDPG(object):
 
         return
 
-    def play_horizon(self, horizon_length):
+    def play_through_training(self, episode_length):
         """
 
         """
@@ -591,7 +573,7 @@ class DDPG(object):
 
         # Collect new state
         next_state, done = self.get_state()
-        reward = calculate_reward(next_state)
+        reward = calculate_reward(next_state, done)
 
         return next_state, reward, done
 
@@ -622,63 +604,63 @@ class DDPG(object):
 
         return
 
-    def test(self, max_steps=-1):
+    def test(self, test_length=-1, num_tests=1):
         """
         This function runs the learned policy until a stop condition occurs.
 
         :inputs:
-            :param max_steps:   (int)   Maximum number of steps to execute in the training cycle. If -1, then there is
-                                        no maximum. Default=-1
+            :param test_length:   (int) Maximum number of steps to execute in the training cycle. If -1, then there is
+                                          no maximum. Default=-1
+            :param num_tests:     (int) Number of tests to be executed. Default=1
         """
 
-        # Initialize
-        state, done = self.get_state()
-        step = 0
-        total_reward = 0
-        states = []
-        actions = []
-        log_probs = []
-        rewards = []
-        values = []
-        returns = []
+        # Initialize a count of the number of times the vehicle crashes
+        crashes = 0
 
-        while not rospy.is_shutdown():
-            # Stop the controller if there is a collision or time-out
-            if done or (step >= max_steps != -1):
-                # stop
-                self.publish_cmd(0.0, 0.0)
-                break
+        avg_episode_reward = 0
 
-            # Determine the next action
-            action, means, stds, entropy, value = self.get_action_and_value(state)
-            log_prob = calculate_log_probability(action, means, stds)
+        for _ in range(num_tests):
+            # Initialize for a new test episode
+            if self.env == 'sim':
+                reset_env()
+                self.rate.sleep()
+                self.lidar_done = 0
+            state, done = self.get_state()
+            step = 0
+            total_reward = 0
 
-            # Execute determined action
-            next_state, actual_action, reward, done = self.step(state, action)
+            # Execute all the steps in the episode
+            while not rospy.is_shutdown():
+                # Stop the controller if there is a collision or time-out
+                if done or (step >= test_length != -1):
+                    # stop
+                    self.publish_cmd(0.0, 0.0)
+                    crashes += done
+                    break
 
-            # Record information about the step
-            states.append(state)
-            actions.append(actual_action)
-            log_probs.append(log_prob)
-            rewards.append(reward)
-            values.append(value)
+                # Determine the next action
+                action = self.get_action(state)
 
-            # Update for next step
-            total_reward += reward
-            state = next_state
-            step += 1
+                # Execute determined action
+                next_state, reward, done = self.step(action)
 
-        # Compute returns
-        _, _, _, _, next_value = self.get_action_and_value(state)
-        returns.extend(compute_returns(next_value, rewards, values, self.gamma, self.lam))
+                # Update for next step
+                total_reward += reward
+                state = next_state
+                step += 1
 
-        # Compute the average reward
-        if step == 0:
-            avg_reward = 0
-        else:
-            avg_reward = total_reward / step
+            # Compute the average reward for the episode
+            if step == 0:
+                avg_reward = 0
+            else:
+                avg_reward = total_reward / step
 
-        return states, actions, log_probs, returns, values, step, avg_reward, done
+            avg_episode_reward += avg_reward/num_tests
+
+        # Compute the chance of crashing based on the number of tests run
+        chance_to_crash = crashes / num_tests
+
+        return avg_episode_reward, chance_to_crash
 
     def update(self, states, actions, old_log_probs, returns, old_values):
         """
