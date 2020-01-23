@@ -42,6 +42,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 from torch.autograd import Variable
+import torch.nn.functional as F
 from tf.transformations import euler_from_quaternion
 
 from nn_ddpg import *
@@ -49,6 +50,7 @@ from replay_buffer import *
 from noise_OU import *
 
 from race.msg import drive_param  # For simulator
+
 # from racecar.msg import drive_param # For actual car
 
 # Set the random seed
@@ -145,21 +147,12 @@ def hard_update(target, source):
         target_param.data.copy_(param.data)
 
 
-def reset_env():
-    """
-    TODO: write this
-    """
-    reset_world = rospy.ServiceProxy('/gazebo/reset_world', Empty)
-    reset_world()
-    # print("The world has been reset")
-    return
-
-
 class DDPG(object):
     def __init__(self, control_pub_name,
                  max_turn_angle=34.0, min_speed=0.5, max_speed=4.0, min_dist=0.1, max_dist=3.0, crash_threshold=10,
                  env='sim', rate=20, load_path=None, log_path='./', save_interval=10, save_path='./',
-                 episode_length=8192, replay_capacity=8192, batch_size=100, actor_learning_rate=1e-4, critic_learning_rate=1e-3,
+                 episode_length=8192, replay_capacity=8192, batch_size=100, actor_learning_rate=1e-4,
+                 critic_learning_rate=1e-3,
                  weight_decay=1e-2, gamma=0.99, tau=0.001):
         """
 
@@ -190,7 +183,17 @@ class DDPG(object):
         # Initialize publishers
         self.pub_drive_param = rospy.Publisher(control_pub_name, drive_param, queue_size=5)
 
-        # Initialize Cuda variables
+        # Initialize simulation interaction functions if operating in a simulation
+        if self.env == 'sim':
+            self.reset_env = rospy.ServiceProxy('/gazebo/reset_world', Empty)
+            self.pause_simulation = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
+            self.unpause_simulation = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
+        else:
+            self.reset_env = None
+            self.pause_simulation = None
+            self.unpause_simulation = None
+
+            # Initialize Cuda variables
         use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -225,9 +228,12 @@ class DDPG(object):
         self.start_time = 0
         self.replay_buffer = ReplayBuffer(self.capacity)
         self.noise = OrnsteinUhlenbeckActionNoise(mu=np.asarray([0, 0]), sigma=self.sigma, theta=self.theta,
-                                                  dt=(1.0/float(rate)))
+                                                  dt=(1.0 / float(rate)))
         self.scale_mult = np.asarray([((self.max_speed - self.min_speed) / 2.0), self.max_turn_angle], dtype=float)
         self.scale_add = np.asarray([((self.max_speed - self.min_speed) / 2.0), 0.0], dtype=float)
+
+        # Debugging variables
+        # self.old_params = list(self.actor_nn.parameters())[0].clone()
 
     def callback_ego_odom(self, data):
         """
@@ -316,7 +322,7 @@ class DDPG(object):
             :return action:     (ndarray)   The chosen action to take
         """
         # Forward pass the network
-        state = torch.FloatTensor(state).to(self.device)
+        state = Variable(torch.FloatTensor(state).to(self.device), requires_grad=True)
         self.actor_nn.eval()  # Must be in eval mode to execute a forward pass
         action = self.actor_nn.forward(state)
         self.actor_nn.train()  # Must be in train mode to record gradients
@@ -421,8 +427,8 @@ class DDPG(object):
             if self.log_path is None:
                 # Print to the console if no log path is specified
                 print(
-                    'Step Count: ' + str(step_count) + ' Avg reward per step: ' + str(avg_ep_reward) +
-                    ' Chance to Crash: ' + str(chance_to_crash))
+                        'Step Count: ' + str(step_count) + ' Avg reward per step: ' + str(avg_ep_reward) +
+                        ' Chance to Crash: ' + str(chance_to_crash))
             else:
                 # Write the performance after testing to a file
                 with open(episode_performance_save_string, "a") as myfile:
@@ -468,9 +474,11 @@ class DDPG(object):
             self.critic_optimizer.load_state_dict(checkpoint['critic_optimizer'])
             self.replay_buffer = ReplayBuffer(checkpoint['replay_buffer'])
 
-            # Evaluate the neural network to ensure the weights were properly loaded
+            # Evaluate the neural networks to ensure the weights were properly loaded
             self.actor_nn.eval()
             self.critic_nn.eval()
+            self.actor_target_nn.eval()
+            self.critic_target_nn.eval()
 
         # Clean up any garbage that's accrued
         gc.collect()
@@ -484,62 +492,60 @@ class DDPG(object):
 
         # Initialize variables
         steps_taken = 0
-        states = []
-        actions = []
-        log_probs = []
-        returns = []
-        values = []
-
-        ep_steps = []
-        ep_rewards = []
-        ep_dones = []
 
         # Make sure the environment starts fresh if in simulation
         if self.env == 'sim':
-            reset_env()
+            self.reset_env()
             self.rate.sleep()
-            print('New Horizon')
+            print('New Training Set')
             self.lidar_done = 0
 
-        # Play through episodes and record the results until the horizon has been played through
-        while steps_taken < horizon_length:
-            # Determine how many steps to take in the next episode
-            max_steps = min((horizon_length - steps_taken), self.episode_length)
+        # Get the initial state information and reset the Ornstein-Uhlenbeck noise
+        self.noise.reset()
+        state, _ = self.get_state()
 
-            # Execute an episode (returns if done or reached desired number of steps)
-            ep_states, ep_actions, ep_log_probs, ep_returns, ep_values, steps, ep_reward, done = self.test(max_steps)
+        # Play through the training episode updating after every step and resetting the environment if there is a crash
+        while steps_taken < episode_length:
 
-            # Update the records
-            steps_taken += steps
-            states.extend(ep_states)
-            actions.extend(ep_actions)
-            log_probs.extend(ep_log_probs)
-            returns.extend(ep_returns)
-            values.extend(ep_values)
+            # Determine the action to take
+            action = self.get_action(state, self.noise.noise())
 
-            # Record information about the episode for logging
-            ep_steps.append(steps_taken)
-            ep_rewards.append(ep_reward)
-            ep_dones.append(done)
+            # Take the action
+            next_state, reward, done = self.step(action)
+
+            # Record the information in the replay buffer
+            self.replay_buffer.add_memory(state, action, reward, done, next_state)
+
+            # Only update if the replay buffer is full
+            if len(self.replay_buffer.rewards) == self.capacity:
+                # Because the update process is lengthy, the simulation will need to be paused for the update
+                if self.env == 'sim':
+                    self.pause_simulation()
+
+                # Update the neural networks using a random sampling of the replay buffer
+                mb_states, mb_actions, mb_rewards, mb_dones, mb_next_states = self.replay_buffer.sample_batch(
+                    self.batch_size)
+                actor_loss, critic_loss = self.update(mb_states, mb_actions, mb_rewards, mb_dones, mb_next_states)
+
+                # Unpause after updating
+                if self.env == 'sim':
+                    self.unpause_simulation()
 
             # Only reset the environment if a terminal state has been reached
             if done == 1:
                 if self.env == 'sim':
-                    reset_env()
+                    self.reset_env()
                     self.rate.sleep()
                     print(steps_taken)
                     self.lidar_done = 0
+                self.noise.reset()
+                state, _ = self.get_state()
+            else:
+                state = next_state
 
-        # print(len(states))
+            steps_taken += 1
 
-        states = np.asarray(states)
-        # print(len(states))
-        actions = np.asarray(actions)
-        log_probs = np.asarray(log_probs)
-        returns = np.asarray(returns)
-        values = np.asarray(values)
-
-        return states, actions, log_probs, returns, values, ep_steps, ep_rewards, ep_dones
+        return
 
     def publish_cmd(self, velocity, steering_angle):
         """
@@ -554,6 +560,15 @@ class DDPG(object):
         self.pub_drive_param.publish(msg)
 
         return
+
+    def set_nns_to_train(self):
+        """
+        This function sets all of the NNs in the class to train mode
+        """
+        self.actor_nn.train()
+        self.critic_nn.train()
+        self.actor_target_nn.train()
+        self.critic_target_nn.train()
 
     def step(self, action):
         """
@@ -622,7 +637,7 @@ class DDPG(object):
         for _ in range(num_tests):
             # Initialize for a new test episode
             if self.env == 'sim':
-                reset_env()
+                self.reset_env()
                 self.rate.sleep()
                 self.lidar_done = 0
             state, done = self.get_state()
@@ -655,77 +670,67 @@ class DDPG(object):
             else:
                 avg_reward = total_reward / step
 
-            avg_episode_reward += avg_reward/num_tests
+            avg_episode_reward += avg_reward / num_tests
 
         # Compute the chance of crashing based on the number of tests run
         chance_to_crash = crashes / num_tests
 
         return avg_episode_reward, chance_to_crash
 
-    def update(self, states, actions, old_log_probs, returns, old_values):
+    def update(self, states, actions, rewards, dones, next_states):
         """
         This function updates neural networks for the actor and critic using back-propogation. More information about
-        this process can be found in the PPO paper (https://arxiv.org/abs/1707.06347) and the pytorch implementation
-        found at https://github.com/higgsfield/RL-Adventure-2
+        this process can be found in the DDPG paper.
 
         :inputs:
-            :param states:          (list)  The observations recorded during the horizon.
-            :param actions:         (list)  The actions taken during the horizon.
-            :param old_log_probs:   (list)  The log probability of each action calculated during the horizon.
-            :param returns:         (list)  The returns calculated during the horizon.
-            :param old_values:      (list)  The estimate state values acquired during the horizon.
+            :param states:       (list)  The batch of states from the replay buffer
+            :param actions:      (list)  The batch of actions from the replay buffer
+            :param rewards:      (list)  The batch of rewards from the replay buffer
+            :param dones:        (list)  The batch of done values (1 indicates crash, 0 indicates no crash) from the
+                                           replay buffer
+            :param next_states:  (list)  The batch of states reached after executing the actions from the replay buffer
         :outputs:
-            :return actor_loss:     (float) The loss value calculated for the actor.
-            :return critic_loss:    (float) The loss value calculated for the critic.
+            :return actor_loss:  (float) The loss value calculated for the actor
+            :return critic_loss: (float) The loss value calculated for the critic
         """
+        # Convert the inputs into tensors to speed up computations
+        batch_states = Variable(torch.FloatTensor(states).to(self.device), requires_grad=True)
+        batch_actions = Variable(torch.FloatTensor(actions).to(self.device), requires_grad=True)
+        batch_rewards = Variable(torch.FloatTensor(rewards).to(self.device), requires_grad=True).unsqueeze(1)
+        batch_dones = Variable(torch.FloatTensor(dones).to(self.device), requires_grad=True).unsqueeze(1)
+        batch_next_states = Variable(torch.FloatTensor(next_states).to(self.device), requires_grad=True)
 
-        # Calculate new values and log probabilities
-        new_log_probs = []
-        new_values = []
-        entropy_term = 0
-        for i in range(len(returns)):
-            _, means, stds, entropy, value = self.get_action_and_value(states[i])
-            log_prob = calculate_log_probability(actions[i], means, stds)
+        # Compute the critics estimated Q values
+        batch_qs = self.critic_nn.forward(batch_states, batch_actions)
 
-            new_log_probs.append(log_prob)
-            new_values.append(value)
-            entropy_term += entropy
+        # Compute what the actions would have been without noise
+        actions_without_noise = self.actor_nn.forward(batch_states)
 
-        # Convert arrays into tensors and send them to the GPU to speed up calculations
-        # frames = Variable(torch.FloatTensor(frames)).to(self.device)
-        old_values = torch.FloatTensor(old_values).detach().to(self.device)
-        new_values = Variable(torch.FloatTensor(new_values), requires_grad=True).to(self.device)
-        returns = torch.FloatTensor(returns).to(self.device)
-        old_log_probs = torch.FloatTensor(old_log_probs).detach().to(self.device)
-        new_log_probs = Variable(torch.FloatTensor(new_log_probs), requires_grad=True).to(self.device)
+        # Compute the target's next state and next Q-value estimates used for computing loss
+        target_next_action_batch = self.actor_target_nn.forward(batch_next_states)
+        target_next_q_batch = self.critic_target_nn.forward(batch_next_states, target_next_action_batch)
 
-        # Calculate the advantage
-        advantages = returns - old_values
-        advantages = Variable(advantages, requires_grad=True)
+        # Compute y (a metric for computing the critic loss)
+        y = batch_rewards + ((1 - batch_dones) * self.gamma * target_next_q_batch)
 
-        # Compute the actor loss function with clipping
-        ratio = (new_log_probs - old_log_probs).exp()
-        loss_not_clipped = ratio * advantages
-        loss_clipped = torch.clamp(ratio, 1.0 - self.clip_range, 1.0 + self.clip_range) * advantages
-        actor_loss = -torch.min(loss_not_clipped, loss_clipped).mean() + 0.001 * entropy_term
+        # Compute critic loss and update using the optimizer
+        critic_loss = F.mse_loss(y, batch_qs)
+        self.critic_optimizer.zero_grad()
+        critic_loss.backward()
+        self.critic_optimizer.step()
 
-        # Compute the critic loss function with clipping
-        clipped_values = old_values + torch.clamp((new_values - old_values), -self.clip_range, self.clip_range)
-        closs_clipped = (returns - clipped_values).pow(2)
-        closs_not_clipped = (returns - new_values).pow(2)
-        critic_loss = 0.5 * torch.max(closs_clipped, closs_not_clipped).mean()
-        # critic_loss = 0.5 * (returns - new_values).pow(2).mean()
+        # Compute the actor loss and update using the optimizer
+        actor_loss = -self.critic_nn(batch_states, actions_without_noise)
+        actor_loss = actor_loss.mean()
+        self.actor_optimizer.zero_grad()
+        actor_loss.backward()
+        self.actor_optimizer.step()
 
-        # Combine for a total loss
-        total_loss = actor_loss + critic_loss
-        total_loss = Variable(total_loss, requires_grad=True)
+        # Update the target networks
+        soft_update(self.actor_target_nn, self.actor_nn)
+        soft_update(self.critic_target_nn, self.critic_nn)
 
-        # Update optimizer
-        self.ac_optimizer.zero_grad()
-        total_loss.backward()
-        self.ac_optimizer.step()
-
-        # new_params = list(self.ac_nn.parameters())[0].clone()
+        # new_params = list(self.actor_nn.parameters())[0].clone()
         # print(torch.equal(new_params.data, self.old_params.data))
         #
         # self.old_params = new_params
@@ -735,47 +740,45 @@ class DDPG(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('ppo_control', anonymous=True)
-    params = rospy.get_param("ppo_params")
+    rospy.init_node('ddpg_control', anonymous=True)
+    params = rospy.get_param("ddpg_params")
     rospy.wait_for_service('/gazebo/reset_world')
-    PPO_Controller = PPO(control_pub_name=params['control_pub_name'],
-                         car_width=params['car_width'],
-                         scan_width=params['scan_width'],
-                         lidar_range=params['lidar_range'],
-                         turn_clearance=params['turn_clearance'],
-                         max_turn_angle=params['max_turn_angle'],
-                         min_speed=params['min_speed'],
-                         max_speed=params['max_speed'],
-                         min_dist=params['min_dist'],
-                         max_dist=params['max_dist'],
-                         no_obst_dist=params['no_obst_dist'],
-                         crash_threshold=params['crash_threshold'],
-                         env=params['env'],
-                         rate=params['rate'],
-                         load_path=params['load_path'],
-                         log_path=params['log_path'],
-                         save_interval=params['save_interval'],
-                         save_path=params['save_path'],
-                         episode_length=params['episode_length'],
-                         gamma=params['gamma'],
-                         lam=params['lam'],
-                         learning_rate=params['learning_rate'],
-                         rl_clip_range=params['rl_clip_range'])
-    rospy.Subscriber(params['lidar_name'], LaserScan, PPO_Controller.callback_lidar)
-    rospy.Subscriber(params['ego_odom_name'], Odometry, PPO_Controller.callback_ego_odom)
-    rospy.Subscriber(params['lead_odom_name'], Odometry, PPO_Controller.callback_leader_odom)
-    PPO_Controller.rate.sleep()
+    DDPG_Controller = DDPG(control_pub_name='/racecar2/drive_parameters',
+                           max_turn_angle=params['max_turn_angle'],
+                           min_speed=params['min_speed'],
+                           max_speed=params['max_speed'],
+                           min_dist=params['min_dist'],
+                           max_dist=params['max_dist'],
+                           crash_threshold=params['crash_threshold'],
+                           env=params['env'],
+                           rate=params['rate'],
+                           load_path=params['load_path'],
+                           log_path=params['log_path'],
+                           save_interval=params['save_interval'],
+                           save_path=params['save_path'],
+                           episode_length=params['episode_length'],
+                           replay_capacity=params['replay_capacity'],
+                           batch_size=params['batch_size'],
+                           actor_learning_rate=params['actor_learning_rate'],
+                           critic_learning_rate=params['critic_learning_rate'],
+                           weight_decay=params['weight_decay'],
+                           gamma=params['gamma'],
+                           tau=params['tau'])
+    rospy.Subscriber(params['lidar_name'], LaserScan, DDPG_Controller.callback_lidar)
+    rospy.Subscriber(params['ego_odom_name'], Odometry, DDPG_Controller.callback_ego_odom)
+    rospy.Subscriber(params['lead_odom_name'], Odometry, DDPG_Controller.callback_leader_odom)
+    DDPG_Controller.rate.sleep()
     if params['test_or_train'] == 'train':
         # Train the network
-        PPO_Controller.learn(horizon_length=params['horizon_length'],
-                             num_epochs=params['num_epochs'],
-                             minibatch_length=params['minibatch_length'])
+        DDPG_Controller.learn(total_steps=params['total_steps'],
+                              test_length=params['test_length'],
+                              num_tests=params['num_tests'])
     else:
         if params['env'] == 'sim':
-            reset_env()
-            PPO_Controller.rate.sleep()
-            # PPO_Controller.ac_nn.eval()
-            _, _, _, _, _, _, avg_reward, _ = PPO_Controller.test(-1)
+            DDPG_Controller.reset_env()
+            DDPG_Controller.rate.sleep()
+            # DDPG_Controller.ac_nn.eval()
+            avg_reward, _ = DDPG_Controller.test(-1)
             print('Average Reward per Step: ' + str(avg_reward))
         else:
-            PPO_Controller.test(-1)
+            DDPG_Controller.test(-1)
