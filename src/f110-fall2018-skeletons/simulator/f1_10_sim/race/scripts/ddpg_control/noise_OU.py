@@ -1,6 +1,7 @@
 # From OpenAI Baselines:
 # https://github.com/openai/baselines/blob/master/baselines/ddpg/noise.py
 
+import numpy as np
 
 class OrnsteinUhlenbeckActionNoise:
     def __init__(self, mu, sigma, theta=.15, dt=1e-2, x0=None):

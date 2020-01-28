@@ -335,9 +335,9 @@ class DDPG(object):
         action = action.clamp(-1.0, 1.0)  # Make sure action cannot exceed limits
 
         # Convert to numpy array
-        action.detach().numpy()
+        np_action = action.detach().numpy()
 
-        return action
+        return np_action
 
     def get_state(self):
         """
@@ -418,7 +418,7 @@ class DDPG(object):
         step_count = 0
         save_count = 0
         while step_count < total_steps:
-            ep_length = min(self.episode_length, (total_steps - step_count))
+            ep_length = min(self.episode_length, (int(total_steps) - int(step_count)))
             # Train through exploration
             self.play_through_training(ep_length)
 
@@ -448,7 +448,7 @@ class DDPG(object):
                 # Create the save path name and save it
                 print('saving...')
                 save_path = self.save_path + 'step_' + str(step_count) + '_model.pth'
-                self.save_models(save_path=save_path)
+                self.save_models(time_step=step_count ,save_path=save_path)
             save_count += 1
 
         return
@@ -774,7 +774,7 @@ if __name__ == '__main__':
     DDPG_Controller.rate.sleep()
     if params['test_or_train'] == 'train':
         # Train the network
-        DDPG_Controller.learn(total_steps=params['total_steps'],
+        DDPG_Controller.learn(total_steps=int(1e9),
                               test_length=params['test_length'],
                               num_tests=params['num_tests'])
     else:
