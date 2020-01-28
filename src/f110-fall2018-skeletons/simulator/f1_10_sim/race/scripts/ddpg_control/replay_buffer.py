@@ -83,12 +83,13 @@ class ReplayBuffer(object):
         next_states = np.asarray(self.next_states)
 
         # Randomize the order of the buffer to eliminate TODO
-        indices = np.arange(self.capacity)
+        capacity = len(self.rewards)
+        indices = np.arange(capacity)
         np.random.shuffle(indices)
 
         # Collect the sample from the middle of the randomized indices
-        batch_start = int(max((math.floor(self.capacity / 2.0) - math.floor(batch_length / 2.0)), 0))
-        batch_end = int(min((math.floor(self.capacity / 2.0) + math.ceil(batch_length / 2.0)), self.capacity))
+        batch_start = int(max((math.floor(capacity / 2.0) - math.floor(batch_length / 2.0)), 0))
+        batch_end = int(min((math.floor(capacity / 2.0) + math.ceil(batch_length / 2.0)), capacity))
         batch_indeces = np.asarray(indices[batch_start:batch_end:1], dtype=int)
         # np.random.shuffle(batch_indeces)  # Shuffle the selected indices again to further randomize
 
@@ -102,12 +103,12 @@ class ReplayBuffer(object):
 
 
 if __name__ == '__main__':
-    replay_buffer = ReplayBuffer(10)
+    replay_buffer = ReplayBuffer(100)
     s = np.asarray([0, 0, 0, 0])
     a = np.asarray([0, 0])
     r = 0
     d = 0
-    for i in range(100):
+    for i in range(18):
         replay_buffer.add_memory(s, a, r, d, s)
         r += 1
 
