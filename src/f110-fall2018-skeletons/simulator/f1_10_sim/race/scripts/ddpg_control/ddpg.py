@@ -153,7 +153,7 @@ class DDPG(object):
                  env='sim', rate=20, load_path=None, log_path='./', save_interval=10, save_path='./',
                  episode_length=8192, replay_capacity=8192, batch_size=100, actor_learning_rate=1e-4,
                  critic_learning_rate=1e-3,
-                 weight_decay=1e-2, gamma=0.99, tau=0.001):
+                 weight_decay=1e-2, gamma=0.99, tau=0.001, OU_sigma=0.2, OU_theta=0.15):
         """
 
         """
@@ -179,6 +179,8 @@ class DDPG(object):
         self.weight_decay = weight_decay
         self.gamma = gamma
         self.tau = tau
+        self.sigma = OU_sigma
+        self.theta = OU_theta
 
         # Initialize publishers
         self.pub_drive_param = rospy.Publisher(control_pub_name, drive_param, queue_size=5)
@@ -763,7 +765,9 @@ if __name__ == '__main__':
                            critic_learning_rate=params['critic_learning_rate'],
                            weight_decay=params['weight_decay'],
                            gamma=params['gamma'],
-                           tau=params['tau'])
+                           tau=params['tau'],
+                           OU_sigma=params['OU_sigma'],
+                           OU_theta=params['OU_theta'])
     rospy.Subscriber(params['lidar_name'], LaserScan, DDPG_Controller.callback_lidar)
     rospy.Subscriber(params['ego_odom_name'], Odometry, DDPG_Controller.callback_ego_odom)
     rospy.Subscriber(params['lead_odom_name'], Odometry, DDPG_Controller.callback_leader_odom)
