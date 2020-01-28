@@ -324,7 +324,8 @@ class DDPG(object):
             :return action:     (ndarray)   The chosen action to take
         """
         # Forward pass the network
-        state = Variable(torch.FloatTensor(state).to(self.device), requires_grad=True)
+        # state = Variable(torch.FloatTensor(state).to(self.device), requires_grad=True)
+        state = torch.FloatTensor(state).to(self.device)
         self.actor_nn.eval()  # Must be in eval mode to execute a forward pass
         action = self.actor_nn.forward(state)
         self.actor_nn.train()  # Must be in train mode to record gradients
