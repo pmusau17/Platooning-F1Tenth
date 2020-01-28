@@ -746,6 +746,7 @@ if __name__ == '__main__':
     rospy.init_node('ddpg_control', anonymous=True)
     params = rospy.get_param("ddpg_params")
     rospy.wait_for_service('/gazebo/reset_world')
+    print(type(params['weight_decay']))
     DDPG_Controller = DDPG(control_pub_name='/racecar2/drive_parameters',
                            max_turn_angle=params['max_turn_angle'],
                            min_speed=params['min_speed'],
