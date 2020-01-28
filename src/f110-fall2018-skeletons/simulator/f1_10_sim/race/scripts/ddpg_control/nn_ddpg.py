@@ -80,7 +80,7 @@ class ActorNN(nn.Module):
         fan_in_uniform_init(self.linear2.weight)
         fan_in_uniform_init(self.linear2.bias)
 
-        nn.init.uniform_(self.mu.weight, -final_bias, final_bias)
+        nn.init.uniform_(self.out.weight, -final_bias, final_bias)
 
     def initialize_orthogonal(self):
         """
@@ -159,7 +159,7 @@ class CriticNN(nn.Module):
         fan_in_uniform_init(self.linear2.weight)
         fan_in_uniform_init(self.linear2.bias)
 
-        nn.init.uniform_(self.mu.weight, -final_bias, final_bias)
+        nn.init.uniform_(self.out.weight, -final_bias, final_bias)
 
     def initialize_orthogonal(self):
         """

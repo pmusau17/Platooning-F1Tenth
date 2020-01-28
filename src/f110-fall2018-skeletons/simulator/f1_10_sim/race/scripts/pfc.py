@@ -135,6 +135,9 @@ class PotentialFieldController(object):
         # Compute the angle force and speed force
         angle_force = np.arctan2(net_force_y, self.force_offset_x) # net_force_x)
         speed_force = max((net_force_x*abs(net_force_x) - abs(net_force_y)), 0) # Note: y forces are subtractive. If the car is close to a wall or turning, we want to go slower
+        #prevent division by zero
+        if(not (abs(speed_force)>0)):
+            return
         speed_force = (speed_force / abs(speed_force)) * math.sqrt(abs(speed_force))
 
         return speed_force, angle_force

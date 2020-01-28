@@ -19,7 +19,7 @@ ddpg_params: {
   replay_capacity: 8192,
   total_steps: int(1e9),
   test_length: 8192,
-  num_tests: 4
+  num_tests: 4,
   batch_size: 100, 
   actor_learning_rate: 1e-4, 
   critic_learning_rate: 1e-3,

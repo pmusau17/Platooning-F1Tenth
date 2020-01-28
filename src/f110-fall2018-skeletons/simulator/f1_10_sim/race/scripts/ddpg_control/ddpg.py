@@ -311,7 +311,7 @@ class DDPG(object):
 
         # print('Lidar updated')
 
-    def get_action(self, state, noise=np.asarray[0, 0]):
+    def get_action(self, state, noise=np.asarray([0, 0])):
         """
         This function calculates the desired output using the NN and the exploration noise.
 
