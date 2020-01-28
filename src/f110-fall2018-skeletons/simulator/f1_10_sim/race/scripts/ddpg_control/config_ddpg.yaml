@@ -17,7 +17,7 @@ ddpg_params: {
   save_path: './ddpg/',
   episode_length: 1200,
   replay_capacity: 10000,
-  total_steps: int(1e9),
+  total_steps: 1e9,
   test_length: 600,
   num_tests: 4,
   batch_size: 100, 
