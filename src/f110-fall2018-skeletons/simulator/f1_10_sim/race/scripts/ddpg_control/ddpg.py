@@ -229,8 +229,8 @@ class DDPG(object):
         # Initialize variables used by the learner
         self.start_time = 0
         self.replay_buffer = ReplayBuffer(self.capacity)
-        self.noise = OrnsteinUhlenbeckActionNoise(mu=np.asarray([0, 0]), sigma=self.sigma, theta=self.theta,
-                                                  dt=(1.0 / float(rate)))
+        self.noise = OrnsteinUhlenbeckActionNoise(mu=np.asarray([0, 0]), sigma=(self.sigma * np.asarray([1, 1])),
+                                                  theta=self.theta, dt=(1.0 / float(rate)))
         self.scale_mult = np.asarray([((self.max_speed - self.min_speed) / 2.0), self.max_turn_angle], dtype=float)
         self.scale_add = np.asarray([((self.max_speed - self.min_speed) / 2.0), 0.0], dtype=float)
 
@@ -519,7 +519,7 @@ class DDPG(object):
             self.replay_buffer.add_memory(state, action, reward, done, next_state)
 
             # Only update if the replay buffer is full
-            if len(self.replay_buffer.rewards) == self.capacity:
+            if len(self.replay_buffer.rewards) >= self.batch_size:
                 # Because the update process is lengthy, the simulation will need to be paused for the update
                 if self.env == 'sim':
                     self.pause_simulation()
@@ -709,11 +709,11 @@ class DDPG(object):
         actions_without_noise = self.actor_nn.forward(batch_states)
 
         # Compute the target's next state and next Q-value estimates used for computing loss
-        target_next_action_batch = self.actor_target_nn.forward(batch_next_states)
-        target_next_q_batch = self.critic_target_nn.forward(batch_next_states, target_next_action_batch)
+        target_next_action_batch = (self.actor_target_nn.forward(batch_next_states)).detach()
+        target_next_q_batch = (self.critic_target_nn.forward(batch_next_states, target_next_action_batch)).detach()
 
         # Compute y (a metric for computing the critic loss)
-        y = batch_rewards + ((1 - batch_dones) * self.gamma * target_next_q_batch)
+        y = (batch_rewards + ((1 - batch_dones) * self.gamma * target_next_q_batch)).detach()
 
         # Compute critic loss and update using the optimizer
         critic_loss = F.mse_loss(y, batch_qs)
@@ -729,8 +729,8 @@ class DDPG(object):
         self.actor_optimizer.step()
 
         # Update the target networks
-        soft_update(self.actor_target_nn, self.actor_nn)
-        soft_update(self.critic_target_nn, self.critic_nn)
+        soft_update(self.actor_target_nn, self.actor_nn, tau=self.tau)
+        soft_update(self.critic_target_nn, self.critic_nn, tau=self.tau)
 
         # new_params = list(self.actor_nn.parameters())[0].clone()
         # print(torch.equal(new_params.data, self.old_params.data))
