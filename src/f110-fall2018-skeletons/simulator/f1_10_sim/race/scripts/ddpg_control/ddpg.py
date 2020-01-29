@@ -673,7 +673,7 @@ class DDPG(object):
             else:
                 avg_reward = total_reward / step
 
-            avg_episode_reward += avg_reward / num_tests
+            avg_episode_reward += (avg_reward / num_tests)
 
         # Compute the chance of crashing based on the number of tests run
         chance_to_crash = crashes / num_tests
