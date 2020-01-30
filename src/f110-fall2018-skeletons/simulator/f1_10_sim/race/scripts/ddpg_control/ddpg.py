@@ -763,9 +763,9 @@ if __name__ == '__main__':
                            episode_length=params['episode_length'],
                            replay_capacity=params['replay_capacity'],
                            batch_size=params['batch_size'],
-                           actor_learning_rate=params['actor_learning_rate'],
-                           critic_learning_rate=params['critic_learning_rate'],
-                           weight_decay=params['weight_decay'],
+                           actor_learning_rate=float(params['actor_learning_rate']),
+                           critic_learning_rate=float(params['critic_learning_rate']),
+                           weight_decay=float(params['weight_decay']),
                            gamma=params['gamma'],
                            tau=params['tau'],
                            OU_sigma=params['OU_sigma'],
@@ -776,7 +776,7 @@ if __name__ == '__main__':
     DDPG_Controller.rate.sleep()
     if params['test_or_train'] == 'train':
         # Train the network
-        DDPG_Controller.learn(total_steps=int(1e9),
+        DDPG_Controller.learn(total_steps=int(float(params['total_steps'])),
                               test_length=params['test_length'],
                               num_tests=params['num_tests'])
     else:
