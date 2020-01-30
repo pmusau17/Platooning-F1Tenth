@@ -154,7 +154,7 @@ class PotentialFieldController(object):
         max_angle = data.angle_max
         angle_step = data.angle_increment
         measured_max = data.range_max
-        measured_min = data.range_max
+        measured_min = data.range_min
         clipped_ranges, clipped_angles = self.clip_ranges(ranges, min_angle, max_angle, angle_step, measured_max,
                                                           measured_min)
 

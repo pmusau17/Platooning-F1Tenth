@@ -46,10 +46,12 @@ class BodyNN(nn.Module):
         self.body = nn.Sequential(
             # Layer 1 (input -> hidden)
             nn.Linear(in_features=self.input_size, out_features=self.hidden_size),
+            nn.LayerNorm(hidden_size),
+            nn.ReLU(),
             # Layer 2 (hidden -> hidden)
             nn.Linear(in_features=self.hidden_size, out_features=self.hidden_size),
-            # Layer 3 (hidden -> hidden)
-            nn.Linear(in_features=self.hidden_size, out_features=self.hidden_size)
+            nn.LayerNorm(hidden_size),
+            nn.ReLU()
         )
 
     def initialize_orthogonal(self):
@@ -76,7 +78,6 @@ class BodyNN(nn.Module):
 
         # Return the result
         return x
-
 
 
 ########################################################################################################################
@@ -107,8 +108,7 @@ class ActorCriticNN(nn.Module):
 
         # Create the output layer for the critic
         self.fc_value_function = nn.Sequential(
-            nn.Linear(in_features=self.hidden_size, out_features=1),
-            nn.ReLU()
+            nn.Linear(in_features=self.hidden_size, out_features=1)
         )
 
     def initialize_orthogonal(self):
@@ -138,14 +138,14 @@ class ActorCriticNN(nn.Module):
         x = self.body.forward(state)
 
         # Take the result of the Body NN and pass it through the control layer
-        distribution = self.fc_control(x)
+        mu = torch.tanh(self.fc_control(x))
 
         # Break apart the output into means and standard deviations
-        means = x[0:(self.output_size/2):1]
-        standard_deviations = x[(self.output_size/2):self.output_size:1]
+        means = mu[0:(self.output_size/2):1]
+        standard_deviations = mu[(self.output_size/2):self.output_size:1]
 
         # Take the result of the Body NN and pass it through the value layer
         value = self.fc_value_function(x)
 
         # Return the result
-        return means/10, standard_deviations/10, value
+        return means, standard_deviations, value

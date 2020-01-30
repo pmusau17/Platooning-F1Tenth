@@ -159,7 +159,7 @@ class DDPG(object):
         """
 
         # Save the input parameters
-        self.max_turn_angle = max_turn_angle
+        self.max_turn_angle = max_turn_angle * math.pi / 180.0
         self.min_speed = min_speed
         self.max_speed = max_speed
         self.min_dist = min_dist
@@ -673,7 +673,7 @@ class DDPG(object):
             else:
                 avg_reward = total_reward / step
 
-            avg_episode_reward += avg_reward / num_tests
+            avg_episode_reward += (avg_reward / num_tests)
 
         # Compute the chance of crashing based on the number of tests run
         chance_to_crash = crashes / num_tests
