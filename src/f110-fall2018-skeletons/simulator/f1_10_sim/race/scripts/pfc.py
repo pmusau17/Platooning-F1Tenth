@@ -24,7 +24,7 @@ from race.msg import drive_param # For simulator
 
 class PotentialFieldController(object):
     def __init__(self, car_width=0.5, scan_width=270.0, lidar_range=10.0, turn_clearance=0.35, max_turn_angle=34.0,
-                 min_speed=0.1, max_speed=1, min_dist=0.1, max_dist=3.0, no_obst_dist=5.0):
+                 min_speed=0.1, max_speed=2.0, min_dist=0.1, max_dist=3.0, no_obst_dist=5.0):
         """
         Todo: explanation of what is
 
