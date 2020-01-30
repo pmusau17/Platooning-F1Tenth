@@ -23,9 +23,9 @@ from race.msg import drive_param  # For simulator
 # from racecar.msg import drive_param # For actual car
 
 # Define some constants
-LEFT = 0
-BOTH = 1
-RIGHT = 2
+LEFT = 1
+BOTH = 0
+RIGHT = -1
 
 
 class WallFollowingControl(object):
@@ -92,7 +92,7 @@ class WallFollowingControl(object):
 
     def compute_wall_distances(self, ranges, min_angle, max_angle, angle_step):
         """
-        TODO: write and explain what this do
+
         :param ranges:
         :param min_angle:
         :param max_angle:
@@ -204,11 +204,13 @@ if __name__ == '__main__':
     rospy.spin()
 
     # TEST CODE
-    # ranges = np.arange(0, 270, 1)
+    # ranges = np.arange(-135, 135, 0.1)
     # min_angle = -135. / 180 * math.pi
     # max_angle = 135. / 180 * math.pi
-    # angle_step = 1. / 180 * math.pi
+    # angle_step = 0.1 / 180 * math.pi
     # left_dist, right_dist, side = extendObj.compute_wall_distances(ranges, min_angle, max_angle, angle_step)
-    # print(left_dist)
-    # print(right_dist)
-    # print(side)
+    # print('left: ' + str(left_dist) + '\tright: ' + str(right_dist) + '\tside: ' + str(side))
+    # speed, angle = extendObj.compute_command(right_dist, side)
+    # print('speed: ' + str(speed) + '\tangle: ' + str(round(angle, 4)) + 'rads, '
+    #       + str(round(angle*180/math.pi, 4)) + 'degs')
+
