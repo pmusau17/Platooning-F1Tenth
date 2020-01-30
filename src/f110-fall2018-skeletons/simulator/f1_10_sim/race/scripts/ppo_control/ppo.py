@@ -178,7 +178,7 @@ class PPO(object):
         self.scan_width = scan_width
         self.lidar_range = lidar_range
         self.turn_clearance = turn_clearance
-        self.max_turn_angle = max_turn_angle
+        self.max_turn_angle = max_turn_angle * math.pi / 180.0
         self.min_speed = min_speed
         self.max_speed = max_speed
         self.min_dist = min_dist
@@ -220,6 +220,9 @@ class PPO(object):
         self.ego_pos = None #[0.0, 0.0, 0.0, 0.0]  # (x, y, yaw, speed)
         self.lead_pos = None #[(max_dist - min_dist)/2, 0.0, 0.0, 0.0]   # (x, y, yaw, speed)
         self.lidar_done = 0
+
+        self.scale_mult = np.asarray([((self.max_speed - self.min_speed) / 2.0), self.max_turn_angle], dtype=float)
+        self.scale_add = np.asarray([((self.max_speed - self.min_speed) / 2.0), 0.0], dtype=float)
 
     def calculate_reward(self, curr_state):
         """
@@ -595,16 +598,13 @@ class PPO(object):
         :param curr_state:  (ndarray)
         :param action:      (ndarray)
         """
+        # Scale the action
+        action = np.multiply(action, self.scale_mult) + self.scale_add
 
         # Publish action
-        vel_cmd = curr_state[2] + action[0]
-        steer_cmd = curr_state[3] + action[1]
+        vel_cmd = action[0]
+        steer_cmd = action[1]
         vel, angle = self.publish_cmd(vel_cmd, steer_cmd)
-
-        # Catch discrepancies between desired and executed actions
-        actual_action = action
-        actual_action[0] = vel - curr_state[2]
-        actual_action[1] = angle - curr_state[3]
 
         # Wait specified time
         self.rate.sleep()
@@ -613,7 +613,7 @@ class PPO(object):
         next_state, done = self.get_state()
         reward = self.calculate_reward(next_state)
 
-        return next_state, actual_action, reward, done
+        return next_state, reward, done
 
     def save_models(self, save_path='models.pth'):
         """
@@ -664,11 +664,11 @@ class PPO(object):
             log_prob = calculate_log_probability(action, means, stds)
 
             # Execute determined action
-            next_state, actual_action, reward, done = self.step(state, action)
+            next_state, reward, done = self.step(state, action)
 
             # Record information about the step
             states.append(state)
-            actions.append(actual_action)
+            actions.append(action)
             log_probs.append(log_prob)
             rewards.append(reward)
             values.append(value)
