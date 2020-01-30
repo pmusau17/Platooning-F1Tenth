@@ -159,7 +159,7 @@ class DDPG(object):
         """
 
         # Save the input parameters
-        self.max_turn_angle = max_turn_angle
+        self.max_turn_angle = max_turn_angle * math.pi / 180.0
         self.min_speed = min_speed
         self.max_speed = max_speed
         self.min_dist = min_dist
