@@ -60,9 +60,9 @@ class WallFollowingControl(object):
         self.pub_drive_param = rospy.Publisher(control_pub_name, drive_param, queue_size=5)
 
         # Initialize PD control variables
-        self.error_constant = 1.0
+        self.error_constant = 2.0
         self.last_angle = 0.0
-        self.steering_p_gain = 1.0
+        self.steering_p_gain = 0.8
         self.steering_d_gain = 0.1
 
     def compute_command(self, distance_to_wall, which_side):
@@ -76,6 +76,8 @@ class WallFollowingControl(object):
         # Compute the angle between the current distance and the desired distance from the wall
         error = distance_to_wall - self.target_distance
         angle = np.arctan2(error, self.error_constant)
+
+        print(error)
 
         # Flip the result depending on the wall
         if which_side == RIGHT:
@@ -106,12 +108,12 @@ class WallFollowingControl(object):
         # Compute the indeces for angles to look at on the right (negative)
         ninety_degrees = math.pi / 2.0
         fifteen_degrees = math.pi / 12.0
-        right_indeces = np.where(((-1 * (ninety_degrees + fifteen_degrees)) <= angles) &
-                                 ((-1 * (ninety_degrees - fifteen_degrees)) >= angles))
+        right_indeces = np.where(((-1 * (ninety_degrees + 2 * fifteen_degrees)) <= angles) &
+                                 ((-1 * (ninety_degrees)) >= angles))
 
         # Compute the indeces for angles to look at on the left (positive)
-        left_indeces = np.where(((ninety_degrees + fifteen_degrees) >= angles) &
-                                ((ninety_degrees - fifteen_degrees) <= angles))
+        left_indeces = np.where(((ninety_degrees) >= angles) &
+                                ((ninety_degrees - 2* fifteen_degrees) <= angles))
 
         # Compute distance to right wall
         right_distances = ranges[right_indeces] * np.sin(angles[right_indeces])
@@ -192,15 +194,15 @@ class WallFollowingControl(object):
 
 if __name__ == '__main__':
     rospy.init_node('wall_follow_control', anonymous=True)
-    extendObj = WallFollowingControl(control_pub_name='racecar/drive_parameters',
+    extendObj = WallFollowingControl(control_pub_name='/racecar/drive_parameters',
                                      car_width=0.5,
                                      lidar_range=10.0,
                                      max_turn_angle=34.0,
                                      min_speed=0.1,
-                                     max_speed=1.5,
-                                     target_dist=0.3,
+                                     max_speed=2.0,
+                                     target_dist=1.0,
                                      which_wall='left')
-    rospy.Subscriber('racecar/scan', LaserScan, extendObj.lidar_callback)
+    rospy.Subscriber('/racecar/scan', LaserScan, extendObj.lidar_callback)
     rospy.spin()
 
     # TEST CODE
