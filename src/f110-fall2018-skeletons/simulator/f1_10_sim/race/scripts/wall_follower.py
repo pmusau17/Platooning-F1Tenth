@@ -192,15 +192,15 @@ class WallFollowingControl(object):
 
 if __name__ == '__main__':
     rospy.init_node('wall_follow_control', anonymous=True)
-    extendObj = WallFollowingControl(control_pub_name='racecar/drive_params',
+    extendObj = WallFollowingControl(control_pub_name='racecar/drive_parameters',
                                      car_width=0.5,
                                      lidar_range=10.0,
                                      max_turn_angle=34.0,
                                      min_speed=0.1,
-                                     max_speed=3.0,
+                                     max_speed=1.5,
                                      target_dist=0.3,
                                      which_wall='left')
-    rospy.Subscriber('scan', LaserScan, extendObj.lidar_callback)
+    rospy.Subscriber('racecar/scan', LaserScan, extendObj.lidar_callback)
     rospy.spin()
 
     # TEST CODE
