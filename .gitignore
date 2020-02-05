@@ -1,0 +1,11 @@
+#Don't track content of these folders
+__pycache__
+build/
+devel/
+
+
+#ignore jupyter checkpoints
+*.ipynb_checkpoints/
+
+#ignore .pyc files
+*.pyc
