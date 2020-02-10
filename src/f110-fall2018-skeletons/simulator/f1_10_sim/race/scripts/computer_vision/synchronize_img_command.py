@@ -24,6 +24,7 @@ class MessageSynchronizer:
         self.drive_parameters=Subscriber('/racecar/drive_parameters',drive_param)
         self.ackermann_stamped=Subscriber('vesc/ackermann_cmd_mux/input/teleop',AckermannDriveStamped)
         self.cv_bridge=CvBridge()
+        self.count=0
 
         #create the time synchronizer
         self.sub = ApproximateTimeSynchronizer([self.image_rect_color,self.image_rect_color_cp,self.ackermann_stamped], queue_size = 20, slop = 0.049)
@@ -31,16 +32,21 @@ class MessageSynchronizer:
         self.sub.registerCallback(self.master_callback)
 
     #callback for the synchronized messages
+    #Note: a negative value means turning to the right, a postive value means turning to the left
     def master_callback(self,image,image_cp,ackermann_msg): #drive_param):
         #convert rosmsg to cv image
         try:
             cv_image=self.cv_bridge.imgmsg_to_cv2(image,"bgr8")
-            cv_image=self.preprocess_image(cv_image,66,200)
+            self.count+=1
+            #cv_image=self.preprocess_image(cv_image,66,200)
         except CvBridgeError as e:
             print(e)
-        print(cv_image.shape,(ackermann_msg.drive.speed,ackermann_msg.drive.steering_angle))
-        cv2.imshow("Current Image",cv_image)
-        cv2.waitKey(5)
+        print(cv_image.shape,(ackermann_msg.drive.steering_angle,self.label_image(ackermann_msg.drive.steering_angle)),self.count)
+        print(str(rospy.Time.now())+'/'+self.label_image(ackermann_msg.drive.steering_angle)+'.jpg')
+        if(self.count % 10==-1):
+            cv2.imshow("Current Image",cv_image)
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                exit()
 
     #preprocess the images so that the DAEV model can use them
     #inspired by Adrian Rosebrock
@@ -68,6 +74,16 @@ class MessageSynchronizer:
         image=cv2.copyMakeBorder(image,padH,padH,padW,padW,cv2.BORDER_REPLICATE)
         image=cv2.resize(image,(width,height))
         return image
+
+    #function that categorizes images into left,right,straight
+    def label_image(self,steering_angle):
+        if(steering_angle<-0.0523599):
+            return "right"
+        elif(steering_angle>0.0523599):
+            return "left"
+        else:
+            return "straight"
+
 
 
 if __name__=='__main__':
