@@ -7,8 +7,9 @@ from cv_bridge import CvBridge, CvBridgeError
 from message_filters import ApproximateTimeSynchronizer, Subscriber
 from ackermann_msgs.msg import AckermannDriveStamped
 import imutils
-
 from race.msg import drive_param
+import os
+import rospkg
 
 
 class MessageSynchronizer:
@@ -23,6 +24,8 @@ class MessageSynchronizer:
         self.image_rect_color_cp=Subscriber('/racecar/camera/zed/rgb/image_rect_color/compressed',CompressedImage)
         self.drive_parameters=Subscriber('/racecar/drive_parameters',drive_param)
         self.ackermann_stamped=Subscriber('vesc/ackermann_cmd_mux/input/teleop',AckermannDriveStamped)
+        r = rospkg.RosPack()
+        self.save_path_root=r.get_path('race')+'/scripts/computer_vision/data/'
         self.cv_bridge=CvBridge()
         self.count=0
 
@@ -38,11 +41,18 @@ class MessageSynchronizer:
         try:
             cv_image=self.cv_bridge.imgmsg_to_cv2(image,"bgr8")
             self.count+=1
-            #cv_image=self.preprocess_image(cv_image,66,200)
+
+            # if you need to reshape the image uncomment the following line
+            # cv_image=self.preprocess_image(cv_image,66,200)
         except CvBridgeError as e:
             print(e)
+
         print(cv_image.shape,(ackermann_msg.drive.steering_angle,self.label_image(ackermann_msg.drive.steering_angle)),self.count)
-        print(str(rospy.Time.now())+'/'+self.label_image(ackermann_msg.drive.steering_angle)+'.jpg')
+
+        command='%.10f' % ackermann_msg.drive.steering_angle
+        command=command.replace('.','~')
+        #print(command)
+        print(self.save_path_root+self.label_image(ackermann_msg.drive.steering_angle)+'/'+str(rospy.Time.now())+'~'+command+'.jpg')
         if(self.count % 10==-1):
             cv2.imshow("Current Image",cv_image)
             if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -84,7 +94,13 @@ class MessageSynchronizer:
         else:
             return "straight"
 
-
+    
+    def save_image(self,image,path):
+        dirPath = os.path.split(path)[0]
+        # if the output directory does not exist, create it
+        if not os.path.exists(dirPath):
+            os.makedirs(dirPath)
+        cv2.imwrite(image,path)
 
 if __name__=='__main__':
     rospy.init_node('image_command_sync')
