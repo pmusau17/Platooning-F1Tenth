@@ -30,7 +30,7 @@ class ImageUtils:
             #get the classification from the path name
             classification= os.path.basename(split_path[0])
             #load the image and normalize
-            image = cv2.imread(imagePath)/255.0
+            image = cv2.imread(imagePath)
             image= imutils.resize(image,width=width)
             #Determine the padding values for the width and the height to obtain the target dimensions
             #One of these is gonna be zero from above.
@@ -43,14 +43,6 @@ class ImageUtils:
             image=cv2.copyMakeBorder(image,padH,padH,padW,padW,cv2.BORDER_REPLICATE)
             image=cv2.resize(image,(width,height))
 
-
-            #print(classification,command)
-            #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            #image = imutils.resize(image, width=28)
-            #image = img_to_array(image)
-            #cv2.imshow(classification,image)
-            #cv2.waitKey(0)
-
             #append the image, classification, command
             self.data.append(image)
             self.labels.append(classification)
@@ -61,3 +53,17 @@ class ImageUtils:
         self.data = np.array(self.data, dtype="float")
         self.labels=np.asarray(self.labels)
         return self.data,self.labels
+
+    def reshape_image(self,image,height,width):
+        image= imutils.resize(image,width=width)
+        #Determine the padding values for the width and the height to obtain the target dimensions
+        #One of these is gonna be zero from above.
+        padW=int((width-image.shape[1])/2.0)
+        padH=int((width-image.shape[0])/2.0)
+
+        #pad the image then apply one more resizing to handle any rounding issues.
+        #There will be cases where we are one pixel off
+        #the padding order is top, bottom, left,right
+        image=cv2.copyMakeBorder(image,padH,padH,padW,padW,cv2.BORDER_REPLICATE)
+        image=cv2.resize(image,(width,height))
+        return image

@@ -35,12 +35,31 @@ width= 32
 
 #Image Utils
 iu=ImageUtils()
-#data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1)
+data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1)
+
+#Normalize the data, shuffle it, and binarize the labels
+data=data/255.0
+np.random.shuffle(data)
+lb = LabelBinarizer()
+labels=lb.fit_transform(labels)
+
 
 #load the pre-trained network (Keras models are HDF5 models)
 print('[INFO] loading pre-trained network...')
 model= load_model(args['model'])
 print(model.summary())
+
+
+preds=model.predict(data,batch_size=32).argmax(axis=1)
+print(preds)
+
+#display each of the predictions
+for (img,pred,label) in zip(data,preds,labels):
+    
+    label_c=lb.classes_[label.argmax()]
+    prediction=lb.classes_[int(pred)]
+    cv2.imshow("Prediction: {}, Label: {}".format(prediction,label_c), img)
+    cv2.waitKey(0)
 
 
 
