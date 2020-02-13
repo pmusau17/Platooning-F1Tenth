@@ -101,8 +101,9 @@ print(commands.min(axis=0),commands.max(axis=0))
 # initialize the model
 print("[INFO] compiling model...")
 #number of epochs
-num_epochs=1
-opt=SGD(lr=0.1,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
+num_epochs=8000
+#decay=0.01/num_epochs
+opt=SGD(lr=0.01,momentum=0.9,nesterov=True)
 model = DAVE2.build(height=66, width=200, depth=3, classes=1)
 model.compile(loss="mean_squared_error", optimizer=opt,metrics=[customAccuracy])
 
