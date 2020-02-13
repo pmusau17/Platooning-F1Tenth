@@ -24,24 +24,24 @@ class ROS_Classify:
         self.util=ImageUtils()
         self.width=width
         self.height=height
+        self.classes=['left','right','straight','weak_left','weak_right']
 
     #image callback
     def image_callback(self,ros_image):
         #convert the ros_image to an openCV image
         try:
-            cv_image=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")
-            cv_image=self.util.reshape_image(cv_image,self.height,self.width)
-            print(cv_image.shape)
+            orig_image=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")
+            cv_image=self.util.reshape_image(orig_image,self.height,self.width)
+            #print(cv_image.shape)
         except CvBridgeError as e:
             print(e)
-        cv2.imshow(self.image_topic,cv_image)
-        cv2.waitKey(3)
-        #img = cv2.resize(cv_image,(224,224),interpolation=cv2.INTER_AREA)
-        cv_image= imutils.resize(cv_image,width=200)
-        print(cv_image.shape)
-        cv2.imshow('224 x 224 topic',cv_image)
-        cv2.waitKey(3)
-        
+
+        predict_image=np.expand_dims(cv_image, axis=0)
+        pred=self.model.predict(predict_image)
+        cv2.imshow(self.classes[pred[0].argmax()],predict_image[0])
+        print(self.classes[pred[0].argmax()])
+        cv2.imshow("Original Image",orig_image)
+        cv2.waitKey(3) 
 
 
 if __name__=='__main__':
@@ -52,7 +52,7 @@ if __name__=='__main__':
     racecar_name=args[0]
     #get the keras model
     model=args[1]
-    il=ROS_Classify(racecar_name,model)
+    il=ROS_Classify(racecar_name,model,32,32)
     image_sub=rospy.Subscriber(il.image_topic,Image,il.image_callback)
     try: 
         rospy.spin()

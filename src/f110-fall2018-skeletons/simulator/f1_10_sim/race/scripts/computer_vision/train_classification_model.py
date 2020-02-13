@@ -81,7 +81,7 @@ for imagePath in sorted(list(paths.list_images(args["dataset"]))):
         print("[INFO] processed {} images".format(count))
 
 data = np.array(data, dtype="float")
-np.random.shuffle(data)
+
 labels=np.asarray(labels)
 
 
