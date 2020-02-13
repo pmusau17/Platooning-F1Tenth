@@ -108,7 +108,7 @@ model.compile(loss="mean_squared_error", optimizer=opt,metrics=[customAccuracy])
 
 #save the best performing models
 fname=args['output']
-checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True, verbose=1)
+checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
 
 #Let us now instantiate th callbacks
 
