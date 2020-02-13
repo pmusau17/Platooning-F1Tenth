@@ -57,12 +57,12 @@ class MessageSynchronizer:
         
         #save path 
         save_path=self.save_path_root+self.label_image(ackermann_msg.drive.steering_angle)+'/'+str(rospy.Time.now())+'~'+command+'.jpg'
-        
+        print(self.label_image(ackermann_msg.drive.steering_angle))
         #print(self.save_path_root+self.label_image(ackermann_msg.drive.steering_angle)+'/'+str(rospy.Time.now())+'~'+command+'.jpg')
         
         if(self.count % 7==0):
             self.save_count+=0
-            self.save_image(cv_image,save_path)
+            #self.save_image(cv_image,save_path)
             
 
     #preprocess the images so that the DAEV model can use them

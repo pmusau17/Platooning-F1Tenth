@@ -39,9 +39,9 @@ data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1)
 
 #Normalize the data, shuffle it, and binarize the labels
 data=data/255.0
-np.random.shuffle(data)
 lb = LabelBinarizer()
 labels=lb.fit_transform(labels)
+np.random.shuffle(data)
 
 
 #load the pre-trained network (Keras models are HDF5 models)
