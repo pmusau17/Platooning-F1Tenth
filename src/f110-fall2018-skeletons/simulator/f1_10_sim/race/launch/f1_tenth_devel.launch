@@ -2,12 +2,12 @@
 <launch>
 
   <!--This world name that is spawned in gazebo-->
-  <!--<arg name="world_name" value="track_barca"/>-->
+  <arg name="world_name" value="track_barca"/>
   <!--<arg name="world_name" value="track_porto"/>-->
   <!--<arg name="world_name" value="lab_track2"/>-->
   <!--<arg name="world_name" value="track_levine"/>-->
   
-  <arg name="world_name" value="track_barca"/>
+  <!-- <arg name="world_name" value="lab_track2"/> -->
   <arg name="gui" default="true" />
   <arg name="run_camera" default="false"/>
 

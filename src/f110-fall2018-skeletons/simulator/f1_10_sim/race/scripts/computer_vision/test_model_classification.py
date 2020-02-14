@@ -41,6 +41,7 @@ data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1)
 data=data/255.0
 lb = LabelBinarizer()
 labels=lb.fit_transform(labels)
+print(lb.classes_)
 np.random.shuffle(data)
 
 
