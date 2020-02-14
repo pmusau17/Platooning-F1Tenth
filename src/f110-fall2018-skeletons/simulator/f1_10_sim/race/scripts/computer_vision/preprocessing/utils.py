@@ -67,3 +67,5 @@ class ImageUtils:
         image=cv2.copyMakeBorder(image,padH,padH,padW,padW,cv2.BORDER_REPLICATE)
         image=cv2.resize(image,(width,height))
         return image
+
+    
