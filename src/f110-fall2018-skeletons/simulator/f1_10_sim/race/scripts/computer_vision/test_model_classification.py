@@ -29,7 +29,7 @@ args = vars(ap.parse_args())
 
 
 
-#desired height and width these come from the DAVE model
+#desired height and width these come from the classifier model
 height= 32
 width= 32
 
