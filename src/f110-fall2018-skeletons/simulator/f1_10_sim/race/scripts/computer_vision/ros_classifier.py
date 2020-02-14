@@ -2,6 +2,7 @@
 import rospy
 import cv2
 from std_msgs.msg import String
+from race.msg import drive_param
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np 
@@ -25,6 +26,7 @@ class ROS_Classify:
         self.width=width
         self.height=height
         self.classes=['left','right','straight','weak_left','weak_right']
+        self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
 
     #image callback
     def image_callback(self,ros_image):
@@ -36,12 +38,44 @@ class ROS_Classify:
         except CvBridgeError as e:
             print(e)
 
+        #reshape the image so we can feed it ot the neural network
         predict_image=np.expand_dims(cv_image, axis=0)
+        #make the prediction
         pred=self.model.predict(predict_image)
+        #publish the actuation command
+        self.send_actuation_command(pred)
+        #display the image as a proof of concept
         cv2.imshow(self.classes[pred[0].argmax()],predict_image[0])
-        print(self.classes[pred[0].argmax()])
+        #log the result to the console
+        print("INFO prediction: {}".format(self.classes[pred[0].argmax()]))
+        #show the original image
         cv2.imshow("Original Image",orig_image)
         cv2.waitKey(3) 
+
+    #computes the actuation command to send to the car
+    def send_actuation_command(self,pred):
+        #create the drive param message
+        msg = drive_param()
+        msg.angle = 0.0
+        msg.velocity = 0.5
+        #get the label
+        label=self.classes[pred[0].argmax()]
+
+        if (label=="left"):
+            msg.angle=0.6108652353
+        elif (label=="right"):
+            msg.angle=-0.6108652353
+        elif (label=="straight"):
+            msg.angle=0.0
+        elif (label=="weak_left"):
+            msg.angle=0.20179
+        elif (label=="weak_right"):
+            msg.angle=-0.20179
+        else: 
+            print("error:",label)
+            msg.velocity=0
+            msg.angle=0
+        self.pub.publish(msg)
 
 
 if __name__=='__main__':
