@@ -9,22 +9,27 @@ import imutils
 
 #import the tensorflow package
 from tensorflow.python.keras.models import load_model
+import tensorflow.keras.backend as K
 
 #import the preprocessing utils (helps with loading data, preprocessing)
 from preprocessing.utils import ImageUtils
 
-class ROS_Classify:
+#class needed to publish to car input
+from ackermann_msgs.msg import AckermannDriveStamped
+
+
+class ROS_Daev:
 
     #define the constructor 
     def __init__(self,racecar_name,model,height,width):
         self.cv_bridge=CvBridge()
         self.image_topic=str(racecar_name)+'/camera/zed/rgb/image_rect_color'
-        self.model=load_model(model)
+        self.model=load_model(model,custom_objects={'customAccuracy': self.customAccuracy})
         #this handles the reshaping
         self.util=ImageUtils()
         self.width=width
         self.height=height
-        self.classes=['left','right','straight','weak_left','weak_right']
+        self.pub=rospy.Publisher('/vesc'+'/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=5)
 
     #image callback
     def image_callback(self,ros_image):
@@ -37,22 +42,40 @@ class ROS_Classify:
             print(e)
 
         predict_image=np.expand_dims(cv_image, axis=0)
-        pred=self.model.predict(predict_image)
-        cv2.imshow(self.classes[pred[0].argmax()],predict_image[0])
-        print(self.classes[pred[0].argmax()])
+        pred=self.model.predict(predict_image)[0]*0.6108652353
+
+
+        msg = AckermannDriveStamped()
+        msg.header.stamp = rospy.Time.now()
+        msg.header.frame_id = racecar_name+"/base_link"
+
+        msg.drive.speed = 1
+        msg.drive.acceleration = 1
+        msg.drive.jerk = 1
+        msg.drive.steering_angle = pred
+        msg.drive.steering_angle_velocity = 1
+        self.pub.publish(msg)
+        
+        cv2.imshow("Image fed to network",predict_image[0])
+        print(str(pred))
         cv2.imshow("Original Image",orig_image)
         cv2.waitKey(3) 
-
+    
+    #define a custom metric for DAEV, accuracy doesn't cut it
+    def customAccuracy(self,y_true, y_pred):
+        diff = K.abs(y_true-y_pred) #absolute difference between correct and predicted values
+        correct = K.less(diff,0.01) #tensor with 0 for false values and 1 for true values
+        return K.mean(correct) #sum all 1's and divide by the total. 
 
 if __name__=='__main__':
-    rospy.init_node("classify_node",anonymous=True)
+    rospy.init_node("ros_daev_node",anonymous=True)
     #get the arguments passed from the launch file
     args = rospy.myargv()[1:]
     #get the racecar name so we know what to subscribe to
     racecar_name=args[0]
     #get the keras model
     model=args[1]
-    il=ROS_Classify(racecar_name,model,32,32)
+    il=ROS_Daev(racecar_name,model,66,200)
     image_sub=rospy.Subscriber(il.image_topic,Image,il.image_callback)
     try: 
         rospy.spin()

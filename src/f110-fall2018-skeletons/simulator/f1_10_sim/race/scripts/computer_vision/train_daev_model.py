@@ -73,14 +73,6 @@ for imagePath in sorted(list(paths.list_images(args["dataset"]))):
     image=cv2.copyMakeBorder(image,padH,padH,padW,padW,cv2.BORDER_REPLICATE)
     image=cv2.resize(image,(width,height))
 
-
-    #print(classification,command)
-    #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    #image = imutils.resize(image, width=28)
-    #image = img_to_array(image)
-    #cv2.imshow(imagePath,image)
-    #cv2.waitKey(0)
-
     #append the image, classification, command
     data.append(image)
     commands.append(command)
