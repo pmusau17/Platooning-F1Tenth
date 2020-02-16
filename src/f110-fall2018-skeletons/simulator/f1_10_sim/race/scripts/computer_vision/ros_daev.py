@@ -15,7 +15,7 @@ import tensorflow.keras.backend as K
 from preprocessing.utils import ImageUtils
 
 #class needed to publish to car input
-from ackermann_msgs.msg import AckermannDriveStamped
+from race.msg import drive_param
 
 
 class ROS_Daev:
@@ -29,7 +29,9 @@ class ROS_Daev:
         self.util=ImageUtils()
         self.width=width
         self.height=height
-        self.pub=rospy.Publisher('/vesc'+'/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=5)
+
+        self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+
 
     #image callback
     def image_callback(self,ros_image):
@@ -44,16 +46,10 @@ class ROS_Daev:
         predict_image=np.expand_dims(cv_image, axis=0)
         pred=self.model.predict(predict_image)[0]*0.6108652353
 
-
-        msg = AckermannDriveStamped()
-        msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id = racecar_name+"/base_link"
-
-        msg.drive.speed = 1
-        msg.drive.acceleration = 1
-        msg.drive.jerk = 1
-        msg.drive.steering_angle = pred
-        msg.drive.steering_angle_velocity = 1
+        #Want to keep things consistent
+        msg = drive_param()
+        msg.angle = pred
+        msg.velocity = 1.0
         self.pub.publish(msg)
         
         cv2.imshow("Image fed to network",predict_image[0])
@@ -81,4 +77,4 @@ if __name__=='__main__':
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting Down")
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
