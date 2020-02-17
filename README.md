@@ -92,7 +92,6 @@ Right now most things are limited to a single car. Multi-car experiments are a w
 
 The current implementation is based on NVIDIA's DAVE-II Model.
 
-#### Training
 
 **Data Collection:**
 
@@ -134,6 +133,17 @@ $ python train_daev_model.py -d data/ -o models/{name_of_your_model}.hdf5
 
 #### Evaluation
 
+In two seperate terminals run the following:
+
+Terminal 1: 
+```bash
+$ roslaunch race f1_tenth_devel.launch
+```
+ 
+Terminal 2: 
+```bash  
+ $ rosrun race disparity_extender_vanderbilt.py
+```
 
 ## Classification Based Discrete Control
 
