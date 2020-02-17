@@ -1,4 +1,4 @@
-# Car-Platooning
+# F1Tenth: Platooning, Computer Vision, Reinforcment Learning, Path Planning
 
 If you have any questions or run into any problems. Feel free to send me an email or to post an issue and I'll do my best to get back to you promptly.
 
@@ -78,11 +78,7 @@ $ source devel/setup.bash
 
 One of the ways that we can switch from the following controller to the disparity extender controller is by using an object tracking algorithm. If our assumption about having accurate information about the position of each car is no longer valid then we can also platoon visually. Thus we also provide object tracking capabilities. The object tracking code is found in the Object_Tracking folder.
 
-# Reinforcement Learning 
 
-**DDPG**
-
-**PPO**
 
 # Computer Vision 
 
@@ -155,16 +151,56 @@ $ roscd race/scripts/computer_vision/
 $ rosrun race analyze_e2e.py /racecar models/{name_of_your_model}.hdf5 /vesc
 ```
 
+Terminal 3: 
+```bash  
+$ rosrun race disparity_extender_vanderbilt.py
+```
+This will plot the error between the prediction from the neural network and ground truth (disparity extender).
 
 ## Classification Based Discrete Control
+
+**Data Collection:** The data collection process is identical to the end-to-end scenario above. 
 
 **Training**
 
 You can select the architechture and hyperparameters in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_classification_model.py). Simply add your architechture in the nn/conv directory appropriately.
 
+Models that are currently available: 
+- Mini VGGNET
+- ShallowNet
+
+To train a model run the following: 
+
+```bash
+$ roscd race/scripts/computer_vision/ 
+$ python train_classification_model.py -d data/ -o models/{name_of_your_model}.hdf5
+```
+
 **Evalutation**
 
-# Running Keyboard nodes
+Similarly to the end to end driving scenario, there are two ways to evaluate the model. The first methods maps the classifications to discrete actions in order to control the car. The second method simply runs the classification model online and identifies misclassifications art runtime. Since the disparity extender was used to generate the training data, we can evaulate its performance with respect its operation. (Very open to suggestions on how to improve this)
+
+To run Discrete Control experiments: 
+
+Terminal 1: 
+```bash
+$ roslaunch race f1_tenth_devel.launch
+```
+ 
+Terminal 2: 
+```bash  
+$ roscd race/scripts/computer_vision/ 
+$ rosrun race ros_classifier.py /racecar models/{name_of_your_model}.hdf5src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_classification_model.py
+```
+The discrete control actions are defined in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/ros_classifier.py). Feel free to tweak them for your experiments.
+
+# Reinforcement Learning 
+
+**DDPG**
+
+**PPO**
+
+# Running teleoperation nodes
 
 To run a node to tele-operate the car via the keyboard run the following in a new terminal:
 
