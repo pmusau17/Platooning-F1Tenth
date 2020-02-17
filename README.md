@@ -135,6 +135,8 @@ $ python train_daev_model.py -d data/ -o models/{name_of_your_model}.hdf5
 
 In two seperate terminals run the following:
 
+To run an experiment where the model controls the car.
+
 Terminal 1: 
 ```bash
 $ roslaunch race f1_tenth_devel.launch
@@ -142,8 +144,17 @@ $ roslaunch race f1_tenth_devel.launch
  
 Terminal 2: 
 ```bash  
- $ rosrun race disparity_extender_vanderbilt.py
+$ roscd race/scripts/computer_vision/ 
+$ rosrun race ros_daev.py /racecar models/{name_of_your_model}.hdf5
 ```
+To analyze the accuracy of your model. Instead of running the above in the second terminal. Run the following
+
+Terminal 2: 
+```bash  
+$ roscd race/scripts/computer_vision/ 
+$ rosrun race analyze_e2e.py /racecar models/{name_of_your_model}.hdf5 /vesc
+```
+
 
 ## Classification Based Discrete Control
 
