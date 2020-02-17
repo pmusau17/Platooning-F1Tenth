@@ -1,4 +1,4 @@
-# F1Tenth: Platooning, Computer Vision, Reinforcment Learning, Path Planning
+# F1Tenth: Platooning, Computer Vision, Reinforcement Learning, Path Planning
 
 If you have any questions or run into any problems. Feel free to send me an email or to post an issue and I'll do my best to get back to you promptly.
 
