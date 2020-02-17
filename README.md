@@ -41,7 +41,7 @@ $ catkin_make
 $ source devel/setup.bash
 ```
 
-# Algorithms
+# Platooning Algorithms
  
  **Disparity Extender**
  
@@ -73,6 +73,12 @@ $ source devel/setup.bash
 
 One of the ways that we can switch from the following controller to the disparity extender controller is by using an object tracking algorithm. If our assumption about having accurate information about the position of each car is no longer valid then we can also platoon visually. Thus we also provide object tracking capabilities. The object tracking code is found in the Object_Tracking folder.
 
+# Reinforcement Learning 
+
+# Computer Vision 
+
+**DAVE-II**
+**Classification Based Discrete Control**
 
 # Running Keyboard nodes
 
