@@ -114,7 +114,23 @@ In three seperate terminals run the following:
  $ rosrun race synchronize_img_command.py
  ```
   
- The synchronize_img_command performs the data collection. It collects the steering angles and logs the data into a directory which can be found in.
+The synchronize_img_command performs the data collection. It collects the steering angles and logs the data into a directory which can be found in the data directory, categorized based on the degree of the turn. This categorization is used to train the classification model in the next section. The classes are left, right, weak_left, weak_right, straight. You can change the classes if you wish. Simply add more classes in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/synchronize_img_command.py).
+
+To access and view the data run: 
+```bash
+$ roscd race/scripts/computer_vision
+```
+
+I purposesly ignored the data directory for git tracking (It's very large). If you would like the data we used to train our models, I'm happy to provide it. Send me an email to obtain it.
+
+**Training**
+
+You can tweak the hyperparameters in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_daev_model.py).
+
+```bash
+$ roscd race/scripts/computer_vision/ 
+$ python train_daev_model.py -d data/ -o models/{name_of_your_model}.hdf5
+```
 
 #### Evaluation
 
@@ -122,6 +138,8 @@ In three seperate terminals run the following:
 ## Classification Based Discrete Control
 
 **Training**
+
+You can select the architechture and hyperparameters in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_classification_model.py). Simply add your architechture in the nn/conv directory appropriately.
 
 **Evalutation**
 
@@ -174,12 +192,17 @@ To run the simulation:
 
 ```bash
 $ docker-compose up
-
+```
 
 To teleoperate the car or run experiments run the following:
 
-```docker container exec -it keyboard bash ```
+```bash
+$ docker container exec -it keyboard bash 
+```
 
-Then run: ```source devel/setup.bash && rosrun race keyboard.py ``````
+Then run: 
+```bash 
+$ source devel/setup.bash && rosrun race keyboard.py
+```
 
 
