@@ -64,8 +64,13 @@ $ source devel/setup.bash
  
  To see a demonstration of this algorithm run the following in two seperate terminals:
  
+ Terminal 1: 
  ```bash
  $ roslaunch race multi_parametrizeable.launch  
+ ```
+ 
+ Terminal 2: 
+ ```bash  
  $ roslaunch race platoon.launch
  ```
  
@@ -75,10 +80,50 @@ One of the ways that we can switch from the following controller to the disparit
 
 # Reinforcement Learning 
 
+**DDPG**
+
+**PPO**
+
 # Computer Vision 
 
-**DAVE-II**
-**Classification Based Discrete Control**
+Right now most things are limited to a single car. Multi-car experiments are a work in progress. 
+
+## End to End Learning 
+
+The current implementation is based on NVIDIA's DAVE-II Model.
+
+#### Training
+
+**Data Collection:**
+
+In three seperate terminals run the following:
+
+ Terminal 1: 
+ ```bash
+ $ roslaunch race f1_tenth_devel.launch
+ ```
+ 
+ Terminal 2: 
+ ```bash  
+ $ rosrun race disparity_extender_vanderbilt.py
+ ```
+ 
+ Terminal 3: 
+ 
+  ```bash  
+ $ rosrun race synchronize_img_command.py
+ ```
+  
+ The synchronize_img_command performs the data collection. It collects the steering angles and logs the data into a directory which can be found in.
+
+#### Evaluation
+
+
+## Classification Based Discrete Control
+
+**Training**
+
+**Evalutation**
 
 # Running Keyboard nodes
 
