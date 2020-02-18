@@ -195,7 +195,7 @@ $ roslaunch race f1_tenth_devel.launch
 Terminal 2: 
 ```bash  
 $ roscd race/scripts/computer_vision/ 
-$ rosrun race ros_classifier.py /racecar models/{name_of_your_model}.hdf5src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_classification_model.py
+$ rosrun race ros_classifier.py /racecar models/{name_of_your_model}.hdf5
 ```
 The discrete control actions are defined in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/ros_classifier.py). Feel free to tweak them for your experiments.
 
