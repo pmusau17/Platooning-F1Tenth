@@ -21,6 +21,8 @@ If you have any questions or run into any problems. Feel free to send me an [ema
 `chmod +x setup_cuda_ros_opencv_conda.sh`
 `./setup_cuda_ros_opencv_conda.sh`
 
+The computer vision packages assume your system is GPU enabled. 
+
 ### Install the Repo
 
 If you already have these environments set up, then go with this choice. We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
@@ -40,6 +42,9 @@ $ ./setup.sh
 $ catkin_make
 $ source devel/setup.bash
 ```
+### Troubleshooting 
+
+If you get the error: ImportError: No module named catkin_pkg.packages and you are using anaconda. Run the following command: ```conda install -c auto catkin_pkg```
 
 # Platooning Algorithms
  
