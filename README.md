@@ -219,6 +219,8 @@ $ rosrun race disparity_extender_vanderbilt.py
 
 This will plot a box plot with the number of detections labeled as misclassifications.
 
+![Misclassifications](./images/Figure_1.png "Misclassifications")
+
 
 # Reinforcement Learning 
 
