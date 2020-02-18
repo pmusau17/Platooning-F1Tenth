@@ -43,6 +43,9 @@ class AnalyzeE2E:
         #get the height and width from the model so we don't get annoying errors
         self.height=self.model.layers[0].input_shape[1]
         self.width=self.model.layers[0].input_shape[2]
+        
+        #window that we track
+        self.window=200
 
         #create the time synchronizer
         self.sub = ApproximateTimeSynchronizer([self.image_rect_color,self.ackermann_stamped], queue_size = 20, slop = 0.049)
@@ -52,6 +55,7 @@ class AnalyzeE2E:
         #this is for plotting
         self.xs=[]
         self.ys=[]
+        self.count=0
         # Create figure for plotting
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(1, 1, 1)
@@ -80,15 +84,17 @@ class AnalyzeE2E:
         #get the difference need it to be smaller than 0.01 radians which 0.57 degrees we can make it smaller but 
         #that is fine for now
         diff=abs(pred[0]-ack.drive.steering_angle)
-        self.xs.append(dt.datetime.now().strftime('%M:%S.%f'))
+        #self.xs.append("%.2f" % float(dt.datetime.now().strftime('%S.%f')))
+        self.xs.append(self.count)
         self.ys.append(diff)
+        self.count+=1
         print(diff)
 
 
     def animate(self,i, xs, ys):
-        # Limit x and y lists to 20 items
-        self.xs = self.xs[-200:]
-        self.ys = self.ys[-200:]
+        # Limit x and y lists to window items
+        self.ys = self.ys[-self.window:]
+        self.xs = self.xs[-self.window:]
 
         # Draw x and y lists
         self.ax.clear()
