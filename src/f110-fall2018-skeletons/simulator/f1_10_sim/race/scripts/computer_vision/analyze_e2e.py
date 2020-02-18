@@ -105,6 +105,7 @@ class AnalyzeE2E:
         plt.subplots_adjust(bottom=0.30)
         plt.title('Difference between prediction and Ground Truth')
         plt.ylabel('Error')
+        plt.xlabel('index of prediction')
 
 
 
