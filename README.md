@@ -200,10 +200,63 @@ $ rosrun race ros_classifier.py /racecar models/{name_of_your_model}.hdf5
 The discrete control actions are defined in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/ros_classifier.py). Feel free to tweak them for your experiments.
 
 # Reinforcement Learning 
+These methods are designed for training a vehicle follower, which we plan on expanding to platooning. However, we might 
+expand this to train a single racer in the future.
 
-**DDPG**
+Both methods require a parameter file is loaded before running. We'll explain these more below, but they contain all of 
+hyperparameters for the learning algorithm. Modifying these can create different results which might be better than our 
+performance. We use nominal values discussed in papers opting for consistent results instead of peak performance.
 
-**PPO**
+### DDPG
+Deep Deterministic Policy Gradient (DDPG) is explained in [Lillicrap et. al, 2015](https://arxiv.org/abs/1509.02971).
+The method uses model-free, off-policy learning to determine an optimal deterministic policy for the agent to follow. 
+This means, during training, the agent executes random actions not determined using the learned policy. This string of 
+randomly executed actions is stored in a replay buffer, which is sampled from after each step to learn an estimation of 
+the state-action value (a.k.a. Q-value) function. This Q-function is used to train the policy to take actions that result in the 
+largest Q-value. The folder containing this method, [DDPG](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ddpg_control), 
+is made of the following parts:
+* [config_ddpg.yaml](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ddpg_control/config_ddpg.yaml): 
+YAML file with all of the configuration information including the hyperparameters used for training. 
+* [ddpg.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ddpg_control/ddpg.py): The main file for 
+running this method. Every step of the DDPG algorithm is implemented in this file.
+* [nn_ddpg.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ddpg_control/nn_ddpg.py): The neural network 
+architecture described in [Lillicrap et. al, 2015](https://arxiv.org/abs/1509.02971) is implemented here using PyTorch. 
+Forward passes and initialization are handled in this class as well.
+* [noise_OU.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ddpg_control/noise_OU.py): 
+Ornstein-Uhlenbeck process noise is implemented in this file. This noise is applied to create the random exploration 
+actions. This is the same noise used in [Lillicrap et. al, 2015](https://arxiv.org/abs/1509.02971).
+* [replay_buffer.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ddpg_control/replay_buffer.py):
+
+To run this method, do the normal launch of the racing environment with 2 cars, then in a separate terminal:
+```bash
+$ rosparam load config_ddpg.yaml
+$ rosrun race ddpg.py
+```
+
+### PPO
+Proximal Policy Optimization (PPO) is explained in [Schulman et. al](https://arxiv.org/abs/1707.06347) as a simplified 
+improvement to Trust Region Policy Optimization ([TRPO](https://arxiv.org/abs/1502.05477)). The method uses model-free, 
+on-policy learning to determine an optimal stochastic policy for the agent to follow. This means, during training, the 
+agent executes actions randomly chosen from the output policy distribution. The policy is followed over the course of a 
+horizon. After the horizon is completed, the Advantages are computed and used to determine the effectiveness of the 
+policy. The Advantage values are used along with the probability of the action being taken to compute a loss function, 
+which is then clipped to prevent large changes in the policy. The clipped loss is used to update the policy and improve 
+future Advantage estimation. The folder containing this method, [PPO](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ppo_control), 
+is made of the following scripts:
+* [class_nn.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ppo_control/class_nn.py): The neural network 
+architecture described in [Lillicrap et. al, 2015](https://arxiv.org/abs/1509.02971) is implemented here using PyTorch. 
+Forward passes and initialization are handled in this class as well. We are currently working on changing the 
+architecture to match that used in [Schulman et. al](https://arxiv.org/abs/1707.06347).
+* [ppo.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ppo_control/ppo.py): The main file for 
+running this method. Every step of the PPO algorithm is implemented in this file.
+* [ppo_config.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ppo_control/ppo_config.yaml): YAML file 
+with all of the configuration information including the hyperparameters used for training. 
+
+To run this method, do the normal launch of the racing environment with 2 cars, then in a separate terminal:
+```bash
+$ rosparam load ppo_config.yaml
+$ rosrun race ppo.py
+```
 
 # Reset the Environment 
 
