@@ -22,6 +22,7 @@ np.random.seed(seed_number)
 torch.manual_seed(seed_number)
 torch.cuda.manual_seed_all(seed_number)
 
+
 def init_weights(m):
     if type(m) == nn.Linear:
         torch.nn.init.orthogonal_(m.weight)
