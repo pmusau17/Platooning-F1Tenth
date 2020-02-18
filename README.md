@@ -260,7 +260,7 @@ $ rosrun race ddpg.py
 ```
 
 ### PPO
-Proximal Policy Optimization (PPO) is explained in [Schulman et. al](https://arxiv.org/abs/1707.06347) as a simplified 
+Proximal Policy Optimization (PPO) is explained in [Schulman et. al, 2017](https://arxiv.org/abs/1707.06347) as a simplified 
 improvement to Trust Region Policy Optimization ([TRPO](https://arxiv.org/abs/1502.05477)). The method uses model-free, 
 on-policy learning to determine an optimal stochastic policy for the agent to follow. This means, during training, the 
 agent executes actions randomly chosen from the output policy distribution. The policy is followed over the course of a 
@@ -272,7 +272,7 @@ is made of the following scripts:
 * [class_nn.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ppo_control/class_nn.py): The neural network 
 architecture described in [Lillicrap et. al, 2015](https://arxiv.org/abs/1509.02971) is implemented here using PyTorch. 
 Forward passes and initialization are handled in this class as well. We are currently working on changing the 
-architecture to match that used in [Schulman et. al](https://arxiv.org/abs/1707.06347).
+architecture to match that used in [Schulman et. al, 2017](https://arxiv.org/abs/1707.06347).
 * [ppo.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ppo_control/ppo.py): The main file for 
 running this method. Every step of the PPO algorithm is implemented in this file.
 * [ppo_config.py](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/ppo_control/ppo_config.yaml): YAML file 
