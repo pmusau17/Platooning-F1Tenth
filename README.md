@@ -205,15 +205,25 @@ The discrete control actions are defined in the following [file](src/f110-fall20
 
 **PPO**
 
+# Reset the Environment 
+
+If the car crashes or you want to start the experiment again. Simply run:
+
+ ```bash
+ $ rosrun race reset_world.py
+ ```
+
+to restart the experiment.
+
 # Running teleoperation nodes
 
 To run a node to tele-operate the car via the keyboard run the following in a new terminal:
 
 ```bash
-$ rosrun race keyboard_gen.py racecar1
+$ rosrun race keyboard_gen.py racecar
 ```
 
-'racecar1' can be replaced with 'racecar' 'racecar2' as well. 
+'racecar' can be replaced with 'racecar1' 'racecar2' if there are multiple cars. 
 
 
 # Docker
