@@ -21,7 +21,7 @@ If you have any questions or run into any problems. Feel free to send me an [ema
 `chmod +x setup_cuda_ros_opencv_conda.sh`
 `./setup_cuda_ros_opencv_conda.sh`
 
-The computer vision packages assume your system is GPU enabled. 
+The computer vision packages assume your system is GPU enabled. If your system is not gpu enabled, change the requirements in [setup.sh](setup.sh) to requirements-cpu.txt.
 
 ### Install the Repo
 
