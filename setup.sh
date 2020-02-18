@@ -10,4 +10,5 @@ pip install defusedxml
 pip install PySide2
 pip uninstall em
 pip install empy 
-pip install -r requirements.txt
+pip install imutils
+pip install -r requirements-gpu.txt

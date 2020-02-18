@@ -114,7 +114,6 @@ class PotentialFieldController(object):
         :param angles:
         :return:
         """
-
         # Compute the indices of useful ranges for determining the x forces (+/- 30 degrees)
         thirty_degrees = math.pi / 6
         x_indices = np.where(((-1 * thirty_degrees) <= angles) & (angles <= thirty_degrees))

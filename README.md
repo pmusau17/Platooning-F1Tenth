@@ -1,4 +1,6 @@
-# Car-Platooning
+# F1Tenth: Platooning, Computer Vision, Reinforcement Learning, Path Planning
+
+If you have any questions or run into any problems. Feel free to send me an [email](mailto:patrick.musau@vanderbilt.edu) or to post an issue and I'll do my best to get back to you promptly.
 
 ![Three_Car_Sim](./images/three_car_platoon.gif "Three Car Simulation")
 
@@ -19,6 +21,8 @@
 `chmod +x setup_cuda_ros_opencv_conda.sh`
 `./setup_cuda_ros_opencv_conda.sh`
 
+The computer vision packages assume your system is GPU enabled. If your system is not gpu enabled, change the requirements in [setup.sh](setup.sh) to requirements-cpu.txt.
+
 ### Install the Repo
 
 If you already have these environments set up, then go with this choice. We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
@@ -38,8 +42,11 @@ $ ./setup.sh
 $ catkin_make
 $ source devel/setup.bash
 ```
+### Troubleshooting 
 
-# Algorithms
+If you get the error: ImportError: No module named catkin_pkg.packages and you are using anaconda. Run the following command: ```conda install -c auto catkin_pkg```
+
+# Platooning Algorithms
  
  **Disparity Extender**
  
@@ -58,12 +65,17 @@ $ source devel/setup.bash
 
  **Following Algorithm**
  
- The task of this project was to get a series of 1/10 scales RC cars to platoon in a reliable manner. As a proof of concept we made a few assumptions. The first assumption is that each car precisely knows its own position and orientaion in the map frame. The second assumption is that the the cars could reliably communicate their position and velocity with each other. However the platooning would occur on a racetrack. Thus there would be times that the following cars would not be able to see the lead car. Thus we needed to design boh a lateral and longitudnal controller that maintained a specified distance between the ego car and the lead car. However if any failures occured in the system, the cars would need to be able to switch to a fallback controller from the following controller. The following controller makes use of the pure pursuit algorith proposed by R. Craig Coulter in the paper ["Implementation of the Pure Pursuit Path 'hcking Algorithm"](https://www.ri.cmu.edu/pub_files/pub3/coulter_r_craig_1992_1/coulter_r_craig_1992_1.pdf). To compute the steering angle we use the pure pursuit algorithm to find a goal point in the lead car's position history that consists of the most recent 100 positions. These positions are transmitted from the lead car to the ego car via TCP. The longitudnal distance is observed using the ego car's LIDAR and a PD controller is used to control the ego car's velocity. The fallback controller is the disparity extender controller. One of the benefits of this algorithm is that it can do some obstacle avoidance "out of the box" making it a reliable fallback controller. 
+ The task of this project was to get a series of 1/10 scales RC cars to platoon in a reliable manner. As a proof of concept we made a few assumptions. The first assumption is that each car precisely knows its own position and orientaion in the map frame. The second assumption is that the the cars could reliably communicate their position and velocity with each other. However the platooning would occur on a racetrack. Thus there would be times that the following cars would not be able to see the lead car. Thus we needed to design boh a lateral and longitudnal controller that maintained a specified distance between the ego car and the lead car. However if any failures occured in the system, the cars would need to be able to switch to a fallback controller from the following controller. The following controller makes use of the pure pursuit algorith proposed by R. Craig Coulter in the paper ["Implementation of the Pure Pursuit Path Tracking Algorithm"](https://www.ri.cmu.edu/pub_files/pub3/coulter_r_craig_1992_1/coulter_r_craig_1992_1.pdf). To compute the steering angle we use the pure pursuit algorithm to find a goal point in the lead car's position history that consists of the most recent 100 positions. These positions are transmitted from the lead car to the ego car via TCP. The longitudnal distance is observed using the ego car's LIDAR and a PD controller is used to control the ego car's velocity. The fallback controller is the disparity extender controller. One of the benefits of this algorithm is that it can do some obstacle avoidance "out of the box" making it a reliable fallback controller. 
  
  To see a demonstration of this algorithm run the following in two seperate terminals:
  
+ Terminal 1: 
  ```bash
  $ roslaunch race multi_parametrizeable.launch  
+ ```
+ 
+ Terminal 2: 
+ ```bash  
  $ roslaunch race platoon.launch
  ```
  
@@ -72,15 +84,146 @@ $ source devel/setup.bash
 One of the ways that we can switch from the following controller to the disparity extender controller is by using an object tracking algorithm. If our assumption about having accurate information about the position of each car is no longer valid then we can also platoon visually. Thus we also provide object tracking capabilities. The object tracking code is found in the Object_Tracking folder.
 
 
-# Running Keyboard nodes
+
+# Computer Vision 
+
+Right now most things are limited to a single car. Multi-car experiments are a work in progress. 
+
+## End to End Learning 
+
+The current implementation is based on NVIDIA's DAVE-II Model.
+
+
+**Data Collection:**
+
+In three seperate terminals run the following:
+
+ Terminal 1: 
+ ```bash
+ $ roslaunch race f1_tenth_devel.launch
+ ```
+ 
+ Terminal 2: 
+ ```bash  
+ $ rosrun race disparity_extender_vanderbilt.py
+ ```
+ 
+ Terminal 3: 
+ 
+  ```bash  
+ $ rosrun race synchronize_img_command.py
+ ```
+  
+The synchronize_img_command performs the data collection. It collects the steering angles and logs the data into a directory which can be found in the data directory, categorized based on the degree of the turn. This categorization is used to train the classification model in the next section. The classes are left, right, weak_left, weak_right, straight. You can change the classes if you wish. Simply add more classes in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/synchronize_img_command.py).
+
+To access and view the data run: 
+```bash
+$ roscd race/scripts/computer_vision
+```
+
+I purposesly ignored the data directory for git tracking (It's very large). If you would like the data we used to train our models, I'm happy to provide it. Send me an email to obtain it.
+
+**Training**
+
+You can tweak the hyperparameters in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_daev_model.py).
+
+```bash
+$ roscd race/scripts/computer_vision/ 
+$ python train_daev_model.py -d data/ -o models/{name_of_your_model}.hdf5
+```
+
+#### Evaluation
+
+In two seperate terminals run the following:
+
+To run an experiment where the model controls the car.
+
+Terminal 1: 
+```bash
+$ roslaunch race f1_tenth_devel.launch
+```
+ 
+Terminal 2: 
+```bash  
+$ roscd race/scripts/computer_vision/ 
+$ rosrun race ros_daev.py /racecar models/{name_of_your_model}.hdf5
+```
+To analyze the accuracy of your model. Instead of running the above in the second terminal. Run the following
+
+Terminal 2: 
+```bash  
+$ roscd race/scripts/computer_vision/ 
+$ rosrun race analyze_e2e.py /racecar models/{name_of_your_model}.hdf5 /vesc
+```
+
+Terminal 3: 
+```bash  
+$ rosrun race disparity_extender_vanderbilt.py
+```
+This will plot the error between the prediction from the neural network and ground truth (disparity extender).
+
+## Classification Based Discrete Control
+
+**Data Collection:** The data collection process is identical to the end-to-end scenario above. 
+
+**Training**
+
+You can select the architechture and hyperparameters in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_classification_model.py). Simply add your architechture in the nn/conv directory appropriately.
+
+Models that are currently available: 
+- Mini VGGNET
+- ShallowNet
+
+To train a model run the following: 
+
+```bash
+$ roscd race/scripts/computer_vision/ 
+$ python train_classification_model.py -d data/ -o models/{name_of_your_model}.hdf5
+```
+
+**Evalutation**
+
+Similarly to the end to end driving scenario, there are two ways to evaluate the model. The first methods maps the classifications to discrete actions in order to control the car. The second method simply runs the classification model online and identifies misclassifications art runtime. Since the disparity extender was used to generate the training data, we can evaulate its performance with respect its operation. (Very open to suggestions on how to improve this)
+
+To run Discrete Control experiments: 
+
+Terminal 1: 
+```bash
+$ roslaunch race f1_tenth_devel.launch
+```
+ 
+Terminal 2: 
+```bash  
+$ roscd race/scripts/computer_vision/ 
+$ rosrun race ros_classifier.py /racecar models/{name_of_your_model}.hdf5
+```
+The discrete control actions are defined in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/ros_classifier.py). Feel free to tweak them for your experiments.
+
+# Reinforcement Learning 
+
+**DDPG**
+
+**PPO**
+
+# Reset the Environment 
+
+If the car crashes or you want to start the experiment again. Simply run:
+
+ ```bash
+ $ rosrun race reset_world.py
+ ```
+
+to restart the experiment.
+
+# Running teleoperation nodes
 
 To run a node to tele-operate the car via the keyboard run the following in a new terminal:
 
 ```bash
-$ rosrun race keyboard_gen.py racecar1
+$ rosrun race keyboard_gen.py racecar
 ```
 
-'racecar1' can be replaced with 'racecar' 'racecar2' as well. 
+'racecar' can be replaced with 'racecar1' 'racecar2' if there are multiple cars. 
 
 
 # Docker
@@ -121,12 +264,17 @@ To run the simulation:
 
 ```bash
 $ docker-compose up
-
+```
 
 To teleoperate the car or run experiments run the following:
 
-```docker container exec -it keyboard bash ```
+```bash
+$ docker container exec -it keyboard bash 
+```
 
-Then run: ```source devel/setup.bash && rosrun race keyboard.py ``````
+Then run: 
+```bash 
+$ source devel/setup.bash && rosrun race keyboard.py
+```
 
 
