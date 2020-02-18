@@ -166,6 +166,8 @@ $ rosrun race disparity_extender_vanderbilt.py
 ```
 This will plot the error between the prediction from the neural network and ground truth (disparity extender).
 
+![Error Analysis](./images/Figure_2.png "Error Analysis")
+
 ## Classification Based Discrete Control
 
 **Data Collection:** The data collection process is identical to the end-to-end scenario above. 
