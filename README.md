@@ -216,6 +216,7 @@ $ rosrun race analyze_classification_model.py /racecar models/{name_of_your_mode
 Terminal 3: 
 ```bash  
 $ rosrun race disparity_extender_vanderbilt.py
+```
 
 This will plot a box plot with the number of detections labeled as misclassifications.
 
