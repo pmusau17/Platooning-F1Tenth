@@ -20,6 +20,7 @@ import tensorflow.keras.backend as K
 
 #import the preprocessing utils (helps with loading data, preprocessing)
 from preprocessing.utils import ImageUtils
+import rospkg
 
 """ This class evaluates the classification model. Based on the way we discretize the data,
     i.e how many classes, check how the model is performing at runtime. Again here the data
@@ -43,6 +44,11 @@ class AnalyzeClassification:
         self.height=self.model.layers[0].input_shape[1]
         self.width=self.model.layers[0].input_shape[2]
 
+        #to save the image data get the path
+        r = rospkg.RosPack()
+        self.save_path_root=r.get_path('race')+'/scripts/computer_vision/data/'
+        self.count=0
+
         #image classes
         self.classes=['left','right','straight','weak_left','weak_right']
 
@@ -61,11 +67,15 @@ class AnalyzeClassification:
         self.ax = self.fig.add_subplot(1, 1, 1)
         self.ls=('left','right','straight','weak_left','weak_right')
 
+        
+
 
         #Animation
         # Set up plot to call animate() function periodically
         ani = animation.FuncAnimation(self.fig, self.animate, fargs=(self.buckets, self.misclassifications), interval=1000)
         plt.show()
+
+        
 
     
     
@@ -76,6 +86,7 @@ class AnalyzeClassification:
         #preprocess the image
         try:
             orig_image=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")/255.0
+            save_img=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")
             cv_image=self.util.reshape_image(orig_image,self.height,self.width)
         except CvBridgeError as e:
             print(e)
@@ -99,14 +110,27 @@ class AnalyzeClassification:
             ind=self.classes.index(lb)
             #increment our counter
             self.misclassifications[ind]+=1
-            print(self.misclassifications)
+            print(self.misclassifications,lb)
+
+            command='%.10f' % ack.drive.steering_angle
+            #replace the period with ~ so it's a valid filename
+            command=command.replace('.','~')
+            save_path=self.save_path_root+self.label_image(ack.drive.steering_angle)+'/'+str(rospy.Time.now())+'~'+command+'.jpg'
+            if self.label_image(ack.drive.steering_angle)!='straight':
+                cv2.imwrite(save_path,save_img)
+                #cv2.imshow("Original Image",save_img)
+                #cv2.waitKey(25)
+                print(lb)
+            else: 
+                print("nah its straight")
         
-        cv2.putText(orig_image, label, (32, 32),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
-        cv2.putText(orig_image, ground_truth_label, (32, 460),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 0, 255), 2)
-
-        #cv2.imshow("Original Image",orig_image)
-        #cv2.waitKey(1) 
-
+        #cv2.putText(orig_image, label, (32, 32),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
+        #cv2.putText(orig_image, ground_truth_label, (32, 460),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 0, 255), 2)
+        
+        #if(self.count%10==0):
+         #   cv2.imshow("Original Image",orig_image)
+          #  cv2.waitKey(25) 
+        self.count+=1
     #this was how the training data was collected
     #function that categorizes images into left, weak_left, straight, weak_right, right
     def label_image(self,steering_angle):

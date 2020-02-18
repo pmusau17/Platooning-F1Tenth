@@ -20,6 +20,7 @@ import tensorflow.keras.backend as K
 
 #import the preprocessing utils (helps with loading data, preprocessing)
 from preprocessing.utils import ImageUtils
+import rospkg
 
 """ This class evaluates the end to end model with respect to the disparity extender
     The assumptions was that the disparity extender was the expert. This helps collect 
@@ -36,6 +37,10 @@ class AnalyzeE2E:
         self.image_rect_color=Subscriber(str(racecar_name)+'/camera/zed/rgb/image_rect_color',Image)
         self.ackermann_stamped=Subscriber(str(vesc_name)+'/ackermann_cmd_mux/input/teleop',AckermannDriveStamped)
         
+        #to save the image data get the path
+        r = rospkg.RosPack()
+        self.save_path_root=r.get_path('race')+'/scripts/computer_vision/data/'
+
         #load the keras model
         self.model=load_model(model,custom_objects={'customAccuracy': self.customAccuracy})
         #this handles the reshaping
@@ -46,6 +51,9 @@ class AnalyzeE2E:
         
         #window that we track
         self.window=200
+
+        #tolerance
+        self.tolerance=0.02
 
         #create the time synchronizer
         self.sub = ApproximateTimeSynchronizer([self.image_rect_color,self.ackermann_stamped], queue_size = 20, slop = 0.049)
@@ -72,6 +80,7 @@ class AnalyzeE2E:
         try:
             orig_image=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")/255.0
             cv_image=self.util.reshape_image(orig_image,self.height,self.width)
+            save_img=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")
             #print(cv_image.shape)
         except CvBridgeError as e:
             print(e)
@@ -88,8 +97,14 @@ class AnalyzeE2E:
         self.xs.append(self.count)
         self.ys.append(diff)
         self.count+=1
-        print(diff)
-
+        
+        if diff>self.tolerance:
+            command='%.10f' % ack.drive.steering_angle
+            #replace the period with ~ so it's a valid filename
+            command=command.replace('.','~')
+            save_path=self.save_path_root+self.label_image(ack.drive.steering_angle)+'/'+str(rospy.Time.now())+'~'+command+'.jpg'
+            print(self.label_image(ack.drive.steering_angle))
+            cv2.imwrite(save_path,save_img)
 
     def animate(self,i, xs, ys):
         # Limit x and y lists to window items
@@ -106,6 +121,21 @@ class AnalyzeE2E:
         plt.title('Difference between prediction and Ground Truth')
         plt.ylabel('Error')
         plt.xlabel('index of prediction')
+
+
+    #this is used for saving it to correct directory
+    #function that categorizes images into left, weak_left, straight, weak_right, right
+    def label_image(self,steering_angle):
+        if(steering_angle<-0.20179):
+            return "right"
+        elif(steering_angle>0.20179):
+            return "left"
+        elif(steering_angle<-0.0523599 and steering_angle>-0.20179):
+            return "weak_right"
+        elif(steering_angle>0.0523599 and steering_angle<0.20179):
+            return "weak_left"
+        else:
+            return "straight"
 
 
 
