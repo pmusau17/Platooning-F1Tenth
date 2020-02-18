@@ -9,3 +9,6 @@ data/
 
 #ignore .pyc files
 *.pyc
+
+#ignore all zip files
+*.zip
