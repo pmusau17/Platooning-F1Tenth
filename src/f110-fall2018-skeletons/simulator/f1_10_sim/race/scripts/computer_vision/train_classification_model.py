@@ -104,8 +104,8 @@ print(lb.classes_,classTotals,classWeight)
 print("[INFO] compiling model...")
 model=MiniVGGNet.build(height=height,width=width,depth=3,classes=len(lb.classes_))
 #number of epochs
-num_epochs=150
-opt=SGD(lr=0.03,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
+num_epochs=200
+opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
 model.compile(loss='categorical_crossentropy',optimizer=opt,metrics=['accuracy'])
 
 
