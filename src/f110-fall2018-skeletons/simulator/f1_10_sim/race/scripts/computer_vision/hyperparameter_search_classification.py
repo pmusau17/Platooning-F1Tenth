@@ -27,8 +27,6 @@ import cv2
 import os
 
 
-
-
 #performs grid search over epochs and batches
 def train_model(model,X_train,X_test,Y_train,Y_test,classWeight,num_epochs,batch_size,learning_rate):
     #optimizer
@@ -47,6 +45,7 @@ def train_model(model,X_train,X_test,Y_train,Y_test,classWeight,num_epochs,batch
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--dataset", required=True,help="path to input dataset")
+ap.add_argument("-t",'--trials',required=True,type=int,help="number of trials to run")
 args = vars(ap.parse_args())
 
 #desired height and width these come from the classifier model
@@ -80,26 +79,28 @@ print(lb.classes_,classTotals,classWeight)
 print("[INFO] compiling model...")
 model=MiniVGGNet.build(height=height,width=width,depth=3,classes=len(lb.classes_))
 
-epochs = [1,50,100,150,200,250]
-batches = [16,32,64,128,256,512]
-learning_rates=[0.1,0.05,0.01]
+#upper and lower ranges
+epochs = [10,250]
+batches = [16,512]
+learning_rates=[0.001,0.1]
 
 grid={}
+#do the random search
+for learning_rate in learning_rates:
 
-#do the grid search
-for epoch_size in epochs:
-    for batch_size in batches:
-        for learning_rate in learning_rates:
+    epoch_size=np.random.randint(epochs[0],epochs[1])
+    batch_size=np.random.randint(batches[0],batches[1])
+    learning_rate=np.random.uniform(learning_rates[0],learning_rates[1])
             
-            key=str(epoch_size)+'-'+str('batch_size')+'-'+str(learning_rate)
-            print('------epoch: {}, batch_size: {}, learning_rate: {}--------'.format(epoch_size,batch_size,learning_rate))
+    key=str(epoch_size)+'-'+str('batch_size')+'-'+str(learning_rate)
+    print('------epoch: {}, batch_size: {}, learning_rate: {}--------'.format(epoch_size,batch_size,learning_rate))
 
-            #train the model
-            H=train_model(model,trainX, testX, trainY, testY,classWeight,epoch_size,batch_size,learning_rate)
+    #train the model
+    H=train_model(model,trainX, testX, trainY, testY,classWeight,epoch_size,batch_size,learning_rate)
 
-            #loss
-            minimum_loss=np.min(H.history['val_loss'])
-            grid[key]=minimum_loss
-            print("Validation Loss:".format(minimum_loss))
+    #loss
+    minimum_loss=np.min(H.history['val_loss'])
+    grid[key]=minimum_loss
+    print("Validation Loss:".format(minimum_loss))
             
 print(grid)

@@ -44,33 +44,36 @@ class ROS_Classify:
         pred=self.model.predict(predict_image)
         #publish the actuation command
         self.send_actuation_command(pred)
-        #display the image as a proof of concept
-        cv2.imshow(self.classes[pred[0].argmax()],predict_image[0])
+
+        #uncomment the following to display the image classification
+        #cv2.imshow(self.classes[pred[0].argmax()],predict_image[0])
+        
         #log the result to the console
         print("INFO prediction: {}".format(self.classes[pred[0].argmax()]))
-        #show the original image
-        cv2.imshow("Original Image",orig_image)
-        cv2.waitKey(3) 
+        
+        #uncomment to show the original image
+        #cv2.imshow("Original Image",orig_image)
+        #cv2.waitKey(3) 
 
     #computes the actuation command to send to the car
     def send_actuation_command(self,pred):
         #create the drive param message
         msg = drive_param()
         msg.angle = 0.0
-        msg.velocity = 0.5
+        msg.velocity = 1.0
         #get the label
         label=self.classes[pred[0].argmax()]
 
         if (label=="left"):
-            msg.angle=0.6108652353
+            msg.angle=0.4108652353
         elif (label=="right"):
-            msg.angle=-0.6108652353
+            msg.angle=-0.4108652353
         elif (label=="straight"):
             msg.angle=0.0
         elif (label=="weak_left"):
-            msg.angle=0.20179
+            msg.angle=0.10179
         elif (label=="weak_right"):
-            msg.angle=-0.20179
+            msg.angle=-0.10179
         else: 
             print("error:",label)
             msg.velocity=0
