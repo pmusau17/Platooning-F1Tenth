@@ -13,7 +13,7 @@ from tensorflow.keras.utils import plot_model
 #Builds the DAVE2 Architechture described in: https://devblogs.nvidia.com/deep-learning-self-driving-cars/
 class DAVE2: 
     @staticmethod
-    def build(height,width,depth,classes):
+    def build(height,width,depth,classes,is_scaled=False):
         # initialize the model
         model = Sequential()
         #the shape of our image inputs
@@ -53,7 +53,8 @@ class DAVE2:
 
         #output
         model.add(Dense(classes))
-        model.add(Activation('tanh'))
+        if not is_scaled:
+            model.add(Activation('tanh'))
 
         return model
 

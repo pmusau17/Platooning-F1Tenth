@@ -12,6 +12,7 @@ from tensorflow.python.keras.utils import np_utils
 from tensorflow.python.keras.callbacks import ModelCheckpoint
 import tensorflow.keras.backend as K  
 from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.optimizers import Adam
 
 #define a custom metric for DAEV, accuracy doesn't cut it
 def customAccuracy(y_true, y_pred):
@@ -33,6 +34,7 @@ import os
 ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--dataset", required=True,help="path to input dataset")
 ap.add_argument("-o", "--output", required=True,help="directory where we will output the model")
+ap.add_argument('-s','--scaled',help="whether or not to train the scaled version")
 args = vars(ap.parse_args())
 
 # initialize the list of data and labels
@@ -83,9 +85,10 @@ for imagePath in sorted(list(paths.list_images(args["dataset"]))):
 data = np.array(data, dtype="float")
 #normalize the commands
 commands=np.asarray(commands, dtype="float")/0.6108652353
+
+if(args['scaled']):
+    commands=commands*100
 print(commands.min(axis=0),commands.max(axis=0))
-
-
 
 
 #End to End data
@@ -93,25 +96,29 @@ print(commands.min(axis=0),commands.max(axis=0))
 # initialize the model
 print("[INFO] compiling model...")
 #number of epochs
-num_epochs=8000
+num_epochs=10000
 #decay=0.01/num_epochs
-opt=SGD(lr=0.01,momentum=0.9,nesterov=True)
-model = DAVE2.build(height=66, width=200, depth=3, classes=1)
+opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
+#opt=Adam(learning_rate=0.1, beta_1=0.9, beta_2=0.999, amsgrad=False)
+if(args['scaled']):
+    model = DAVE2.build(height=66, width=200, depth=3, classes=1,is_scaled=True)
+else:
+    model = DAVE2.build(height=66, width=200, depth=3, classes=1)
+   
+print(model.summary())
 model.compile(loss="mean_squared_error", optimizer=opt,metrics=[customAccuracy])
+#model.compile(loss="mean_absolute_percentage_error", optimizer=opt,metrics=[customAccuracy])
+
 
 #save the best performing models
 fname=args['output']
 checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
 
 #Let us now instantiate th callbacks
-
-
+callbacks=[checkpoint]
 # train the network
 print("[INFO] training network...")
-
-
-callbacks=[checkpoint]
-H = model.fit(EndtrainX, EndtrainY, validation_data=(EndtestX, EndtestY), batch_size=128, callbacks=callbacks , epochs=num_epochs, verbose=1)
+H = model.fit(EndtrainX, EndtrainY, validation_data=(EndtestX, EndtestY), batch_size=256, callbacks=callbacks , epochs=num_epochs, verbose=1)
 
 
 # evaluate the network
@@ -119,6 +126,7 @@ print("[INFO] evaluating network...")
 predictions = model.predict(EndtestX, batch_size=64)
 
 print(predictions[:10],EndtestY[:10])
+print(max(predictions))
 
 # plot the training + testing loss and accuracy
 plt.style.use("ggplot")
