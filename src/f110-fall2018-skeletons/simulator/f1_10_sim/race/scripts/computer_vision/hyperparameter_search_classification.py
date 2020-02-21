@@ -35,10 +35,9 @@ def train_model(model,X_train,X_test,Y_train,Y_test,classWeight,num_epochs,batch
     model.compile(loss='categorical_crossentropy',optimizer=opt,metrics=['accuracy'])
     #callbacks
     #checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
-    #callbacks_list = [EarlyStopping(monitor='loss', patience=10, verbose=0),checkpoint]
-
+    callbacks_list = [EarlyStopping(monitor='loss', patience=10, verbose=0)]
     #train the model
-    H = model.fit(X_train, Y_train, validation_data=(X_test, Y_test),class_weight=classWeight, batch_size=128, epochs=num_epochs, verbose=1)
+    H = model.fit(X_train, Y_train, validation_data=(X_test, Y_test),class_weight=classWeight, batch_size=128, epochs=num_epochs, verbose=1,callbacks=callbacks_list)
     return H
 
 
@@ -55,6 +54,7 @@ width= 32
 #Image Utils
 iu=ImageUtils()
 data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1)
+data=data/255.0
 
 # convert the labels from integers to vectors
 #THIS WOULD HAVE SOLVED MY PROBLEM WEEKS AGO
@@ -101,6 +101,6 @@ for learning_rate in learning_rates:
     #loss
     minimum_loss=np.min(H.history['val_loss'])
     grid[key]=minimum_loss
-    print("Validation Loss:".format(minimum_loss))
+    print("Validation Loss:{}".format(minimum_loss))
             
 print(grid)
