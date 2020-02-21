@@ -7,6 +7,9 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np 
 import imutils
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import time
 
 #import the tensorflow package
 from tensorflow.python.keras.models import load_model
@@ -27,6 +30,20 @@ class ROS_Classify:
         self.height=height
         self.classes=['left','right','straight','weak_left','weak_right']
         self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+
+        #fields for plotting
+        self.commands=[]
+        self.time=[]
+        self.start_time=time.time()
+        #figure for live animation
+        self.fig = plt.figure()
+        self.ax = self.fig.add_subplot(1, 1, 1)
+        self.window=4000
+
+        #Animation
+        # Set up plot to call animate() function periodically
+        ani = animation.FuncAnimation(self.fig, self.animate, interval=200)
+        plt.show()
 
     #image callback
     def image_callback(self,ros_image):
@@ -78,7 +95,26 @@ class ROS_Classify:
             print("error:",label)
             msg.velocity=0
             msg.angle=0
+        self.commands.append(msg.angle)
+        self.time.append(time.time()-self.start_time)
         self.pub.publish(msg)
+
+    #function that animates the plotting
+    def animate(self,i, buckets, misclassifications):
+        # Limit x and y lists to window items
+        self.commands = self.commands[-self.window:]
+        self.time = self.time[-self.window:]
+
+        # Draw x and y lists
+        self.ax.clear()
+        self.ax.plot(self.time, self.commands)
+
+        # Format plot
+        plt.xticks(rotation=45, ha='right')
+        plt.subplots_adjust(bottom=0.30)
+        plt.title('Time (s) vs Steering Angle (radians)')
+        plt.ylabel('Steering Angle (radians)')
+        plt.xlabel('Time (s)')
 
 
 if __name__=='__main__':
