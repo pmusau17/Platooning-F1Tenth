@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 
 #this is for live plotting
 import matplotlib.animation as animation
-import datetime as dt
 
 #import the tensorflow package
 from tensorflow.python.keras.models import load_model

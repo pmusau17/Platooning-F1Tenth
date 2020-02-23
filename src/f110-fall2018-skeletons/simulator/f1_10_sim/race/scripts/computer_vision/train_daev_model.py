@@ -92,7 +92,7 @@ print(commands.min(axis=0),commands.max(axis=0))
 
 
 #End to End data
-(EndtrainX, EndtestX, EndtrainY, EndtestY) = train_test_split(data,commands, test_size=0.20, random_state=42)
+(EndtrainX, EndtestX, EndtrainY, EndtestY) = train_test_split(data,commands, test_size=0.05, random_state=42)
 # initialize the model
 print("[INFO] compiling model...")
 #number of epochs
@@ -112,7 +112,8 @@ model.compile(loss="mean_squared_error", optimizer=opt,metrics=[customAccuracy])
 
 #save the best performing models
 fname=args['output']
-checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
+#checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
+checkpoint = ModelCheckpoint(fname,monitor="customAccuracy", mode="max",save_best_only=True,save_weights_only=False, verbose=1)
 
 #Let us now instantiate th callbacks
 callbacks=[checkpoint]
