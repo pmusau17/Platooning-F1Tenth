@@ -104,7 +104,6 @@ class ROS_Classify:
 
     #function that animates the plotting
     def animate(self,i,commands,times):
-        print("happens")
         # Limit x and y lists to window items
         self.commands = self.commands[-self.window:]
         self.times = self.times[-self.window:]
