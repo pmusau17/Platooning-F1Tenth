@@ -117,8 +117,8 @@ class AnalyzeClassification:
             save_path=self.save_path_root+self.label_image(ack.drive.steering_angle)+'/'+str(rospy.Time.now())+'~'+command+'.jpg'
             if self.label_image(ack.drive.steering_angle)!='straight':
                 cv2.imwrite(save_path,save_img)
-                #cv2.imshow("Original Image",save_img)
-                #cv2.waitKey(25)
+                cv2.imshow("Original Image",save_img)
+                cv2.waitKey(25)
                 print(lb)
             else: 
                 print("nah its straight")
