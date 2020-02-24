@@ -30,20 +30,22 @@ class ROS_Classify:
         self.height=height
         self.classes=['left','right','straight','weak_left','weak_right']
         self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
-
+        self.image_sub=rospy.Subscriber(self.image_topic,Image,self.image_callback)
         #fields for plotting
         self.commands=[]
-        self.time=[]
+        self.times=[]
         self.start_time=time.time()
         #figure for live animation
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(1, 1, 1)
         self.window=4000
 
+
         #Animation
         # Set up plot to call animate() function periodically
-        ani = animation.FuncAnimation(self.fig, self.animate, interval=200)
+        ani = animation.FuncAnimation(self.fig, self.animate, fargs=(self.commands, self.times), interval=1000)
         plt.show()
+        
 
     #image callback
     def image_callback(self,ros_image):
@@ -96,18 +98,19 @@ class ROS_Classify:
             msg.velocity=0
             msg.angle=0
         self.commands.append(msg.angle)
-        self.time.append(time.time()-self.start_time)
+        self.times.append(time.time()-self.start_time)
         self.pub.publish(msg)
+        #plt.show()
 
     #function that animates the plotting
-    def animate(self,i, buckets, misclassifications):
+    def animate(self,i,commands,times):
+        print("happens")
         # Limit x and y lists to window items
         self.commands = self.commands[-self.window:]
-        self.time = self.time[-self.window:]
-
+        self.times = self.times[-self.window:]
         # Draw x and y lists
         self.ax.clear()
-        self.ax.plot(self.time, self.commands)
+        self.ax.plot(self.times, self.commands)
 
         # Format plot
         plt.xticks(rotation=45, ha='right')
@@ -126,7 +129,6 @@ if __name__=='__main__':
     #get the keras model
     model=args[1]
     il=ROS_Classify(racecar_name,model,32,32)
-    image_sub=rospy.Subscriber(il.image_topic,Image,il.image_callback)
     try: 
         rospy.spin()
     except KeyboardInterrupt:
