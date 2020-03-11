@@ -20,6 +20,7 @@ from imutils import paths
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+from preprocessing.utils import ImageUtils
 import imutils
 import cv2
 import os
@@ -30,55 +31,19 @@ ap.add_argument("-d", "--dataset", required=True,help="path to input dataset")
 ap.add_argument("-o", "--output", required=True,help="directory where we will output the model")
 args = vars(ap.parse_args())
 
-# initialize the list of data and labels
-data = []
-labels = []
-
-
 #desired height and width these come from the DAVE model
 height= 32
 width= 32
 
-#count to show the user progress
-count=0
-# loop over the input images
-for imagePath in sorted(list(paths.list_images(args["dataset"]))):
-    #load the image, pre-process it, and store it in the data list
-    #The directory has the classification label and the image name has the command
-    #EXAMPLE: data/{classification}/{time-stamp}~{command}.jpg
-    
-    #split the path
-    split_path=os.path.split(imagePath)
-    #get the classification from the path name
-    classification= os.path.basename(split_path[0])
-    #load the image and normalize
-    image = cv2.imread(imagePath)/255.0
-    image= imutils.resize(image,width=width)
-    #Deterime the padding values for the width and the height to obtain the target dimensions
-    #One of these is gonna be zero from above.
-    padW=int((width-image.shape[1])/2.0)
-    padH=int((width-image.shape[0])/2.0)
-
-    #pad the image then apply one more resizing to handle any rounding issues.
-    #There will be cases where we are one pixel off
-    #the padding order is top, bottom, left,right
-    image=cv2.copyMakeBorder(image,padH,padH,padW,padW,cv2.BORDER_REPLICATE)
-    image=cv2.resize(image,(width,height))
-
-    #append the image, classification, command
-    data.append(image)
-    labels.append(classification)
-    count+=1
-    if(count%500==0):
-        print("[INFO] processed {} images".format(count))
-
-data = np.array(data, dtype="float")
-
-labels=np.asarray(labels)
+#load the data
+iu=ImageUtils()
+data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1)
 
 
-# convert the labels from integers to vectors
-#THIS WOULD HAVE SOLVED MY PROBLEM WEEKS AGO
+#normalize the images
+data=data/255.0
+
+#convert the labels from integers to vectors
 lb = LabelBinarizer()
 labels=lb.fit_transform(labels)
 
@@ -96,11 +61,9 @@ print(lb.classes_,classTotals,classWeight)
 print("[INFO] compiling model...")
 model=MiniVGGNet.build(height=height,width=width,depth=3,classes=len(lb.classes_))
 #number of epochs
-num_epochs=200
+num_epochs=2
 opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
 model.compile(loss='categorical_crossentropy',optimizer=opt,metrics=['accuracy'])
-
-
 
 #save the best performing models
 fname=args['output']
