@@ -44,7 +44,7 @@ class ROS_Classify:
         #Animation
         # Set up plot to call animate() function periodically
         ani = animation.FuncAnimation(self.fig, self.animate, fargs=(self.commands, self.times), interval=1000)
-        plt.show()
+        #plt.show()
         
 
     #image callback
