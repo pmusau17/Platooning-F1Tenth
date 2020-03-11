@@ -29,12 +29,12 @@ import argparse
 import imutils
 import cv2
 import os
+from preprocessing.utils import ImageUtils
 
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-d", "--dataset", required=True,help="path to input dataset")
 ap.add_argument("-o", "--output", required=True,help="directory where we will output the model")
-ap.add_argument('-s','--scaled',help="whether or not to train the scaled version")
 args = vars(ap.parse_args())
 
 # initialize the list of data and labels
@@ -45,68 +45,33 @@ commands= []
 height=66
 width= 200
 
-#count to show the user progress
-count=0
-# loop over the input images
-for imagePath in sorted(list(paths.list_images(args["dataset"]))):
-    #load the image, pre-process it, and store it in the data list
-    #The directory has the classification label and the image name has the command
-    #EXAMPLE: data/{classification}/{time-stamp}~{command}.jpg
-    
-    #split the path
-    split_path=os.path.split(imagePath)
-    #get the classification from the path name
-    classification= os.path.basename(split_path[0])
-    #get the command
-    command=split_path[1].replace('.jpg','').split('~')[1:]
-    #convert it back to the command
-    command=float('.'.join(command))
-    #load the image and normalize
-    image = cv2.imread(imagePath)/255.0
-    image= imutils.resize(image,width=width)
-    #Deterime the padding values for the width and the height to obtain the target dimensions
-    #One of these is gonna be zero from above.
-    padW=int((width-image.shape[1])/2.0)
-    padH=int((width-image.shape[0])/2.0)
+#load the image utils
+iu=ImageUtils()
 
-    #pad the image then apply one more resizing to handle any rounding issues.
-    #There will be cases where we are one pixel off
-    #the padding order is top, bottom, left,right
-    image=cv2.copyMakeBorder(image,padH,padH,padW,padW,cv2.BORDER_REPLICATE)
-    image=cv2.resize(image,(width,height))
+data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1,regression=True)
 
-    #append the image, classification, command
-    data.append(image)
-    commands.append(command)
-    count+=1
-    if(count%500==0):
-        print("[INFO] processed {} images".format(count))
 
-data = np.array(data, dtype="float")
-#normalize the commands
-commands=np.asarray(commands, dtype="float")/0.6108652353
-
-if(args['scaled']):
-    commands=commands*100
-print(commands.min(axis=0),commands.max(axis=0))
+#normalize the images and commands
+commands=labels/0.6108652353
+data=data/255.0
 
 
 #End to End data
 (EndtrainX, EndtestX, EndtrainY, EndtestY) = train_test_split(data,commands, test_size=0.05, random_state=42)
 # initialize the model
 print("[INFO] compiling model...")
+
 #number of epochs
-num_epochs=10000
+num_epochs=1
 #decay=0.01/num_epochs
 opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
 #opt=Adam(learning_rate=0.1, beta_1=0.9, beta_2=0.999, amsgrad=False)
-if(args['scaled']):
-    model = DAVE2.build(height=66, width=200, depth=3, classes=1,is_scaled=True)
-else:
-    model = DAVE2.build(height=66, width=200, depth=3, classes=1)
-   
+
+
+model = DAVE2.build(height=66, width=200, depth=3, classes=1)   
 print(model.summary())
 model.compile(loss="mean_squared_error", optimizer=opt,metrics=[customAccuracy])
+
 #model.compile(loss="mean_absolute_percentage_error", optimizer=opt,metrics=[customAccuracy])
 
 
