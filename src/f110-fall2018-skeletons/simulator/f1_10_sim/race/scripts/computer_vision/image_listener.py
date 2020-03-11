@@ -20,7 +20,6 @@ class ImageListener:
     def image_callback(self,ros_image):
         #convert the ros_image to an openCV image
         try:
-            print(type(ros_image)==Image)
             cv_image=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")
             print(cv_image.shape)
         except CvBridgeError as e:
