@@ -1,15 +1,19 @@
 <?xml version="1.0"?>
 <launch>
-
   <!--This world name that is spawned in gazebo-->
-  <arg name="world_name" value="track_barca"/>
-  <!--<arg name="world_name" value="track_porto"/>-->
-  <!--<arg name="world_name" value="lab_track2"/>-->
+  <!-- <arg name="world_name" value="track_barca"/> -->
+  <arg name="world_name" value="track_porto"/>
+  <!-- <arg name="world_name" value="lab_track2"/> -->
   <!--<arg name="world_name" value="track_levine"/>-->
   
   <!-- <arg name="world_name" value="lab_track2"/> -->
   <arg name="gui" default="true" />
   <arg name="run_camera" default="false"/>
+
+  <!--flag to enable/disable keyboard-->
+  <arg name="enable_keyboard" default="false"/>
+
+
 
   <!--launch the world-->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -67,7 +71,7 @@
       Additionally you can run a node from the command line via rosrun race keyboard_gen.py racecar2 with the appropriate
       car_name
   -->
-  <node pkg="race" name="keyboard_node_$(arg car_name1)" type="keyboard_gen.py" output="screen" args="$(arg car_name1)"/>
+  <node pkg="race" name="keyboard_node_$(arg car_name1)" if="$(arg enable_keyboard)" type="keyboard_gen.py" output="screen" args="$(arg car_name1)"/>
   
   
   </launch>
