@@ -1,8 +1,6 @@
-#pull from the osrf full kinetic build
-#FROM nvidia/cudagl:9.0-base-ubuntu16.04
-FROM nvidia/cudagl:10.0-base-ubuntu16.04
-ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},display
+FROM tensorflow/tensorflow:2.0.0
 
+ENV DEBIAN_FRONTEND=noninteractive
 #install ros
 RUN apt-get update && apt-get install -q -y \
     dirmngr \
@@ -14,7 +12,7 @@ RUN apt-get update && apt-get install -q -y \
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
 # setup sources.list
-RUN echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list
+RUN echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list 
 
 # install bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -43,6 +41,7 @@ RUN apt-get install -y python-pip && apt-get install -y python3-pip
 
 RUN pip install rospkg defusedxml PySide2
 RUN pip install empy 
+RUN pip install tensorflow-gpu 
 
 #navigate to the home directory
 WORKDIR home
@@ -51,8 +50,4 @@ WORKDIR catkin_ws
 RUN git clone https://github.com/pmusau17/Platooning-F1Tenth src
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash && catkin_make'
 
-#ENTRYPOINT /bin/bash -c "source /opt/ros/kinetic/setup.bash" 
-
-
-
-
+ENTRYPOINT /bin/bash -c "source /opt/ros/kinetic/setup.bash" 
