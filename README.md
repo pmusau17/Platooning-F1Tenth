@@ -331,6 +331,12 @@ To build the docker image use the Dockerfile located in this repository.
 $ docker build -t platoon_test .
 ```
 
+To build the image with tensorflow and ros image run:
+
+```bash
+$ docker build -t tfros -f Dockerfile2 .
+```
+
 Test if the image builds correctly by running: 
 
 ```bash
@@ -357,6 +363,12 @@ To run the simulation:
 
 ```bash
 $ docker-compose up
+```
+
+To run the end-to-end simulation:
+
+```bash
+$ docker-compose -f end_to_end.yml up
 ```
 
 To teleoperate the car or run experiments run the following:
