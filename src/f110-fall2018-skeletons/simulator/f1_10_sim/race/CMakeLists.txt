@@ -47,13 +47,15 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-## Generate messages in the 'msg' folder
-	add_message_files(
+#Generate messages in the 'msg' folder
+add_message_files(
 		FILES
+    angle_msg.msg
+    velocity_msg.msg
 		drive_param.msg
 		drive_values.msg
     pid_input.msg
-	)
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
