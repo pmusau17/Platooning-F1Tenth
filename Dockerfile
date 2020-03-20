@@ -45,8 +45,8 @@ RUN pip install rospkg defusedxml PySide2
 RUN pip install empy 
 
 #Need these packages for debugging
-RUN apt-get install nano
-RUN apt-get install apt-get install net-tools
+RUN apt-get install -y nano
+RUN apt-get install -y net-tools
 
 #navigate to the home directory
 WORKDIR home
@@ -54,11 +54,3 @@ RUN mkdir -p catkin_ws
 WORKDIR catkin_ws
 RUN git clone https://github.com/pmusau17/Platooning-F1Tenth src
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash && catkin_make'
-
-RUN apt-get install -y xvfb
-
-#ENTRYPOINT /bin/bash -c "source /opt/ros/kinetic/setup.bash" 
-
-
-
-
