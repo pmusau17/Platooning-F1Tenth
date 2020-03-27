@@ -166,6 +166,15 @@ $ rosrun race disparity_extender_vanderbilt.py
 ```
 This will plot the error between the prediction from the neural network and ground truth (disparity extender).
 
+You can also run the evaluation using the following launch. It assumes that your model is placed in the models directory within the [computer vision package](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/models). Simply specify your model name in the following [launch file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/launch/end_to_end.launch) and run the following after launching f1_tenth_devel.launch:
+
+```bash
+  $ roslaunch race end_to_end.launch
+```
+
+
+
+
 ![Error Analysis](./images/Figure_2.png "Error Analysis")
 
 ## Classification Based Discrete Control
@@ -304,6 +313,11 @@ $ rosrun race keyboard_gen.py racecar
 
 'racecar' can be replaced with 'racecar1' 'racecar2' if there are multiple cars. 
 
+Additionally if using the f1_tenth_devel.launch file, simply type the following:
+
+```bash
+$ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
+```
 
 # Docker
 
@@ -315,6 +329,12 @@ To build the docker image use the Dockerfile located in this repository.
 
 ```bash
 $ docker build -t platoon_test .
+```
+
+To build the image with tensorflow and ros image run:
+
+```bash
+$ docker build -t tfros -f Dockerfile2 .
 ```
 
 Test if the image builds correctly by running: 
@@ -343,6 +363,12 @@ To run the simulation:
 
 ```bash
 $ docker-compose up
+```
+
+To run the end-to-end simulation:
+
+```bash
+$ docker-compose -f end_to_end.yml up
 ```
 
 To teleoperate the car or run experiments run the following:

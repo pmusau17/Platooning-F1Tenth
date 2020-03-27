@@ -11,6 +11,7 @@ from nn.conv.shallownet import ShallowNet
 from tensorflow.python.keras.preprocessing.image import img_to_array
 from tensorflow.python.keras.utils import np_utils
 from tensorflow.python.keras.callbacks import ModelCheckpoint
+from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 import tensorflow.keras.backend as K  
 from tensorflow.keras.optimizers import SGD
 
@@ -31,13 +32,15 @@ ap.add_argument("-d", "--dataset", required=True,help="path to input dataset")
 ap.add_argument("-o", "--output", required=True,help="directory where we will output the model")
 args = vars(ap.parse_args())
 
-#desired height and width these come from the DAVE model
-height= 32
-width= 32
+#desired height, width, epochs
+HEIGHT= 64
+WIDTH= 64
+NUM_EPOCHS = 100
+BATCH_SIZE = 128
 
 #load the data
 iu=ImageUtils()
-data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1)
+data,labels=iu.load_from_directory(args['dataset'],HEIGHT,WIDTH,verbose=1)
 
 
 #normalize the images
@@ -59,9 +62,9 @@ print(lb.classes_,classTotals,classWeight)
 
 # initialize the model
 print("[INFO] compiling model...")
-model=MiniVGGNet.build(height=height,width=width,depth=3,classes=len(lb.classes_))
+model=MiniVGGNet.build(height=HEIGHT,width=WIDTH,depth=3,classes=len(lb.classes_))
 #number of epochs
-num_epochs=2
+num_epochs=NUM_EPOCHS
 opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
 model.compile(loss='categorical_crossentropy',optimizer=opt,metrics=['accuracy'])
 
@@ -72,11 +75,17 @@ checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_onl
 #Let us now instantiate th callbacks
 callbacks=[checkpoint]
 
+
+# define the image augmentation generator
+aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range=[0.7,1.3],rescale=1.0/255.0,fill_mode="nearest")
+
+
 # train the network
 print("[INFO] training network...")
-H = model.fit(trainX, trainY, validation_data=(testX, testY),class_weight=classWeight, batch_size=128, callbacks=callbacks , epochs=num_epochs, verbose=1)
 
-
+#the batch size you are using
+batch_size=BATCH_SIZE
+H = model.fit_generator(aug.flow(trainX,trainY,batch_size=batch_size), validation_data=(testX,testY), steps_per_epoch=len(trainX)//batch_size,epochs =num_epochs,verbose=1,callbacks=callbacks)
 
 # evaluate the network
 print("[INFO] evaluating network...")

@@ -4,7 +4,6 @@ import rospy
 from race.msg import drive_param
 from ackermann_msgs.msg import AckermannDriveStamped
 
-import math
 
 
 #get the arguments passed from the launch file 

@@ -33,6 +33,8 @@ RUN rosdep init \
 
 # install ros packages
 ENV ROS_DISTRO kinetic
+
+RUN apt-get update && apt-get install -y ros-kinetic-gazebo-plugins ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
 RUN apt-get update && apt-get install -y ros-kinetic-desktop-full && rosdep update && apt install -y python-rosinstall python-rosinstall-generator python-wstool build-essential
 RUN apt-get update &&  apt-get install -y ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-ackermann-msgs ros-kinetic-joy
 RUN apt-get update &&  apt-get install -y ros-kinetic-teb-local-planner ros-kinetic-move-base ros-kinetic-navigation ros-kinetic-hector-slam ros-kinetic-driver-common ros-kinetic-actionlib
@@ -48,9 +50,7 @@ RUN pip install empy
 RUN apt-get install -y nano
 RUN apt-get install -y net-tools
 
-#navigate to the home directory
-WORKDIR home
-RUN mkdir -p catkin_ws
-WORKDIR catkin_ws
-RUN git clone https://github.com/pmusau17/Platooning-F1Tenth src
-RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash && catkin_make'
+WORKDIR /home/musaup/Documents/Research/Platooning-F1Tenth
+
+RUN useradd musaup 
+#USER musaup

@@ -16,12 +16,13 @@ from preprocessing.utils import ImageUtils
 
 #class needed to publish to car input
 from race.msg import drive_param
+from race.msg import angle_msg
 
 
 class ROS_Daev:
 
     #define the constructor 
-    def __init__(self,racecar_name,model,height,width):
+    def __init__(self,racecar_name,model,height,width,decoupled=False):
         self.cv_bridge=CvBridge()
         self.image_topic=str(racecar_name)+'/camera/zed/rgb/image_rect_color'
         self.model=load_model(model,custom_objects={'customAccuracy': self.customAccuracy})
@@ -29,8 +30,12 @@ class ROS_Daev:
         self.util=ImageUtils()
         self.width=width
         self.height=height
-
-        self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+        #this is if we onlt want it to publish angle messages
+        self.decoupled=decoupled
+        if (not self.decoupled):
+            self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+        else:
+            self.pub=rospy.Publisher(racecar_name+'/angle_msg',angle_msg)
 
 
     #image callback
@@ -47,9 +52,15 @@ class ROS_Daev:
         pred=self.model.predict(predict_image)[0]*0.6108652353
 
         #Want to keep things consistent
-        msg = drive_param()
-        msg.angle = pred
-        msg.velocity = 1.0
+        if (not self.decoupled):
+            msg = drive_param()
+            msg.header.stamp=rospy.Time.now()
+            msg.angle = pred
+            msg.velocity = 1.0
+        else:
+            msg=angle_msg()
+            msg.header.stamp=rospy.Time.now()
+            msg.steering_angle=pred
         self.pub.publish(msg)
         
         cv2.imshow("Image fed to network",predict_image[0])
@@ -71,7 +82,13 @@ if __name__=='__main__':
     racecar_name=args[0]
     #get the keras model
     model=args[1]
-    il=ROS_Daev(racecar_name,model,66,200)
+
+    #if there's more than two arguments then its decoupled
+    if len(args)>2:
+        il=ROS_Daev(racecar_name,model,66,200,decoupled=True)
+    else:
+        il=ROS_Daev(racecar_name,model,66,200)
+        
     image_sub=rospy.Subscriber(il.image_topic,Image,il.image_callback)
     try: 
         rospy.spin()

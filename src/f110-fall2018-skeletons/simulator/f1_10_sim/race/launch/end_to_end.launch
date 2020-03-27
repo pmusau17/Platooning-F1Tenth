@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+<!--specify the model name-->
+<arg name="model_file" value='daev_accuracy.hdf5'/>
+
+<!--specify the racecar name-->
+<arg name="racecar_name" value="racecar"/>
+
+<arg name="bag_filename" default="recording.bag"/>
+<arg name="record" default="true"/>
+
+<node pkg="rosbag" type="record" name="recording" args='record -O $(find race)/$(arg bag_filename) -a -x "(.*)([Cc]ompressed|[Tt]heora)(.*)"' if="$(arg record)" output="screen"/>
+
+<!--launch the end to end driving node based on dave2
+<node pkg="race" name="end_to_end" type="ros_daev.py" args="$(arg racecar_name) $(find race)/scripts/computer_vision/models/$(arg model_file)" output="screen"/>-->
+
+<node pkg="race" name="end_to_end" type="disparity_extender_vanderbilt.py" output="screen"/>
+
+ </launch>
