@@ -12,3 +12,6 @@ data/
 
 #ignore all zip files
 *.zip
+
+#ignore catkin_workspace
+.catkin_workspace

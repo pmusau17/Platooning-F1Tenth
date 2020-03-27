@@ -10,6 +10,7 @@ from nn.conv.dave2 import DAVE2
 from tensorflow.python.keras.preprocessing.image import img_to_array
 from tensorflow.python.keras.utils import np_utils
 from tensorflow.python.keras.callbacks import ModelCheckpoint
+from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 import tensorflow.keras.backend as K  
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.optimizers import Adam
@@ -42,13 +43,15 @@ data = []
 commands= []
 
 #desired height and width these come from the DAVE model
-height=66
-width= 200
+HEIGHT= 66
+WIDTH= 200
+NUM_EPOCHS = 100
+BATCH_SIZE = 128
 
 #load the image utils
 iu=ImageUtils()
 
-data,labels=iu.load_from_directory(args['dataset'],height,width,verbose=1,regression=True)
+data,labels=iu.load_from_directory(args['dataset'],HEIGHT,WIDTH,verbose=1,regression=True)
 
 
 #normalize the images and commands
@@ -62,7 +65,7 @@ data=data/255.0
 print("[INFO] compiling model...")
 
 #number of epochs
-num_epochs=1
+num_epochs=NUM_EPOCHS
 #decay=0.01/num_epochs
 opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
 #opt=Adam(learning_rate=0.1, beta_1=0.9, beta_2=0.999, amsgrad=False)
@@ -80,16 +83,21 @@ fname=args['output']
 #checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
 checkpoint = ModelCheckpoint(fname,monitor="customAccuracy", mode="max",save_best_only=True,save_weights_only=False, verbose=1)
 
+
+# Instantiate Data Augmentation Generator
+aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range=[0.7,1.3],rescale=1.0/255.0,fill_mode="nearest")
+
 #Let us now instantiate th callbacks
 callbacks=[checkpoint]
 # train the network
 print("[INFO] training network...")
-H = model.fit(EndtrainX, EndtrainY, validation_data=(EndtestX, EndtestY), batch_size=256, callbacks=callbacks , epochs=num_epochs, verbose=1)
+batch_size=BATCH_SIZE
+H = model.fit_generator(aug.flow(EndtrainX,EndtrainY,batch_size=batch_size), validation_data=(EndtestX,EndtestY), steps_per_epoch=len(EndtrainX)//batch_size,epochs=num_epochs,verbose=1,callbacks=callbacks)
 
 
 # evaluate the network
 print("[INFO] evaluating network...")
-predictions = model.predict(EndtestX, batch_size=64)
+predictions = model.predict(EndtestX, batch_size=BATCH_SIZE)
 
 print(predictions[:10],EndtestY[:10])
 print(max(predictions))

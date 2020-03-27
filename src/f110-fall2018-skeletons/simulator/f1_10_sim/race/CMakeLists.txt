@@ -5,6 +5,7 @@ project(race)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  gazebo_ros
   roscpp
   rospy
   sensor_msgs
@@ -47,13 +48,15 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-## Generate messages in the 'msg' folder
-	add_message_files(
+#Generate messages in the 'msg' folder
+add_message_files(
 		FILES
+    angle_msg.msg
+    velocity_msg.msg
 		drive_param.msg
 		drive_values.msg
     pid_input.msg
-	)
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -107,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES race
-  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs geometry_msgs
+  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs geometry_msgs gazebo_ros
 #  DEPENDS system_lib
 )
 

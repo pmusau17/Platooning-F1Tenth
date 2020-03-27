@@ -7,8 +7,8 @@
   <!--<arg name="world_name" value="track_levine"/>-->
   
   <!-- <arg name="world_name" value="lab_track2"/> -->
-  <arg name="gui" default="true" />
-  <arg name="run_camera" default="false"/>
+  <arg name="gui" default="false" />
+  <!--<arg name="run_camera" default="false"/>-->
 
   <!--flag to enable/disable keyboard-->
   <arg name="enable_keyboard" default="false"/>
@@ -19,6 +19,7 @@
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find racecar_gazebo)/worlds/$(arg world_name).world"/>
     <arg name="gui" value="$(arg gui)"/>
+    <arg name= "verbose" value="true"/>
   </include>
 
 
