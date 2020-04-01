@@ -45,7 +45,7 @@ commands= []
 #desired height and width these come from the DAVE model
 HEIGHT= 66
 WIDTH= 200
-NUM_EPOCHS = 100
+NUM_EPOCHS = 10000
 BATCH_SIZE = 128
 
 #load the image utils
@@ -85,7 +85,7 @@ checkpoint = ModelCheckpoint(fname,monitor="customAccuracy", mode="max",save_bes
 
 
 # Instantiate Data Augmentation Generator
-aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range=[0.7,1.3],rescale=1.0/255.0,fill_mode="nearest")
+aug= ImageDataGenerator(rotation_range=2, brightness_range=[0.5,1.5], zoom_range=[0.9,1.1],rescale=1.0/255.0,fill_mode="nearest")
 
 #Let us now instantiate th callbacks
 callbacks=[checkpoint]
