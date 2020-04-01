@@ -77,7 +77,7 @@ callbacks=[checkpoint]
 
 
 # define the image augmentation generator
-aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range=[0.7,1.3],rescale=1.0/255.0,fill_mode="nearest")
+aug= ImageDataGenerator(rotation_range=2, brightness_range=[0.5,1.5], zoom_range=[0.9,1.1],rescale=1.0/255.0,fill_mode="nearest")
 
 
 # train the network
