@@ -116,7 +116,7 @@ for i in np.arange(0, args['num_models']):
    plt.figure()
    
    for key in H.history.keys():
-       plt.plot(np.arange(0, NUM_EPOCHS), H.history[i], label=i)
+       plt.plot(np.arange(0, NUM_EPOCHS), H.history[key], label=key)
        
    plt.title("Training Loss and Accuracy for model {}".format(i))
    plt.xlabel("Epoch #")
