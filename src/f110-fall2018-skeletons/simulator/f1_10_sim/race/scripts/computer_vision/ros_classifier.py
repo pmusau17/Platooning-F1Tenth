@@ -20,14 +20,14 @@ from preprocessing.utils import ImageUtils
 class ROS_Classify:
 
     #define the constructor 
-    def __init__(self,racecar_name,model,height,width):
+    def __init__(self,racecar_name,model):
         self.cv_bridge=CvBridge()
         self.image_topic=str(racecar_name)+'/camera/zed/rgb/image_rect_color'
         self.model=load_model(model)
         #this handles the reshaping
         self.util=ImageUtils()
-        self.width=width
-        self.height=height
+        self.height=self.model.layers[0].input_shape[1]
+        self.width=self.model.layers[0].input_shape[2]
         self.classes=['left','right','straight','weak_left','weak_right']
         self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
         self.image_sub=rospy.Subscriber(self.image_topic,Image,self.image_callback)
@@ -127,7 +127,7 @@ if __name__=='__main__':
     racecar_name=args[0]
     #get the keras model
     model=args[1]
-    il=ROS_Classify(racecar_name,model,32,32)
+    il=ROS_Classify(racecar_name,model)
     try: 
         rospy.spin()
     except KeyboardInterrupt:
