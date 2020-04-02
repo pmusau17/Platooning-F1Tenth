@@ -1,0 +1,11 @@
+              precision    recall  f1-score   support
+
+        left       0.85      0.90      0.88       143
+       right       0.89      0.82      0.86       158
+    straight       0.85      0.86      0.85       224
+   weak_left       0.84      0.81      0.82       209
+  weak_right       0.81      0.84      0.82       229
+
+   micro avg       0.84      0.84      0.84       963
+   macro avg       0.85      0.85      0.85       963
+weighted avg       0.84      0.84      0.84       963
