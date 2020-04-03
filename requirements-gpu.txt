@@ -82,6 +82,7 @@ ninja
 oauthlib
 olefile
 packaging
+pathlib
 pathlib2
 pillow
 pip

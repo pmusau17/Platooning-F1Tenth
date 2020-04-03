@@ -17,6 +17,12 @@ import matplotlib.animation as animation
 from tensorflow.python.keras.models import load_model
 import tensorflow.keras.backend as K
 
+# import sys so we can use packages outside of this folder in
+# either python 2 or python 3
+import sys
+#insert parent directory into the path
+sys.path.insert(0,'..')
+
 #import the preprocessing utils (helps with loading data, preprocessing)
 from preprocessing.utils import ImageUtils
 import rospkg

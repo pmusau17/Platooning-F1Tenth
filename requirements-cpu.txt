@@ -131,3 +131,4 @@ wstool
 rosinstall 
 six 
 vcstools
+pathlib

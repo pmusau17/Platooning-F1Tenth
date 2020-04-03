@@ -2,6 +2,14 @@
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras.preprocessing.image import img_to_array
 from tensorflow.python.keras.preprocessing.image import load_img
+
+# import sys so we can use packages outside of this folder in
+# either python 2 or python 3
+import sys
+#insert parent directory into the path
+sys.path.insert(0,'..')
+
+from preprocessing.utils import ImageUtils
 import numpy as np 
 import argparse
 import cv2
