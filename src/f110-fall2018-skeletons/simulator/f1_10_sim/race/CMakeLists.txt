@@ -52,6 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
 		FILES
     angle_msg.msg
+    prediction.msg
     velocity_msg.msg
 		drive_param.msg
 		drive_values.msg
