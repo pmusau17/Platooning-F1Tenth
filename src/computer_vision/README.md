@@ -1,5 +1,9 @@
 # Computer Vision 
 
+![F1Tenth](../../images/f1.jpg "F1Tenth")
+
+Photo Credit: Hannah O'Leary, Oregon State University
+
 Right now most things are limited to a single car. Multi-car experiments are a work in progress. 
 
 ## End to End Learning 
