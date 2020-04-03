@@ -1,4 +1,11 @@
 # import the neccessary packages
+
+# import sys so we can use packages outside of this folder in
+# either python 2 or python 3
+import sys
+#insert parent directory into the path
+sys.path.insert(0,'..')
+
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report

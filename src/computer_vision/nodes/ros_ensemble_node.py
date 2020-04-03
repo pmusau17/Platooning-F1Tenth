@@ -9,6 +9,14 @@ from sensor_msgs.msg import Image
 #import the tensorflow package
 from tensorflow.python.keras.models import load_model
 
+# import sys so we can use packages outside of this folder in
+# either python 2 or python 3, I know it's janky, chill
+import sys
+import os
+from pathlib import Path 
+#insert parent directory into the path
+sys.path.insert(0,str(Path(os.path.abspath(__file__)).parent.parent))
+
 #import the preprocessing utils (helps with loading data, preprocessing)
 from preprocessing.utils import ImageUtils
 
