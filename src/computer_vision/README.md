@@ -3,7 +3,7 @@
 <img src="../../images/f1.jpg" alt="F1Tenth"
 	title="A cute kitten" width="400" />
 
-Photo Credit: Hannah O'Leary, Oregon State University
+**Photo Credit**: Hannah O'Leary, Oregon State University
 
 Right now most things are limited to a single car. Multi-car experiments are a work in progress. 
 
@@ -162,11 +162,13 @@ Then run:
 $ source devel/setup.bash && rosrun race keyboard.py
 ```
 
-# End-to End Driving via Ensemble Based Classification 
-
 To run the end-to-end simulation:
 
 ```bash
 $ roscd && cd ..
 $ docker-compose -f end_to_end.yml up
 ```
+
+# End-to End Driving via Ensemble Based Classification 
+
+I'll write it on monday.
