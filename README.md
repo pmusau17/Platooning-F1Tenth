@@ -79,159 +79,18 @@ If you get the error: ImportError: No module named catkin_pkg.packages and you a
  $ roslaunch race platoon.launch
  ```
  
-**Object Tracking**
+# Computer Vision 
 
-One of the ways that we can switch from the following controller to the disparity extender controller is by using an object tracking algorithm. If our assumption about having accurate information about the position of each car is no longer valid then we can also platoon visually. Thus we also provide object tracking capabilities. The object tracking code is found in the Object_Tracking folder.
+Right now most things are limited to a single car. Multi-car experiments are a work in progress. Details can be found in the [Computer Vision](src/computer_vision) package
+
+![Error Analysis](./images/Figure_2.png "Error Analysis")
+
 
 # Changing The Number of Cars and The Track
 
 Changing the number of cars can be done in the [multi_parametrizeable.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/multi_parametrizeable.launch) at the top of the file. You can experiment with two or three car experiments. Beyond that Gazebo operates painfully slow. 
 
 For single car experiments you can change the track by editing the world_name parameter in [f1_tenth_devel.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/f1_tenth_devel.launch) at the top of the file.
-
-# Computer Vision 
-
-Right now most things are limited to a single car. Multi-car experiments are a work in progress. 
-
-## End to End Learning 
-
-The current implementation is based on NVIDIA's DAVE-II Model.
-
-
-**Data Collection:**
-
-In three seperate terminals run the following:
-
- Terminal 1: 
- ```bash
- $ roslaunch race f1_tenth_devel.launch
- ```
- 
- Terminal 2: 
- ```bash  
- $ rosrun race disparity_extender_vanderbilt.py
- ```
- 
- Terminal 3: 
- 
-  ```bash  
- $ rosrun race synchronize_img_command.py
- ```
-  
-The synchronize_img_command performs the data collection. It collects the steering angles and logs the data into a directory which can be found in the data directory, categorized based on the degree of the turn. This categorization is used to train the classification model in the next section. The classes are left, right, weak_left, weak_right, straight. You can change the classes if you wish. Simply add more classes in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/synchronize_img_command.py).
-
-To access and view the data run: 
-```bash
-$ roscd race/scripts/computer_vision
-```
-
-I purposesly ignored the data directory for git tracking (It's very large). If you would like the data we used to train our models, I'm happy to provide it. Send me an email to obtain it.
-
-**Training**
-
-You can tweak the hyperparameters in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_daev_model.py).
-
-```bash
-$ roscd race/scripts/computer_vision/ 
-$ python train_daev_model.py -d data/ -o models/{name_of_your_model}.hdf5
-```
-
-#### Evaluation
-
-In two seperate terminals run the following:
-
-To run an experiment where the model controls the car.
-
-Terminal 1: 
-```bash
-$ roslaunch race f1_tenth_devel.launch
-```
- 
-Terminal 2: 
-```bash  
-$ roscd race/scripts/computer_vision/ 
-$ rosrun race ros_daev.py /racecar models/{name_of_your_model}.hdf5
-```
-To analyze the accuracy of your model. Instead of running the above in the second terminal. Run the following
-
-Terminal 2: 
-```bash  
-$ roscd race/scripts/computer_vision/ 
-$ rosrun race analyze_e2e.py /racecar models/{name_of_your_model}.hdf5 /vesc
-```
-
-Terminal 3: 
-```bash  
-$ rosrun race disparity_extender_vanderbilt.py
-```
-This will plot the error between the prediction from the neural network and ground truth (disparity extender).
-
-You can also run the evaluation using the following launch. It assumes that your model is placed in the models directory within the [computer vision package](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/models). Simply specify your model name in the following [launch file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/launch/end_to_end.launch) and run the following after launching f1_tenth_devel.launch:
-
-```bash
-  $ roslaunch race end_to_end.launch
-```
-
-
-
-
-![Error Analysis](./images/Figure_2.png "Error Analysis")
-
-## Classification Based Discrete Control
-
-**Data Collection:** The data collection process is identical to the end-to-end scenario above. 
-
-**Training**
-
-You can select the architechture and hyperparameters in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/train_classification_model.py). Simply add your architechture in the nn/conv directory appropriately.
-
-Models that are currently available: 
-- Mini VGGNET
-- ShallowNet
-
-To train a model run the following: 
-
-```bash
-$ roscd race/scripts/computer_vision/ 
-$ python train_classification_model.py -d data/ -o models/{name_of_your_model}.hdf5
-```
-
-**Evalutation**
-
-Similarly to the end-to-end driving scenario, there are two ways to evaluate the model. The first methods maps the classifications to discrete actions in order to control the car. The second method simply runs the classification model online and identifies misclassifications art runtime. Since the disparity extender was used to generate the training data, we can evaulate its performance with respect its operation. (Very open to suggestions on how to improve this)
-
-To run Discrete Control experiments: 
-
-Terminal 1: 
-```bash
-$ roslaunch race f1_tenth_devel.launch
-```
- 
-Terminal 2: 
-```bash  
-$ roscd race/scripts/computer_vision/ 
-$ rosrun race ros_classifier.py /racecar models/{name_of_your_model}.hdf5
-```
-The discrete control actions are defined in the following [file](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/scripts/computer_vision/ros_classifier.py). Feel free to tweak them for your experiments.
-
-In a similar vein to the end-to-end learning experiments. You can analyze how well your classification system adheres to the ground truth classifications generated by either the disparity extender or the potential field controller.
-
-To analyze the accuracy of your model. Instead of running the above in the second terminal. Run the following:
-
-Terminal 2: 
-```bash  
-$ roscd race/scripts/computer_vision/ 
-$ rosrun race analyze_classification_model.py /racecar models/{name_of_your_model}.hdf5 /vesc
-```
-
-Terminal 3: 
-```bash  
-$ rosrun race disparity_extender_vanderbilt.py
-```
-
-This will plot a box plot with the number of detections labeled as misclassifications.
-
-![Misclassifications](./images/Figure_1.png "Misclassifications")
 
 
 # Reinforcement Learning 
@@ -363,12 +222,6 @@ To run the simulation:
 
 ```bash
 $ docker-compose up
-```
-
-To run the end-to-end simulation:
-
-```bash
-$ docker-compose -f end_to_end.yml up
 ```
 
 To teleoperate the car or run experiments run the following:
