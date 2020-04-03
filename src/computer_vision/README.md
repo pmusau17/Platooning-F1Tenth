@@ -1,6 +1,7 @@
 # Computer Vision 
 
-![F1Tenth](../../images/f1.jpg "F1Tenth")
+<img src="../../images/f1.jpg" alt="F1Tenth"
+	title="A cute kitten" width="400" />
 
 Photo Credit: Hannah O'Leary, Oregon State University
 
