@@ -171,4 +171,15 @@ $ docker-compose -f end_to_end.yml up
 
 # End-to End Driving via Ensemble Based Classification 
 
-I'll write it on monday.
+The training process of neural networks is challenging and in some cases it can fail. This can mean that the model at the end of training may not be stable or the best-peforming set of weights. One way to deal with this challenge is to use ensemble methods which refers to training a "large number of modles and then combining their output predictions via voting or averaging. The other method of combining several methds is to use an average of the weights of multiple models to create a new model, this form of combining methods is called Polyak-Ruppert Averaging. A discussion of these techniques can be found in the following [tutorial](https://machinelearningmastery.com/polyak-neural-network-model-weight-ensemble/) by Dr. Jason Brownlee.
+
+## Combining Predictions Using Averaging
+
+The first method I investigate for evaluating ensemble methods on the F1Tenth platform is inspired by [Dr. Adrian Rosebrock](https://www.pyimagesearch.com/author/adrian/).
+
+## Creating a new model using Polyak-Ruppert Averaging 
+
+Working on this. Will be done by 4/10/2020.
+
+
+
