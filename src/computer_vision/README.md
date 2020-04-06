@@ -7,7 +7,7 @@
 
 Right now most things are limited to a single car. Multi-car experiments are a work in progress. 
 
-## End to End Learning 
+## End-to-End Learning 
 
 The current implementation is based on NVIDIA's DAVE-II Model.
 
