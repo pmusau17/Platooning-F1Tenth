@@ -242,8 +242,10 @@ $ python python polyak_averaging_test.py -m ../models -s model_*.hdf5 -d ../data
 
 This will load five network models based on the MiniVGGNet [architecture](/..training/nn/conv) by selecting them using the model*.hdf5 search pattern. These models are then loaded into memory and the weights in each layer are combined using a simple average. These weights are then used to create the new model with the same architechture. Using the new model, the script makes predictions on the data contained in the data directory. In our experiments, using only five models resulted in a 25% accuracy. One explanation is that the average deviates largely from the actual weights exhibited by a single model. I did some experiments with a simple feedforward network and found that to be the case. The plots can be seen below. Once the accuracy improves, we can test these models on the F1Tenth Platform (Stay Tuned).  
 
+### Feedforward Network
 ![Dense Model](../../images/Dense.png "Dense Model")
 
+### MiniVGGNet
 ![MiniVGGNet](../../images/MiniVGGNet.png "MiniVGGNet")
 
 
