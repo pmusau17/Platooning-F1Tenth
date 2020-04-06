@@ -231,7 +231,20 @@ $ rosrun race computer_vision ensemble_manager.py /racecar model_1 .... model_n
 
 ## Creating a new model using Polyak-Ruppert Averaging 
 
-Working on this. Will be done by 4/10/2020.
+Polyak-Ruppert Averaging is the idea that you can use an average of the weights from mulitple models seen toward the end of a training run to improve performance. It can be further improved by using a linearly or exponentially weighted average of the model weights. At runtime its considerably less computationally expensive than the ensemble approach presented in the previous section.
+
+To run an experiment demonstrating the approach run the following: 
+
+```
+$ roscd computer_vision
+$ python python polyak_averaging_test.py -m ../models -s model_*.hdf5 -d ../data/
+```
+
+This will load five network models based on the MiniVGGNet [architecture](/..training/nn/conv) by selecting them using the model*.hdf5 search pattern. These models are then loaded into memory and the weights in each layer are combined using a simple average. These weights are then used to create the new model with the same architechture. Using the new model, the script makes predictions on the data contained in the data directory. In our experiments, using only five models resulted in a 25% accuracy. One explanation is that the average deviates largely from the actual weights exhibited by a single model. I did some experiments with a simple feedforward network and found that to be the case. The plots can be seen below. Once the accuracy improves, we can test these models on the F1Tenth Platform (Stay Tuned).  
+
+![Dense Model](../../images/Dense.png "Dense Model")
+
+![MiniVGGNet](../../images/MiniVGGNet.png "MiniVGGNet")
 
 
 
