@@ -199,9 +199,35 @@ The default is to train 5 models but you can change that with -n flag.
 
 ## Combining Predictions Using Averaging
 
-The first method I investigate for evaluating ensemble methods on the F1Tenth platform is inspired by [Dr. Adrian Rosebrock](https://www.pyimagesearch.com/author/adrian/).
+The first method I investigate for evaluating ensemble methods on the F1Tenth platform is inspired by [Dr. Adrian Rosebrock](https://www.pyimagesearch.com/author/adrian/). The idea here is that we create several ros nodes that make predictions on images received from the camera mounted on the car. Each model makes a prediction based on that image into 5 classes (left, weak left, straight, weak right, right) and then that prediction is sent to a ensemble manager. The ensemble manager then takes each of the prediction logits and averages them. This can be done in multiple ways but the default is to use a simple average. Based on that average the ensemble manager assigns the prediction to the highest value in the average logit. The architechture is shown below.
 
 ![Ensemble Architechture](../../images/ALC-Example.png "Ensemble Architechture")
+
+To run this demonstration run the following:
+
+Terminal 1:
+
+```
+$ roslaunch race f1_tenth_devel.launch
+```
+
+Each node must be named in order for the ensemble manager to properly synchronize the messages. The name is the last parameter passed to the following commands. Each node gets its own terminal. Alternatively, you can create a launch file. The first parameter is the name of the racecar. This specifies which camera to subscribe to, if there are multiple.
+
+Terminal 2-N:
+
+```
+$ roscd computer_vision 
+$ rosrun race computer_vision ros_ensemble.py /racecar models/minivgg_3.hdf5 model_name
+```
+
+The names of each model are then passed to the ensemble manager.
+
+Terminal N+1:
+
+```
+$ roscd computer_vision 
+$ rosrun race computer_vision ensemble_manager.py /racecar model_1 .... model_n
+```
 
 ## Creating a new model using Polyak-Ruppert Averaging 
 
