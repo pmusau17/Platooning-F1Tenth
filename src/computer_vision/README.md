@@ -173,11 +173,35 @@ $ docker-compose -f end_to_end.yml up
 
 The training process of neural networks is challenging and in some cases it can fail. This can mean that the model at the end of training may not be stable or the best-peforming set of weights. One way to deal with this challenge is to use ensemble methods which refers to training a "large number of modles and then combining their output predictions via voting or averaging. The other method of combining several methds is to use an average of the weights of multiple models to create a new model, this form of combining methods is called Polyak-Ruppert Averaging. A discussion of these techniques can be found in the following [tutorial](https://machinelearningmastery.com/polyak-neural-network-model-weight-ensemble/) by Dr. Jason Brownlee.
 
+## Training 
+
+Before we can use an ensemble of neural networks to make predictions. We must first make the ensemble. The file to train the ensemble can be found [here](training/train_ensemble_classifer.py). The syntax to train ensembles is given by: 
+
+```
+python train_ensemble_classifier.py [-h] -d DATASET -o OUTPUT -l LOGS [-n NUM_MODELS]
+   optional arguments:
+	-h, --help show this help message and exit
+	-d DATASET, --dataset DATASET path to input dataset
+	-o OUTPUT, --output OUTPUT directory where we will output the model
+	-l LOGS, --logs LOGS directory where we will output the plots and accuracy reports
+	-n NUM_MODELS, --num-models NUM_MODELS # of models to train  
+```
+
+Example: 
+
+``` bash
+$ roscd computer_vision/training  
+$ python train_ensemble_classifer.py -d data/ -o output/ -l logs/
+```
+
+The default is to train 5 models but you can change that with -n flag.
+
+
 ## Combining Predictions Using Averaging
 
 The first method I investigate for evaluating ensemble methods on the F1Tenth platform is inspired by [Dr. Adrian Rosebrock](https://www.pyimagesearch.com/author/adrian/).
 
-![Ensemble Architechture](../../images/ALC-Example "Ensemble Architechture")
+![Ensemble Architechture](../../images/ALC-Example.png "Ensemble Architechture")
 
 ## Creating a new model using Polyak-Ruppert Averaging 
 
