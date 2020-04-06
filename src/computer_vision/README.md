@@ -177,6 +177,8 @@ The training process of neural networks is challenging and in some cases it can 
 
 The first method I investigate for evaluating ensemble methods on the F1Tenth platform is inspired by [Dr. Adrian Rosebrock](https://www.pyimagesearch.com/author/adrian/).
 
+![Ensemble Architechture](../../images/ALC-Example "Ensemble Architechture")
+
 ## Creating a new model using Polyak-Ruppert Averaging 
 
 Working on this. Will be done by 4/10/2020.
