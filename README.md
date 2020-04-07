@@ -9,6 +9,7 @@
 4. [Computer Vision](#ComputerVision)
 5. [Reinforcement Learning](#ReinforcementLearning)
 6. [Docker](#Docker)
+7. [Developers](#Developers)
 
 
 # Introduction <a name="introduction"></a>
@@ -187,4 +188,13 @@ Then run:
 $ source devel/setup.bash && rosrun race keyboard.py
 ```
 
+# Developers
 
+Our team consists of graduate and undergraduate students from Vanderbilt University working at the [Institute for Software Integrated Systems](https://www.isis.vanderbilt.edu/).
+
+* [Patrick Musau](https://www.linkedin.com/in/musaup/)
+* [Diego Manzanas Lopez](https://www.linkedin.com/in/diego-manzanas-3b4841106/)
+* [Nathaniel (Nate) Hamilton](https://www.linkedin.com/in/nathaniel-hamilton-b01942112/)
+* [Diandry Rutayisire](https://www.linkedin.com/in/diandry-rutayisire-298a45153/)
+* [Tim Darrah](https://www.linkedin.com/in/timothydarrah/)
+* [Shreyas Ramakrishna](https://www.linkedin.com/in/shreyasramakrishna/)
