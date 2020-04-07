@@ -1,7 +1,0 @@
-image: april_1_5_2.pgm
-resolution: 0.070000
-origin: [-71.715004, -71.715004, 0.000000]
-negate: 0
-occupied_thresh: 0.65
-free_thresh: 0.196
-
