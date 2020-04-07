@@ -92,13 +92,13 @@ Changing the number of cars can be done in the [multi_parametrizeable.launch](sr
 
 For single car experiments you can change the track by editing the world_name parameter in [f1_tenth_devel.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/f1_tenth_devel.launch) at the top of the file.
 
-# Computer Vision <a name="introduction"></a>
+# Computer Vision <a name="ComputerVision"></a>
 
 Right now most things are limited to a single car. Multi-car experiments are a work in progress. Details can be found in the [Computer Vision](src/computer_vision) package.
 
 ![Error Analysis](./images/Figure_2.png "Error Analysis")
 
-# Reinforcement Learning <a name="ComputerVision"></a>
+# Reinforcement Learning <a name="ReinforcementLearning"></a>
 These methods are designed for training a vehicle follower, which we plan on expanding to platooning. However, we might 
 expand this to train a single racer in the future.
 
