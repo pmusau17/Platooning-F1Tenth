@@ -179,7 +179,6 @@ Before we can use an ensemble of neural networks to make predictions. We must fi
 
 ```
 python train_ensemble_classifier.py [-h] -d DATASET -o OUTPUT -l LOGS [-n NUM_MODELS]
-   optional arguments:
 	-h, --help show this help message and exit
 	-d DATASET, --dataset DATASET path to input dataset
 	-o OUTPUT, --output OUTPUT directory where we will output the model
@@ -247,6 +246,29 @@ This will load five network models based on the MiniVGGNet [architecture](/..tra
 
 ### MiniVGGNet
 ![MiniVGGNet](../../images/MiniVGGNet.png "MiniVGGNet")
+
+# Transfer Learning 
+
+In practice transfer learning is used widely as a means of acheiving state of the art performance. As mentioned in the following [course notes](https://cs231n.github.io/transfer-learning/) by Andrej Karpathy, in practice very few people train an entire neural network from scratch. One often doesn't have a sufficient amount of data in order to do the training effectively. There are several different strategies for transfer learning and the following experiments use a strategy referred to as "fine tuning." The crux of the "fine tuning" strategy is replacing the final layers of a pre-trained convolutional neural network such as [VGGNet](https://arxiv.org/abs/1409.1556), [ResNet](https://arxiv.org/abs/1512.03385), or [Inception](https://arxiv.org/abs/1512.00567) with a new set of randomly initialized fully connected layers. Using this new architechture, all the layers from the pre-trained model are frozen, and a series of training epochs is conducted in order to allow the new set of FC layers to learn patterns from the pre-trained layers. Once that is done and depending on what your performance, you can unfreeze the pre-trained layers and continue training to further improve performance. These experiments were also inspired by [Dr. Adrian Rosebrock](https://www.pyimagesearch.com/2019/06/03/fine-tuning-with-keras-and-deep-learning/).
+
+### Training 
+
+The pre-trained architechture, that I played with in these experiments is VGG16. The final layers were added using the following [model definition](nn/conv/fcheadnet.py). The architechture is visualized [here](../plots/model.png). To train the model run the following commands:
+
+```
+$ python transfer_classifier.py [-h] -d DATASET -m MODEL
+	-h, --help show this help message and exit
+	-d DATASET, --dataset DATASET path to input dataset
+	-m MODEL, --model MODEL path to save the output model
+```
+
+Example: 
+
+```
+ $ python transfer_classifier.py -d ../data -m ../models/VGG16_transfer.hdf5
+```
+
+
 
 
 
