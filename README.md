@@ -1,18 +1,25 @@
 # F1Tenth: Platooning, Computer Vision, Reinforcement Learning, Path Planning
 
+
+# Table of Contents
+
+1. [Introduction](#introduction)
+2. [Installation](#Installation)
+3. [Platooning](#Platooning)
+4. [Computer Vision](#ComputerVision)
+5. [Reinforcement Learning](#ReinforcementLearning)
+6. [Docker](#Docker)
+
+
+# Introduction <a name="introduction"></a>
+
+Welcome! This repository contains a host of [ROS](http://wiki.ros.org/ROS/Introduction) packages for the [F1Tenth Autonomous Racing Competition](http://f1tenth.org/). In this repository you will find ROS packages designed for both simulation and the F1Tenth hardware platform. The simulation is based on a Gazebo based virtual racing environment. Our goal is to develop the F1Tenth platform for AI research to experiment with deep learning, computer vision, reinforcement learning, and path planning for autonomous racing.  
+
 If you have any questions or run into any problems. Feel free to send me an [email](mailto:patrick.musau@vanderbilt.edu) or to post an issue and I'll do my best to get back to you promptly.
 
 ![Three_Car_Sim](./images/three_car_platoon.gif "Three Car Simulation")
 
-# Repository Organization
-
-**f110-fall2018-skeletons**: F1Tenth Simulation Code
-
-**particle_filter**: A fast particle filter localization algorithm developped by Corey Walsh et al.
-
-**a_stars_pure_pursuit**: ROS package for a pure pursuit motion planner developped by Siddharth Singh
-
-# Installation 
+# Installation <a name="Installation"></a>
 
 ### Install Necessary Environments
  
@@ -46,7 +53,7 @@ $ source devel/setup.bash
 
 If you get the error: ImportError: No module named catkin_pkg.packages and you are using anaconda. Run the following command: ```conda install -c auto catkin_pkg```
 
-# Platooning Algorithms
+# Platooning Algorithms<a name="Platooning"></a>
  
  **Disparity Extender**
  
@@ -78,20 +85,20 @@ If you get the error: ImportError: No module named catkin_pkg.packages and you a
  ```bash  
  $ roslaunch race platoon.launch
  ```
- 
+
 # Changing The Number of Cars and The Track
 
 Changing the number of cars can be done in the [multi_parametrizeable.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/multi_parametrizeable.launch) at the top of the file. You can experiment with two or three car experiments. Beyond that Gazebo operates painfully slow. 
 
 For single car experiments you can change the track by editing the world_name parameter in [f1_tenth_devel.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/f1_tenth_devel.launch) at the top of the file.
 
-# Computer Vision 
+# Computer Vision <a name="introduction"></a>
 
 Right now most things are limited to a single car. Multi-car experiments are a work in progress. Details can be found in the [Computer Vision](src/computer_vision) package.
 
 ![Error Analysis](./images/Figure_2.png "Error Analysis")
 
-# Reinforcement Learning 
+# Reinforcement Learning <a name="ComputerVision"></a>
 These methods are designed for training a vehicle follower, which we plan on expanding to platooning. However, we might 
 expand this to train a single racer in the future.
 
@@ -123,7 +130,7 @@ Additionally if using the f1_tenth_devel.launch file, simply type the following:
 $ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
 ```
 
-# Docker
+# Docker <a name="Docker"></a>
 
 Install [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) to containerize and run GPU accelerated workloads. In order to run the simulation please install it. 
 
