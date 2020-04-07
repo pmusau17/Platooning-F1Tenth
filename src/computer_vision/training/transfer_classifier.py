@@ -1,10 +1,12 @@
 # import the neccessary packages
 
 # import sys so we can use packages outside of this folder in
-# either python 2 or python 3
+# either python 2 or python 3, I know it's janky, chill
 import sys
+import os
+from pathlib import Path 
 #insert parent directory into the path
-sys.path.insert(0,'..')
+sys.path.insert(0,str(Path(os.path.abspath(__file__)).parent.parent))
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.model_selection import train_test_split
@@ -15,13 +17,14 @@ from preprocessing.utils import ImageUtils
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 
 #optimizers
-from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.applications import VGG16
+from keras.optimizers import RMSprop
+from keras.optimizers import SGD
+from keras.applications import VGG16
+from keras.utils import plot_model
 
 # layers, model
-from tensorflow.python.keras.layers import Input
-from tensorflow.python.keras.models import Model 
+from keras.layers import Input
+from keras.models import Model 
 
 # customary packages
 import numpy as np 
@@ -66,7 +69,6 @@ print(lb.classes_,classTotals,classWeight)
 (trainX, testX, trainY, testY) = train_test_split(data,labels, test_size=0.20, stratify=labels, random_state=42)
 
 # now comes the main event, the network surgery
-
 baseModel = VGG16(weights='imagenet',include_top=False,input_tensor=Input(shape=(224,224,3)))
 print(baseModel.summary())
 
@@ -76,10 +78,10 @@ headModel=FCHeadNet.build(baseModel,testY.shape[1],256)
 
 # place the head FC model on top of the base model -- this will 
 # become the actual model we will train
-
 model = Model(inputs=baseModel.input,outputs=headModel)
 
 print(model.summary())
+plot_model(model, to_file='../plots/model.png')
 
 # loop over all layers in the base model and freeze them so they 
 # will * not* be updated during the training process.
@@ -106,7 +108,7 @@ model.fit_generator(aug.flow(trainX,trainY,batch_size=BATCH_SIZE),
 # evaluate the network after initialization 
 print("[INFO] evaluating after initialization")
 predictions = model.predict(testX, batch_size = BATCH_SIZE)
-print(classification_report(testY.argmax(axis=1),predictions.argmax(axis=1),target_names=classNames))
+print(classification_report(testY.argmax(axis=1),predictions.argmax(axis=1),target_names=lb.classes_))
 
 # now that the head FC layers have been trained/initialized, lets 
 # unfreeze the final set of CONV layers and make them trainable
@@ -133,7 +135,7 @@ model.fit_generator(aug.flow(trainX,trainY,batch_size=BATCH_SIZE),
 # evaluate the network after initialization 
 print("[INFO] evaluating after fine-tuning")
 predictions = model.predict(testX, batch_size = BATCH_SIZE)
-print(classification_report(testY.argmax(axis=1),predictions.argmax(axis=1),target_names=classNames))
+print(classification_report(testY.argmax(axis=1),predictions.argmax(axis=1),target_names=lb.classes_))
 
 #save te model to disk
 print("[INFO] serializing model...")
