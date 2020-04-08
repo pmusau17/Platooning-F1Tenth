@@ -15,3 +15,6 @@ data/
 
 #ignore catkin_workspace
 .catkin_workspace
+
+#Ignore Specific files
+VGG16transfer.hdf5
