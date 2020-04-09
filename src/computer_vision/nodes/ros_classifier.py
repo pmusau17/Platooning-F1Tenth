@@ -33,10 +33,18 @@ class ROS_Classify:
         self.cv_bridge=CvBridge()
         self.image_topic=str(racecar_name)+'/camera/zed/rgb/image_rect_color'
         self.model=load_model(model)
+        print(self.model.layers[0].input_shape)
         #this handles the reshaping
         self.util=ImageUtils()
-        self.height=self.model.layers[0].input_shape[1]
-        self.width=self.model.layers[0].input_shape[2]
+
+        # depends how the model was trained
+        try:
+            self.height=self.model.layers[0].input_shape[1]
+            self.width=self.model.layers[0].input_shape[2]
+        except IndexError as e:
+            self.height=self.model.layers[0].input_shape[0][1]
+            self.width=self.model.layers[0].input_shape[0][2]
+
         self.classes=['left','right','straight','weak_left','weak_right']
         self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
         self.image_sub=rospy.Subscriber(self.image_topic,Image,self.image_callback)
