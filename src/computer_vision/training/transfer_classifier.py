@@ -21,6 +21,7 @@ from keras.optimizers import RMSprop
 from keras.optimizers import SGD
 from keras.applications import VGG16
 from keras.utils import plot_model
+from keras.applications import imagenet_utils   
 
 # layers, model
 from keras.layers import Input
@@ -30,6 +31,7 @@ from keras.models import Model
 import numpy as np 
 import argparse
 import os 
+import cv2 
 
 # construct the argument parser
 ap = argparse.ArgumentParser()
@@ -51,8 +53,16 @@ aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range
 iu=ImageUtils()
 data,labels=iu.load_from_directory(args['dataset'],HEIGHT,WIDTH,verbose=1)
 
+training_images=[]
 #normalize the images
-data=data/255.0
+for img in data:
+    processed_image=imagenet_utils.preprocess_input(img)
+    training_images.append(processed_image)
+
+cv2.imshow("processed_image",training_images[0])
+cv2.waitKey(0)
+exit()
+
 
 #convert the labels from integers to vectors
 lb = LabelBinarizer()
