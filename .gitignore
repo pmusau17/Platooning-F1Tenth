@@ -14,11 +14,7 @@ data/
 *.zip
 
 #ignore catkin_workspace
-<<<<<<< HEAD
 .catkin_workspace
 
 #Ignore Specific files
 VGG16transfer.hdf5
-=======
-.catkin_workspace
->>>>>>> b4ba92e02a9f500be5f2529079fe3b4f93ae928a
