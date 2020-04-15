@@ -53,6 +53,7 @@ aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range
 iu=ImageUtils()
 data,labels=iu.load_from_directory(args['dataset'],HEIGHT,WIDTH,verbose=1)
 
+<<<<<<< HEAD
 
 print("[INFO] Imagenet preprocessing")
 training_images=[]
@@ -64,6 +65,17 @@ for img in np.copy(data):
     if(count % 100 ==0):
         print("Processed {} Images".format(count))
     count +=1
+=======
+training_images=[]
+#normalize the images
+for img in data:
+    processed_image=imagenet_utils.preprocess_input(img)
+    training_images.append(processed_image)
+
+cv2.imshow("processed_image",training_images[0])
+cv2.waitKey(0)
+exit()
+>>>>>>> fd91edd7e3351d059b263da7498c8f3c465dfca1
 
 
 data=np.asarray(training_images)
