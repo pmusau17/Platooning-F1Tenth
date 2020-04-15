@@ -53,17 +53,20 @@ aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range
 iu=ImageUtils()
 data,labels=iu.load_from_directory(args['dataset'],HEIGHT,WIDTH,verbose=1)
 
+
+print("[INFO] Imagenet preprocessing")
 training_images=[]
 #normalize the images
-for img in data:
+count = 1
+for img in np.copy(data):
     processed_image=imagenet_utils.preprocess_input(img)
     training_images.append(processed_image)
+    if(count % 100 ==0):
+        print("Processed {} Images".format(count))
+    count +=1
 
-cv2.imshow("processed_image",training_images[0])
-cv2.waitKey(0)
-exit()
 
-
+data=np.asarray(training_images)
 #convert the labels from integers to vectors
 lb = LabelBinarizer()
 labels=lb.fit_transform(labels)
