@@ -10,4 +10,4 @@ TEST_HDF5 = "../data/hdf5/test.hdf5"
 # define the path to the dataset mean
 # The mean will be used to store the average red, green, blue ouxel intensity across 
 # the tneire (training) dataset
-DATASET_MEAN = "../data/hdf5/f1tenth_mean.json"
+DATASET_MEAN = "../data/means/f1tenth_mean.json"

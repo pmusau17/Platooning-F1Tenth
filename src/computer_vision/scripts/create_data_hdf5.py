@@ -64,6 +64,9 @@ for (dType, paths, labels, outputPath) in datasets:
     print("[INFO] building {}...".format(outputPath))
     writer = HDF5DatasetWriter((len(paths),HEIGHT,WIDTH,3),outputPath)
 
+    if dType == "train":
+        writer.storeClassLabels(le.classes_)
+
 
     # Initialize the progress bar
 
@@ -94,12 +97,11 @@ for (dType, paths, labels, outputPath) in datasets:
     pbar.finish
     writer.close()
 
-    # construct the dictionary of averages, then serialize the means to a JSON file
-
-    print("[INFO] serializing means...")
+# construct the dictionary of averages, then serialize the means to a JSON file
+print("[INFO] serializing means...")
     
-    D = {"R": np.mean(R), "G": np.mean(G),"B":np.mean(B)}
+D = {"R": np.mean(R), "G": np.mean(G),"B":np.mean(B)}
     
-    f = open(config.DATASET_MEAN,'w')
-    f.write(json.dumps(D))
-    f.close()
+f = open(config.DATASET_MEAN,'w')
+f.write(json.dumps(D))
+f.close()
