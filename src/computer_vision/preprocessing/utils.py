@@ -73,4 +73,36 @@ class ImageUtils:
         image=cv2.resize(image,(width,height))
         return image
 
+    # This function will return the image paths and labels from 
+    # a directory
+    def load_imagepaths_and_labels(self,dataset,verbose=0,regression=False):
+        #count to show the user progress
+        count=0
+        # loop over the input images
+        for imagePath in sorted(list(paths.list_images(dataset))):
+            #load the image, pre-process it, and store it in the data list
+            #The directory has the classification label and the image name has the command
+            #EXAMPLE: data/{classification}/{time-stamp}~{command}.jpg
+            
+            #split the path
+            split_path=os.path.split(imagePath)
+            #get the classification from the path name
+            classification= os.path.basename(split_path[0])
+
+            #get the command
+            command=split_path[1].replace('.jpg','').split('~')[1:]
+            #convert it back to the command
+            command=float('.'.join(command))
+
+            self.data.append(imagePath)
+            if(not regression):
+                self.labels.append(classification)
+            else:
+                self.labels.append(command)
+            count+=1
+            if(count%500==0 and verbose):
+                print("[INFO] processed {} images".format(count))
+
+        return self.data,self.labels
+        
     
