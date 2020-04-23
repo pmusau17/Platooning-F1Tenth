@@ -77,7 +77,7 @@ print("[INFO] compiling model...")
 model=MiniVGGNet.build(height=HEIGHT,width=WIDTH,depth=3,classes=CLASSES)
 #number of epochs
 num_epochs=NUM_EPOCHS
-opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
+opt=SGD(lr=0.05,momentum=0.9,nesterov=True)
 model.compile(loss='categorical_crossentropy',optimizer=opt,metrics=['accuracy'])
 
 #save the best performing models
