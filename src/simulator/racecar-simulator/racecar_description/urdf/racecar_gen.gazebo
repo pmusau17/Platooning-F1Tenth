@@ -64,7 +64,7 @@
         <collision>base_link_fixed_joint_lump__contact_link_collision</collision>
       </contact>
       <plugin filename="libgazebo_ros_bumper.so" name="left_arm_fist_plugin">
-        <bumperTopicName>contact_link_contact</bumperTopicName>
+        <bumperTopicName>contact_link_collisions</bumperTopicName>
         <frameName>contact_link</frameName>
       </plugin>
     </sensor>
