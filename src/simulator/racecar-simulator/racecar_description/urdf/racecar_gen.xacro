@@ -238,6 +238,34 @@
   </joint>
 
 
+
+  <!--contact sensor link-->
+  <link name="contact_link">
+  <inertial>
+    <xacro:chassis_inertial_params />
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size="1.0 1.0 0.01"/><!--<box size="0.001 0.001 0.001"/>-->
+    </geometry>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size="1.0 1.0 .01"/>
+      <material name="grey" />
+    </geometry>
+  </collision>
+</link>
+<joint name="contact_joint" type="fixed">
+    <axis xyz="0 0 1"/> <!-- 0 1 0 -->
+    <origin xyz="0.0 0 0.0"/>
+    <parent link="chassis"/>
+    <child link="contact_link"/>
+  </joint>
+
+
   <!-- zed camera -->
   <link name="zed_camera_link">
     <inertial>
