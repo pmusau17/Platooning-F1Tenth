@@ -51,12 +51,12 @@
 <!--contact sensor gazebo-->
 
 <gazebo reference="contact_link">
-  <mu1 value="0.0"/>
+   <!--<mu1 value="0.0"/>
   <mu2 value="0.0"/>
   <kp  value="10000000.0" />
   <kd  value="1.0" />
-  <material>Gazebo/Green</material><!--Gotta change the car color here-->
-
+  <visualize>false</visualize>
+ <material>Gazebo/Green</material>--><!--Gotta change the car color here-->
 
   <sensor name="contact_link_contact_sensor" type="contact">
       <always_on>true</always_on>
