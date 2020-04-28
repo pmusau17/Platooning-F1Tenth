@@ -22,16 +22,25 @@ ap.add_argument("-p","--prefix",type=str,default="image",help="output filename p
 
 args= vars(ap.parse_args())
 
+# If you are going to save the file to disk just know that Keras 
+# loads images in RGB and OpenCV loads things BGR
+img = load_img(args["image"])
+img= img_to_array(img)
+img = np.expand_dims(img,axis=0)
+
 #load the input image, convert it to a Numpy array, and then reshape it to have an extra dimension
 print("[INFO] loading example image...")
-image = cv2.imread(args["image"]).astype("float")/255.0
+image = cv2.imread(args["image"]).astype("float")
 print(image)
-cv2.imshow("original",image)
+cv2.imshow("original",image/255.0)
 cv2.waitKey(0)
+
+image = img_to_array(image)
 image = np.expand_dims(image,axis=0)
 
 #contruct the image generator for data augmentation
 #rescaling makes sure that the image is back to 1/255
+# 
 aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range=[0.7,1.3],rescale=1.0/255.0,fill_mode="nearest")
 total = 0
 
@@ -42,22 +51,25 @@ images=[]
 
 # You can save the images to fie effectively creating synthetic data 
 if(args['output']):
-    imageGen=aug.flow(image,save_to_dir=args["output"],save_prefix=args["prefix"],save_format="jpg",batch_size=1)
+    imageGen=aug.flow(img,save_to_dir=args["output"],save_prefix=args["prefix"],batch_size=1)
 else:
-    imageGen=aug.flow(image,batch_size=1)
+    imageGen=aug.flow(img,batch_size=1)
 
+
+# need to put it back for openCV
+imageGen=aug.flow(image,batch_size=1)
 #loop over examples from the image data augmentation generator
 for image in imageGen:
     # increment the counter
     total +=1
     images.append(image[0])
-    print(image.shape)
+    #print(image.shape)
 
     # if we have reached 10 examples, break from the loop
-    if total == 100:
+    if total == 10:
         break
 
 # visualize the image
 for i in images:
     cv2.imshow(args["image"],i)
-    cv2.waitKey(40)
+    cv2.waitKey(0)
