@@ -5,10 +5,9 @@
   <arg name="world_name" default="track_porto"/>
   <!-- <arg name="world_name" value="lab_track2"/> -->
   <!--<arg name="world_name" value="track_levine"/>-->
-  
-  <!-- <arg name="world_name" value="lab_track2"/> -->
   <arg name="gui" default="true" />
   <arg name="run_camera" default="false"/>
+  <arg name="reset_on_crash" default = "false"/>
 
   <!--flag to enable/disable keyboard-->
   <arg name="enable_keyboard" default="false"/>
@@ -72,6 +71,11 @@
       car_name
   -->
   <node pkg="race" name="keyboard_node_$(arg car_name1)" if="$(arg enable_keyboard)" type="keyboard_gen.py" output="screen" args="$(arg car_name1)"/>
-  
+
+  <!-- Launch node that will publish collisions-->
+
+  <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" if = "$(arg reset_on_crash)" type ="contact_listener_node.py" args="$(arg car_name1) 1"/>
+
+  <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" unless = "$(arg reset_on_crash)" type ="contact_listener_node.py" args="$(arg car_name1)"/>
   
   </launch>

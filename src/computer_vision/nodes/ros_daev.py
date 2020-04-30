@@ -71,10 +71,10 @@ class ROS_Daev:
             msg.steering_angle=pred
         self.pub.publish(msg)
         
-        cv2.imshow("Image fed to network",predict_image[0])
-        print(str(pred))
-        cv2.imshow("Original Image",orig_image)
-        cv2.waitKey(3) 
+        #cv2.imshow("Image fed to network",predict_image[0])
+        #print(str(pred))
+        #cv2.imshow("Original Image",orig_image)
+        #cv2.waitKey(3) 
     
     #define a custom metric for DAEV, accuracy doesn't cut it
     def customAccuracy(self,y_true, y_pred):

@@ -20,6 +20,8 @@ class ContactSubscriber:
 
         self.reset_on_crash = reset_on_crash
 
+        # counter utiized to evaluate how many crashes occured
+        self.count =0 
 
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_world', Empty)
 
@@ -28,7 +30,9 @@ class ContactSubscriber:
     def callback(self,msg):
         states=msg.states
         if(states):
+            self.count+=1
             rospy.logwarn("Collision Occured")
+            rospy.logwarn("Crash Count: {}".format(self.count))
             if(self.reset_on_crash):
                 self.reset_proxy()
 
@@ -48,6 +52,7 @@ if __name__=="__main__":
     if(reset_world):
     # create object 
         cs = ContactSubscriber(racecar_name,reset_on_crash=True)
+        rospy.logwarn("Will Reset On Crash")
     else:
         cs = ContactSubscriber(racecar_name)
 
