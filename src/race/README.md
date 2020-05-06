@@ -10,13 +10,13 @@ This package contains the nodes, launch files, msg files, and infrastructure nee
     To run the node execute the following after the simulation is up and running:
 
     ```bash
-    $  rosrun race contact_listener_node.py /racecar
+    $  rosrun race collision_tracker.py /racecar
     ```
 
     To enable resetting the world run: 
 
      ```bash
-    $  rosrun race contact_listener_node.py /racecar 1
+    $  rosrun race collision_tracker.py /racecar 1
     ```
 
     

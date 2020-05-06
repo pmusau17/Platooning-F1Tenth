@@ -109,9 +109,7 @@ Details can be found in the [Reinforcement Learning](src/rl) package.
 
 If the car crashes or you want to start the experiment again. Simply run:
 
- ```bash
- $ rosrun race reset_world.py
- ```
+
 
 to restart the experiment.
 
@@ -198,3 +196,4 @@ Our team consists of graduate and undergraduate students from Vanderbilt Univers
 * [Diandry Rutayisire](https://www.linkedin.com/in/diandry-rutayisire-298a45153/)
 * [Tim Darrah](https://www.linkedin.com/in/timothydarrah/)
 * [Shreyas Ramakrishna](https://www.linkedin.com/in/shreyasramakrishna/)
+* [Tim Krentz](https://www.linkedin.com/in/tim-krentz-15042585/)

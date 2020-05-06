@@ -74,8 +74,8 @@
 
   <!-- Launch node that will publish collisions-->
 
-  <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" if = "$(arg reset_on_crash)" type ="contact_listener_node.py" args="$(arg car_name1) 1"/>
+  <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" if = "$(arg reset_on_crash)" type ="collision_tracker.py" args="$(arg car_name1) 1"/>
 
-  <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" unless = "$(arg reset_on_crash)" type ="contact_listener_node.py" args="$(arg car_name1)"/>
+  <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" unless = "$(arg reset_on_crash)" type ="collision_tracker.py" args="$(arg car_name1)"/>
   
   </launch>
