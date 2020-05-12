@@ -11,20 +11,23 @@ import csv
 import pdb
 
 
+#get the arguments passed from the launch file
+args = rospy.myargv()[1:]
+
+# get the path to the file containing the waypoints
+waypoint_file=args[0]
+
 # get an instance of RosPack with the default search paths
 rospack = rospkg.RosPack()
 #get the path for this paackage
 package_path=rospack.get_path('a_stars_pure_pursuit')
 
-#filename='/home/musaup/Documents/catkin_ws/src/f110-fall2018-skeletons/labs/wall_following/logs/pure-pursuit-wp-2019-04-07-22-39-51.csv'
-#filename='/home/musaup/Documents/catkin_ws/src/f110-fall2018-skeletons/labs/wall_following/logs/pure-pursuit-wp-2019-04-08-02-28-24.csv'
-filename=package_path+'/waypoints/waypoints_1.csv'
+filename=os.path.sep.join([package_path,'waypoints',waypoint_file])
 with open(filename) as f:
 	path_points = [tuple(line) for line in csv.reader(f)]
 
 topic = 'visualization_marker_array'
 publisher = rospy.Publisher(topic, MarkerArray, queue_size="1")
-
 rospy.init_node('register')
 
 # Visualize every other marker to save on memory and speed

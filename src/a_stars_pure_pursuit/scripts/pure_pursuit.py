@@ -2,7 +2,7 @@
 
 import rospy
 from race.msg import drive_param
-from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point
 import math
 import numpy as np
@@ -14,37 +14,37 @@ import rospkg
 
 class pure_pursuit:
 
-    def __init__(self):
+    def __init__(self,racecar_name,waypoint_file):
 
-        self.LOOKAHEAD_DISTANCE = 0.70#1.70 # meters
+        # initialize class fields 
+        self.racecar_name = racecar_name
+        self.waypoint_file = waypoint_file
+
+        # pure pursuit parameters
+        self.LOOKAHEAD_DISTANCE = 1.70#1.70 # meters
         self.VELOCITY = 3.2 # m/s
         self.goal = 0
         self.read_waypoints()
         self.msg = drive_param()
         self.msg.velocity = 1.5#1.5
+       
 
         # Publisher for 'drive_parameters' (speed and steering angle)
-        self.pub = rospy.Publisher('drive_parameters', drive_param, queue_size=1)
+        self.pub = rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=1)
 
 	#Publisher for the goal point
 	self.goal_pub = rospy.Publisher('/waypoint/goal', Point, queue_size=1)
 
-        rospy.Subscriber("racecar_position_gazebo", PoseStamped, self.callback, queue_size=1)
+        rospy.Subscriber(racecar_name+"odom", Odometry, self.callback, queue_size=1)
 
     # Import waypoints.csv into a list (path_points)
     def read_waypoints(self):
 
-
-        #filename='/home/musaup/Documents/catkin_ws/src/f110-fall2018-skeletons/labs/wall_following/logs/pure-pursuit-wp-2019-04-07-22-39-51.csv'
-        #filename='/home/musaup/Documents/catkin_ws/src/f110-fall2018-skeletons/labs/wall_following/logs/pure-pursuit-wp-2019-04-08-02-28-24.csv'
-        #filename = os.path.join(dirname, '../waypoints/levine-waypoints.csv')
-
-        
         # get an instance of RosPack with the default search paths
         rospack = rospkg.RosPack()
         #get the path for this paackage
         package_path=rospack.get_path('a_stars_pure_pursuit')
-        filename=package_path+'/waypoints/waypoints_1.csv'
+        filename=os.path.sep.join([package_path,'waypoints',waypoint_file])
 
         with open(filename) as f:
             path_points = [tuple(line) for line in csv.reader(f)]
@@ -66,17 +66,17 @@ class pure_pursuit:
     # Runs pure pursuit and publishes velocity and steering angle.
     def callback(self,data):
 
-        qx=data.pose.orientation.x
-        qy=data.pose.orientation.y
-        qz=data.pose.orientation.z
-        qw=data.pose.orientation.w
+        qx=data.pose.pose.orientation.x
+        qy=data.pose.pose.orientation.y
+        qz=data.pose.pose.orientation.z
+        qw=data.pose.pose.orientation.w
 
         quaternion = (qx,qy,qz,qw)
         euler   = euler_from_quaternion(quaternion)
         yaw     = euler[2] 
 
-        x = data.pose.position.x
-        y = data.pose.position.y
+        x = data.pose.pose.position.x
+        y = data.pose.pose.position.y
 
         self.path_points_x = np.array(self.path_points_x)
         self.path_points_y = np.array(self.path_points_y)
@@ -164,7 +164,7 @@ class pure_pursuit:
     def const_speed(self,angle):
         #self.LOOKAHEAD_DISTANCE = 2
         self.msg.angle = angle
-        self.msg.velocity = 1.5#self.VELOCITY
+        self.msg.velocity = 1.0#self.VELOCITY
 
     # find the angle bewtween two vectors    
     def find_angle(self, v1, v2):
@@ -175,7 +175,13 @@ class pure_pursuit:
 
 if __name__ == '__main__':
     rospy.init_node('pure_pursuit')
-    C = pure_pursuit()  
+    #get the arguments passed from the launch file
+    args = rospy.myargv()[1:]
+    # get the racecar name so we know what to subscribe to
+    racecar_name=args[0]
+    # get the path to the file containing the waypoints
+    waypoint_file=args[1]
+    C = pure_pursuit(racecar_name,waypoint_file)  
     r = rospy.Rate(40)
 
     while not rospy.is_shutdown():
