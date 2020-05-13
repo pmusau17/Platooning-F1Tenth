@@ -13,6 +13,9 @@
   <arg name="enable_keyboard" default="false"/>
 
 
+  <!--define rosparams-->
+  <param name="world_name"  value="$(arg world_name)" />
+
 
   <!--launch the world-->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
