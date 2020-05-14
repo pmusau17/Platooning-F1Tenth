@@ -19,7 +19,7 @@ waypoint_file=args[0]
 # get an instance of RosPack with the default search paths
 rospack = rospkg.RosPack()
 #get the path for this paackage
-package_path=rospack.get_path('a_stars_pure_pursuit')
+package_path=rospack.get_path('pure_pursuit')
 
 filename=os.path.sep.join([package_path,'waypoints',waypoint_file])
 with open(filename) as f:

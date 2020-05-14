@@ -23,7 +23,7 @@ class WaypointLogger():
         # get the worldname from the parameter server
         world_name = rospy.get_param("/world_name")
         #get the path for this paackage
-        package_path=rospack.get_path('a_stars_pure_pursuit')
+        package_path=rospack.get_path('pure_pursuit')
         # get the pid to create "unique" filenames
         self.filename=package_path+'/waypoints/{}_{}.csv'.format(world_name,os.getpid())
         self.file = open(self.filename, 'w')
