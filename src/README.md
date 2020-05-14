@@ -12,7 +12,7 @@
 
 **Computer Vision**: Computer Vision ROS package developed by [Patrick Musau](http://pmusau17.github.io/)
 
-**Pure Pursuit**: Implementation of Pure Pursuit Path Tracking Algorithm developed by [Diandry Rutayisire](https://www.linkedin.com/in/diandry-rutayisire-298a45153/) and [Patrick Musau](http://pmusau17.github.io/)
+**Pure Pursuit**: Implementation of Pure Pursuit Path Tracking Algorithm by [Diandry Rutayisire](https://www.linkedin.com/in/diandry-rutayisire-298a45153/) and [Patrick Musau](http://pmusau17.github.io/)
 
 **System**: ROS packages deployed on the physical [F1Tenth](https://f1tenth.org/build.html) Hardware.
     
