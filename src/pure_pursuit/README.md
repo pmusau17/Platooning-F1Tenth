@@ -11,8 +11,19 @@ towards that point. The algorithm has a single tunable parameter called the look
 
 To collect waypoints 
 
+#### Available Worlds 
+
+- track_barca: Large racetrack usually used to evaluate efficacy of algorithms developed on racetracks
+- track_levine: Racetrack inspired by the Levine building at UPenn
+- track_porto: Simple racetrack with small and wide turns
+- racecar_walker: Beautiful track with multiple paths,
+- racecar_cones: Empty world with safety cones spaced evenly.
+- racecar_tunnel: World with car located in a tunnel with high walls
+- racecar_parking_1: Racecar world for you to test your paralle parking skills
+- lab_track2: Simple racetrack modeled after laboratory space at Vanderbilt University
 
 Terminal 1:
+
 ``` 
 roslaunch race f1_tenth_devel.launch enable_keyboard:=true
 ```

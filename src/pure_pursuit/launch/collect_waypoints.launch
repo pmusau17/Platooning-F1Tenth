@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!--world name-->
+	<arg name="world_name" default="track_porto"/>
+	<arg name="car_name" default="racecar"/>
+	
+	<include file="$(find race)/launch/f1_tenth_devel.launch">
+		<arg name="enable_keyboard" value="true"/>
+		<arg name="world_name" value="$(arg world_name)"/>
+	</include>
+  	
+    <!--launch pure pursuit node-->
+	<node pkg="pure_pursuit" type="waypoint_logger_pure_pursuit.py" name="pure_pursuit_node" args="$(arg car_name)"/>
+
+
+</launch>

@@ -28,7 +28,6 @@ class pure_pursuit:
         self.distance_from_rear_wheel_to_front_wheel = 0.5
 
         self.VELOCITY = 3.2 # m/s
-        self.goal = 0
         self.read_waypoints()
        
         # Publisher for 'drive_parameters' (speed and steering angle)
@@ -88,38 +87,6 @@ class pure_pursuit:
         markerArray.markers.append(marker)
         publisher.publish(markerArray)
 
-
-    def visualize_considered_points(self,pts,r=0.0,g=0.0,b=1.0):
-
-        # create a marker array
-        markerArray = MarkerArray()
-        
-        idx = np.random.randint(0,len(pts))
-        pt = pts[idx]
-
-        x = float(pt[0])
-        y = float(pt[1])            
-        marker = Marker()
-        marker.header.frame_id = "/map"
-        marker.type = marker.SPHERE
-        marker.action = marker.ADD
-        marker.scale.x = 0.1
-        marker.scale.y = 0.1
-        marker.scale.z = 0.1
-        marker.color.a = 1.0
-        marker.color.r = r
-        marker.color.g = g
-        marker.color.b = b
-        marker.pose.orientation.w = 1.0
-        marker.pose.position.x = x
-        marker.pose.position.y = y
-        marker.pose.position.z = 0
-        markerArray.markers.append(marker)
-            
-
-        self.considered_pub.publish(markerArray)
-
-    
 
     # Input data is PoseStamped message from topic racecar_name/odom.
     # Runs pure pursuit and publishes velocity and steering angle.
