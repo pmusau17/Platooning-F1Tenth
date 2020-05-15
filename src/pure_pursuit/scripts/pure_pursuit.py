@@ -54,7 +54,6 @@ class pure_pursuit:
         # Turn path_points into a list of floats to eliminate the need for casts in the code below.
         self.path_points_x   = np.asarray([float(point[0]) for point in path_points])
         self.path_points_y   = np.asarray([float(point[1]) for point in path_points])
-        self.path_points_w   = np.asarray([float(point[2]) for point in path_points])
 
         # list of xy pts 
         self.xy_points = np.hstack((self.path_points_x.reshape((-1,1)),self.path_points_y.reshape((-1,1)))).astype('double')

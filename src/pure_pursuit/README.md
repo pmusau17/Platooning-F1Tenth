@@ -9,7 +9,20 @@ towards that point. The algorithm has a single tunable parameter called the look
 
 ### Waypoints 
 
-To collect waypoints 
+To collect waypoints you must specify two things:  The world name and the name of the car launched in the simulation. The available world names are listed below. 
+As an example to collect waypoints in the track_porto world run the following and then drive the car manually with the keyboard:
+
+Terminal 1:
+
+``` 
+roslaunch race f1_tenth_devel.launch world_name:=track_porto enable_keyboard:=true
+```
+
+
+Terminal 2: 
+``` 
+rosrun pure_pursuit waypoint_logger_pure_pursuit.py /racecar
+```
 
 #### Available Worlds 
 
@@ -22,17 +35,7 @@ To collect waypoints
 - racecar_parking_1: Racecar world for you to test your paralle parking skills
 - lab_track2: Simple racetrack modeled after laboratory space at Vanderbilt University
 
-Terminal 1:
 
-``` 
-roslaunch race f1_tenth_devel.launch enable_keyboard:=true
-```
-
-
-Terminal 2: 
-``` 
-rosrun pure_pursuit waypoint_logger_pure_pursuit.py /racecar
-```
 
 ### Running Experiments
 
