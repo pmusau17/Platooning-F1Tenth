@@ -2,6 +2,7 @@
 __pycache__
 build/
 devel/
+datasets/
 data/
 
 #ignore jupyter checkpoints
