@@ -199,6 +199,6 @@ class PotentialFieldController(object):
 
 if __name__ == '__main__':
     rospy.init_node('potential_field_control', anonymous=True)
-    extendObj = PotentialFieldController()
+    extendObj = PotentialFieldController(max_speed=1.0)
     rospy.Subscriber('scan', LaserScan, extendObj.lidar_callback)
     rospy.spin()

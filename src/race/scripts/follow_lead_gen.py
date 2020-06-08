@@ -2,8 +2,10 @@
 
 import rospy
 from race.msg import drive_param
-from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point
+from visualization_msgs.msg import Marker
+from visualization_msgs.msg import MarkerArray
 from sensor_msgs.msg import LaserScan
 import math
 import numpy as np
@@ -20,20 +22,20 @@ class follow_lead_pure_pursuit:
 
        
         self.goal = 0
-
-        #self.read_waypoints()
         self.msg = drive_param()
-        self.msg.velocity = 1.5#1.5
+        self.msg.velocity = 1.0
 
         # Publisher for 'drive_parameters' (speed and steering angle)
         self.pub = rospy.Publisher(ego_car+'/drive_parameters', drive_param, queue_size=1)
         
+        # Debugging Visualization 
+        self.goal_pub = rospy.Publisher(ego_car+'/goal_point', MarkerArray, queue_size="1")
 
 
         #subscribe to the first car's position and the ego position and you need to synchronize the messages to calculate the distance
         #between them 
-        self.lead_car_position=Subscriber(lead_car+"_position_gazebo", PoseStamped)
-        self.ego_position=Subscriber(ego_car+"_position_gazebo", PoseStamped)
+        self.lead_car_position=Subscriber(lead_car+"/odom", Odometry)
+        self.ego_position=Subscriber(ego_car+"/odom", Odometry)
         self.lidar_ego=rospy.Subscriber(ego_car+"/scan",LaserScan,self.scan_callback)
         self.scan_msg=None
         
@@ -44,18 +46,16 @@ class follow_lead_pure_pursuit:
         self.window_size=100
         self.window_index=0
 
-
         #position_window
-        self.position_window=np.zeros([self.window_size,3])
+        self.position_window=np.zeros([self.window_size,2])
 
         #prior error for PD controller
         self.prior_error=0
-
         #create an array that will store the distances 
         self.dist_arr=np.zeros(self.window_size)
 
         #tuning parameter for the pure_pursuit
-        self.LOOKAHEAD_DISTANCE = 0.70#1.70 # meters
+        self.LOOKAHEAD_DISTANCE = 0.70
 
         #platoon_distance
         self.platoon_distance=1.0
@@ -68,30 +68,29 @@ class follow_lead_pure_pursuit:
     
     #subscriber that synchronizes the vehicle distances
     def  sync_callback(self,lead,ego):
-        #print("lead:",lead)
-
         #we don't want a massive amount of points from which to choose a goal point so this allows us to rewrite points as we move on
         proper_index=self.window_index%self.window_size
-        
+    
         #store this index so that we can get this point if there's no better option
         self.proper_index=proper_index
 
-        
         #we also need to store the orientation for pure pursuit so perform this calculation
-        lead_quaternion=lead.pose.orientation
+        lead_quaternion=lead.pose.pose.orientation
         lead_quat=(lead_quaternion.x,lead_quaternion.y,lead_quaternion.z,lead_quaternion.w)
         lead_yaw=euler_from_quaternion(lead_quat)[2]
         #record the x,y, yaw values into the position window
-        self.position_window[proper_index]=np.asarray([lead.pose.position.x,lead.pose.position.y,lead_yaw])
+        #self.position_window[proper_index]=np.asarray([lead.pose.position.x,lead.pose.position.y,lead_yaw])
+        self.position_window[proper_index]=np.asarray([lead.pose.pose.position.x,lead.pose.pose.position.y])
         self.window_index+=1
 
-        distance=self.compute_distance(lead.pose.position,ego.pose.position)
-        self.pure_pursuit_following(lead.pose,ego.pose,distance)
+        distance=self.compute_distance(lead.pose.pose.position,ego.pose.pose.position)
+        self.pure_pursuit_following(lead.pose.pose,ego.pose.pose,distance)
 
     def scan_callback(self,data):
         self.scan_msg=data
 
     #compute the euclidean distance between them
+    # Technically this isn't correct.
     def compute_distance(self,pos1,pos2):
 
         position1=np.asarray([pos1.x,pos1.y])
@@ -110,6 +109,35 @@ class follow_lead_pure_pursuit:
         cosang = np.dot(v1, v2)
         sinang = la.norm(np.cross(v1, v2))
         return np.arctan2(sinang, cosang)
+
+    # Visualize the points for debugging 
+    def visualize_point(self,pts,publisher,frame='/map',r=1.0,g=0.0,b=1.0):
+        # create a marker array
+        markerArray = MarkerArray()
+
+        idx = np.random.randint(0,len(pts))
+        pt = pts[idx]
+
+        x = float(pt[0])
+        y = float(pt[1])
+		
+        marker = Marker()
+        marker.header.frame_id = frame
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale.x = 0.2
+        marker.scale.y = 0.2
+        marker.scale.z = 0.2
+        marker.color.a = 1.0
+        marker.color.r = r
+        marker.color.g = g
+        marker.color.b = b
+        marker.pose.orientation.w = 1.0
+        marker.pose.position.x = x
+        marker.pose.position.y = y
+        marker.pose.position.z = 0
+        markerArray.markers.append(marker)
+        publisher.publish(markerArray)
     
 
     def pure_pursuit_following(self,lead_position,ego_position,distance):
@@ -124,61 +152,53 @@ class follow_lead_pure_pursuit:
 
         x = ego_position.position.x
         y = ego_position.position.y
+        
 
-        #print("lead:",(lead_position.position.x,lead_position.position.y),"ego:",(x,y))
+        ## finding the distance of each way point from the current position 
+        curr_pos= np.asarray([x,y]).reshape((1,2))
+        dist_arr = np.linalg.norm(self.position_window-curr_pos,axis=-1)
 
-        #choose the goal point to be the closest point of where the lead car has been
-        for i in range(self.window_size):
-            self.dist_arr[i] = self.dist((self.position_window[i][0],self.position_window[i][1]),(x,y))
+        ##finding those points which are less than the look ahead distance (will be behind and ahead of the vehicle)
+        goal_arr = np.where((dist_arr > self.LOOKAHEAD_DISTANCE) & (dist_arr<self.LOOKAHEAD_DISTANCE+0.3))[0]
+
+        # finding the goal point which is within the goal points 
+        pts = self.position_window[goal_arr]
 
 
-
-        goal_arr = np.where((self.dist_arr < self.LOOKAHEAD_DISTANCE+0.1)&(self.dist_arr > self.LOOKAHEAD_DISTANCE-0.1))[0]
-
-        ##finding the goal point which is the last in the set of points less than the lookahead distance
-        ##if the closest points array could not be formed, then the point which is closest to the current position is the goal. 
-        if len(goal_arr)==0:
-            goal=self.proper_index
-            print("No goal")
-        goal=self.proper_index
-
-        for idx in goal_arr:
-            #line from the point position to the car position
-            v1 = [self.position_window[idx][0]-x , self.position_window[idx][1]-y]
+        # get all points in front of the car, using the orientation 
+        # and the angle between the vectors
+        pts_infrontofcar=[]
+        for idx in range(len(pts)): 
+            v1 = pts[idx] - curr_pos
             #since the euler was specified in the order x,y,z the angle is wrt to x axis
             v2 = [np.cos(yaw), np.sin(yaw)]
-            #find the angle between these two vectors NOTE:These are in world coordinates
-            temp_angle = self.find_angle(v1,v2)
-            if abs(temp_angle) < np.pi/2:
-                goal = idx
-                # print(self.goal)
-                break
 
+            angle= self.find_angle(v1,v2)
+            if angle < np.pi/2:
+                pts_infrontofcar.append(pts[idx])
 
-        #goal_point
-        goal_point=self.position_window[goal]
-        ##Transforming the goal point into the vehicle coordinate frame (This come straight from the paper)
+        pts_infrontofcar =np.asarray(pts_infrontofcar)
 
-        gvcx = goal_point[0] - x
-        gvcy = goal_point[1] - y 
-        goal_x_veh_coord = gvcx*np.cos(yaw) + gvcy*np.sin(yaw)
-        goal_y_veh_coord = gvcy*np.cos(yaw) - gvcx*np.sin(yaw)
+        # compute new distances
+        dist_arr = np.linalg.norm(pts_infrontofcar-curr_pos,axis=-1)- self.LOOKAHEAD_DISTANCE
+        
+        # get the point closest to the lookahead distance
+        idx = np.argmin(dist_arr)
 
-        #print(goal_x_veh_coord, goal_y_veh_coord)
+        # goal point 
+        goal_point = pts_infrontofcar[idx]
+        self.visualize_point([goal_point],self.goal_pub)
 
-        # math: find the curvature and the angle 
+        # transform it into the vehicle coordinates
+        v1 = (goal_point - curr_pos)[0].astype('double')
+        xgv = (v1[0] * np.cos(yaw)) + (v1[1] * np.sin(yaw))
+        ygv = (-v1[0] * np.sin(yaw)) + (v1[1] * np.cos(yaw))
 
-
-        alpha = goal_point[2] - (yaw)
-        k = 2 * math.sin(alpha)/distance
-        angle_i = math.atan(k*0.4)
-
-        angle = angle_i*2
-        angle = np.clip(angle, -0.4189, 0.4189) # 0.4189 radians = 24 degrees because car can only turn 24 degrees max
+        # calculate the steering angle
+        angle = math.atan2(ygv,xgv)
         self.const_speed(angle,distance)
 
 
-    
     #safey function for turning, if it rounds the corner first this will be used later
     def adjust_turning_for_safety(self,left_distances,right_distances,angle):
         min_left=min(left_distances)
@@ -217,9 +237,6 @@ class follow_lead_pure_pursuit:
             #distance_error
             error=distance-self.platoon_distance
 
-
-
-
             #compute the previous error
             derivative_term=error-self.prior_error
 
@@ -236,7 +253,7 @@ class follow_lead_pure_pursuit:
             desired_speed=np.clip(desired_speed,0,1.5)
 
             self.msg.angle = angle
-            self.msg.velocity = desired_speed#self.VELOCITY
+            self.msg.velocity = desired_speed
             self.pub.publish(self.msg)
 
 

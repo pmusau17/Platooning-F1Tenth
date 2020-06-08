@@ -2,51 +2,48 @@
 <launch>
 
 
+
+<!--define arguments
+  - the first part defines the namespaces for the cars
+  - whether or not to launch the keyboard
+  - the world name
+-->
+
+<arg name='car_name' value='racecar'/>
+<arg name='car_name2' value='racecar2'/>
+<arg name='car_name3' value='racecar3'/>
+<arg name='enable_keyboard' default='false'/>
+<arg name='world_name' default='track_porto'/> 
+<arg name='number_of_cars' default='2'/>
+
+
 <!--uncomment for three car experiments-->
 
-<!--  This is the main launch file that launches the world, plugins, controllers 
-  <include file="$(find racecar_gazebo)/launch/many_car.launch">
-    <arg name="world_name" value="track_porto"/>
+<!--  This is the main launch file that launches the world, plugins, controllers -->
+  <include file="$(find racecar_gazebo)/launch/many_car.launch" if = "$(eval arg('number_of_cars') ==3)">
+      <arg name="world_name" value="track_porto"/>
   </include>
   
-  <arg name='number_of_cars' value='3'/>-->
 
 
-  <!----><include file="$(find racecar_gazebo)/launch/two_car.launch">
-    <arg name="world_name" value="track_porto"/>
+  
+  <include file="$(find racecar_gazebo)/launch/two_car.launch" if = "$(eval arg('number_of_cars') ==2)" >
+    <arg name="world_name" value="$(arg world_name)"/>
   </include>
-  <arg name='number_of_cars' value='2'/>
+  
 
   <!--Launch the nodes for the disparity extender NOTE: THESE NAMES SHOULD CORRESPOND TO THOSE LAUNCHED IN many_car.launch-->
-  
-  <arg name='car_name' value='racecar'/>
-  <arg name='car_name2' value='racecar2'/>
-  <arg name='car_name3' value='racecar3'/>
-
-  <!--number of cars-->
   
 
   <!--test of running a keyboard_node
       Additionally you can run a node from the command line via rosrun race keyboard_gen.py racecar2 with the appropriate
       car_name
   -->
-  <node pkg="race" name="keyboard_node_$(arg car_name)" type="keyboard_gen.py" output="screen" args="$(arg car_name)"/>
+  <node pkg="race" name="keyboard_node_$(arg car_name)" type="keyboard_gen.py" output="screen" args="$(arg car_name)" if = "$(arg enable_keyboard)"/>
 
 
-  <!--These nodes subscribe to the position information given by gazebo so that we can adequately navigate using pure_pursuit-->
-  <node pkg='a_stars_pure_pursuit' name='$(arg car_name)_position' type='remap_gazebo_pose_gen.py' args='$(arg car_name) $(arg number_of_cars)'/>
-  <node pkg='a_stars_pure_pursuit' name='$(arg car_name2)_position' type='remap_gazebo_pose_gen.py' args='$(arg car_name2) $(arg number_of_cars)'/>
-  <node pkg='a_stars_pure_pursuit' name='$(arg car_name3)_position' type='remap_gazebo_pose_gen.py' args='$(arg car_name3) $(arg number_of_cars)'  if="$(eval number_of_cars == '3')"/>
-
-  <!--Launch the nodes for the disparity extender
+  <!--Launch the visualizitation rviz-->
   <node type="rviz" name="rviz" pkg="rviz" args="-d $(find race)/cfg/multicar.rviz"/>
 
-
-  <node pkg="race" name="disparity_extender2" type="follow_lead.py" output="screen"/>-->
-  
-
-  <!-- Launch the nodes that know the positions of the car, We can generalize this later but right now these are outside nodes
-  <node pkg='a_stars_pure_pursuit' name='racecar_1_position' type='remap_gazebo_pose.py'/>
-  <node pkg='a_stars_pure_pursuit' name='racecar_2_position' type='remap_gazebo_pose2.py'/>-->
 
 </launch>
