@@ -91,7 +91,63 @@ If you get the error: ImportError: No module named catkin_pkg.packages and you a
 
 Changing the number of cars can be done in the [multi_parametrizeable.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/multi_parametrizeable.launch) at the top of the file. You can experiment with two or three car experiments. Beyond that Gazebo operates painfully slow. 
 
+To experiment with two or three cars, pass the argument number_of_cars to the multi_paramterizable launch file as shown below:
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=2
+```
+
+or 
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=3
+```
+
+At the moment, the launch files are designed to use the track_porto world file. However you can change this in the launch files by editing the world_name parameter.
+
 For single car experiments you can change the track by editing the world_name parameter in [f1_tenth_devel.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/f1_tenth_devel.launch) at the top of the file.
+
+# Running the Experiments manually. 
+If you would like to run the platooning experiments without the launch files. You can execute the following commands in seperate terminals. 
+
+Terminal 1:
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=2
+```
+
+or 
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=3
+```
+
+Terminal 2:
+
+The lead car will use whatever driving algorithm you select to navigate the track. In this case we utilized the disparity extender. 
+
+``` 
+$ rosrun race disparity_extender_vanderbilt.py
+```
+Terminal 3:
+
+The syntax for running the following algorithm is the following:
+
+``` 
+$ rosrun race follow_lead_gen.py (lead_car name) (ego car name)
+```
+
+Example: 
+
+``` 
+$ rosrun race follow_lead_gen.py racecar racecar2
+```
+
+Terminal 4:
+
+``` 
+$ rosrun race follow_lead_gen.py racecar2 racecar3
+```
 
 # Computer Vision <a name="ComputerVision"></a>
 
