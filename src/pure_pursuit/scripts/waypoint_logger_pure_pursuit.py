@@ -28,13 +28,22 @@ class WaypointLogger():
         self.filename=package_path+'/waypoints/{}_{}.csv'.format(world_name,os.getpid())
         self.file = open(self.filename, 'w')
 
+        self.waypoints=[[0,0]]
+
     def save_waypoint(self,data):
-        print("x: {}, y: {}".format(data.pose.pose.position.x,data.pose.pose.position.y))
-        self.file.write('%f, %f\n' % (data.pose.pose.position.x,
+        pt = np.asarray([[data.pose.pose.position.x,data.pose.pose.position.y]])
+        dist_arr = np.linalg.norm(np.asarray(self.waypoints)-pt,axis=-1)
+        
+        min_dist= np.min(dist_arr)
+        if min_dist>0.14142135623730953:
+            self.waypoints.append([data.pose.pose.position.x,data.pose.pose.position.y])
+         
+            print("x: {}, y: {}".format(data.pose.pose.position.x,data.pose.pose.position.y))
+            self.file.write('%f, %f\n' % (data.pose.pose.position.x,
                                         data.pose.pose.position.y))
 
     def shutdown(self):
-        self.file.close()
+        #self.file.close()
         print('Goodbye')
  
     def listener(self):
