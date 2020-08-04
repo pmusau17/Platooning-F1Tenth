@@ -35,6 +35,8 @@ class ROS_Classify:
         self.model=load_model(model)
         print(self.model.layers[0].input_shape)
         #this handles the reshaping
+
+        self.count = 0
         self.util=ImageUtils()
 
         # depends how the model was trained
@@ -78,8 +80,10 @@ class ROS_Classify:
         predict_image=np.expand_dims(cv_image, axis=0)
         #make the prediction
         pred=self.model.predict(predict_image)
+        self.count+=1
         #publish the actuation command
-        self.send_actuation_command(pred)
+        if(self.count>20):
+            self.send_actuation_command(pred)
 
         #uncomment the following to display the image classification
         #cv2.imshow(self.classes[pred[0].argmax()],predict_image[0])
@@ -96,14 +100,14 @@ class ROS_Classify:
         #create the drive param message
         msg = drive_param()
         msg.angle = 0.0
-        msg.velocity = 1.0
+        msg.velocity = 1.2
         #get the label
         label=self.classes[pred[0].argmax()]
 
         if (label=="left"):
-            msg.angle=0.4108652353
+            msg.angle=0.5108652353
         elif (label=="right"):
-            msg.angle=-0.4108652353
+            msg.angle=-0.5108652353
         elif (label=="straight"):
             msg.angle=0.0
         elif (label=="weak_left"):
