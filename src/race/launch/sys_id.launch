@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <!--launch the world-->
+  <include file="$(find race)/launch/f1_tenth_devel.launch">
+    <!--<arg name="world_name" value="$(find racecar_gazebo)/worlds/$(arg world_name).world"/>
+    <arg name="gui" value="$(arg gui)"/>-->
+  </include>
+
+  <node pkg="race" name="sysid" type="gen_sysid_data.py" output="screen"/> 
+
+  <!--launch the controller -->
+  <node pkg="race" name="disparity_extender" type="disparity_extender_vanderbilt.py" args="racecar" output="log"/> 
+
+
+  
+  <!--<arg name="model_file" value='minivgg_1.hdf5'/>
+  <node pkg="computer_vision" name="end_to_end" type="ros_classifier.py" args="racecar $(find computer_vision)/models/$(arg model_file)" output="screen"/>-->
+
+  
+  
+</launch>
