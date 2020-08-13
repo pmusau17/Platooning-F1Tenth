@@ -83,10 +83,10 @@ class genSysIDData:
             time = 0 
         else:
             time = rospy.Time.now()- self.startTime
-            time = time.to_sec()
+            time = np.round(time.to_sec(),decimals=2)
         self.count+=1
 
-        print("x:",x,"y:",y,"theta:",rpy[2],"speed:",speed,"u:",u,"delta:",delta,"time:",time)
+        print("x:",x,"y:",y,"speed:",speed,"theta:",rpy[2],"u:",u,"delta:",delta,"time:",time)
         self.file.write('%f, %f, %f, %f, %f, %f, %f \n' % (time,x,y,speed,rpy[2],u,delta))
     def shutdown(self):
         self.file.close()
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     
     C = genSysIDData()
     atexit.register(C.shutdown)
-    r = rospy.Rate(40)
+    r = rospy.Rate(80)
 
     while not rospy.is_shutdown():
         r.sleep()

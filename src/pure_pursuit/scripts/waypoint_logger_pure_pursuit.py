@@ -43,7 +43,7 @@ class WaypointLogger():
                                         data.pose.pose.position.y))
 
     def shutdown(self):
-        #self.file.close()
+        self.file.close()
         print('Goodbye')
  
     def listener(self):
