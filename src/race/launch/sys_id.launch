@@ -5,14 +5,19 @@
   <include file="$(find race)/launch/f1_tenth_devel.launch">
     <!--<arg name="world_name" value="$(find racecar_gazebo)/worlds/$(arg world_name).world"/>
     <arg name="gui" value="$(arg gui)"/>-->
+    <arg name="world_name" value="track_barca"/>
   </include>
 
-  <node pkg="race" name="sysid" type="gen_sysid_data.py" output="screen"/> 
+  <arg name="car_name" default="racecar"/>
+  <arg name="csv_filename" default="track_barca_4676.csv"/>
 
-  <!--launch the controller -->
-  <node pkg="race" name="disparity_extender" type="disparity_extender_vanderbilt.py" args="racecar" output="log"/> 
+  <node pkg="race" name="sysid" type="gen_sysid_data.py" output="screen"/>
 
+  <!--launch the controller 
+  <node pkg="race" name="disparity_extender" type="disparity_extender_vanderbilt.py" args="racecar" output="log"/> -->
 
+ <!--launch pure pursuit node-->
+<node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_node" args="$(arg car_name) $(arg csv_filename)"/>
   
   <!--<arg name="model_file" value='minivgg_1.hdf5'/>
   <node pkg="computer_vision" name="end_to_end" type="ros_classifier.py" args="racecar $(find computer_vision)/models/$(arg model_file)" output="screen"/>-->

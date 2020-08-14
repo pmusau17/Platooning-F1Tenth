@@ -149,27 +149,34 @@ class pure_pursuit:
         # calculate the steering angle
         angle = math.atan2(ygv,xgv)
         self.const_speed(angle)
+        #self.set_speed(angle)
    
     # USE THIS FUNCTION IF CHANGEABLE SPEED IS NEEDED
     def set_speed(self,angle):
 
         msg = drive_param()
         
-        if (abs(angle)>0.2018):
-
-            self.LOOKAHEAD_DISTANCE = 1.2
-            msg.angle = angle
-
-            if msg.velocity - 1.5 >= 0.5:
-                msg.velocity -= 0.5#0.7
-
+        angle = abs(angle)
+        if(angle <0.01):
+            speed = 3.0#11.5
+        elif(angle<0.0336332):
+            speed = 2.7#11.1
+        elif(angle < 0.0872665):
+            speed = 2.4#7.6
+        elif(angle<0.1309):
+            speed = 2.3#6.5 
+        elif(angle < 0.174533):
+            speed = 2.2#6.0
+        elif(angle < 0.261799):
+            speed = 2.1#5.5
+        elif(angle < 0.349066):
+            speed = 1.5#3.2
+        elif(angle < 0.436332):
+            speed = 1.3#5.1
         else:
-            self.LOOKAHEAD_DISTANCE = 1.2
-            msg.angle = angle
-
-            if self.VELOCITY - msg.velocity > 0.2:
-                msg.velocity += 0.2
-        print(angle,msg.velocity)
+            print("more than 25 degrees",angle)
+            speed = 1.0
+        msg.velocity = speed
         msg.header.stamp = rospy.Time.now()
         self.pub.publish(msg)
 
@@ -179,7 +186,7 @@ class pure_pursuit:
         msg = drive_param()
         msg.header.stamp = rospy.Time.now()
         msg.angle = angle
-        msg.velocity = 0.5
+        msg.velocity = np.random.uniform(0.5,1.0)
         self.pub.publish(msg)
 
     # find the angle bewtween two vectors    

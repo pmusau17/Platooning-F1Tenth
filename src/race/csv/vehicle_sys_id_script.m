@@ -1,5 +1,5 @@
 % load the data
-T = readtable('data_29749.csv');
+T = readtable('data_27180.csv');
 
 % The order of the data (time,x,y,speed,theta,u,delta)
 time = T{:,1};
@@ -14,11 +14,11 @@ delta = T{:,7};
 
 % create the input and output matrices
 
-output = {x(1:300),y(1:300),speed(1:300)};
+output = {x,y,speed};
 output = cell2mat(output);
 
 
-input = {u(1:300),delta(1:300)};
+input = {u,delta};
 input = cell2mat(input);
 
 % Create iddata object
@@ -76,7 +76,7 @@ setpar(nonlinear_model,'Fixed',{false, false,false,true,true});
 % Do the estimation 
 opt = nlgreyestOptions;
 opt.Display = 'Full';
-opt.SearchOptions.FunctionTolerance = 1e-15;
+opt.SearchOptions.FunctionTolerance = 1e-5;
 opt.SearchOptions.MaxIterations = 10000;
 nonlinear_model = nlgreyest(data,nonlinear_model,opt);
 
