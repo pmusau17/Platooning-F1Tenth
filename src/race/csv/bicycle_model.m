@@ -14,6 +14,7 @@ function [dx,y] = bicycle_model(t,x,u,ca,cm,ch,lf,lr,varargin)
 y(1) = x(1);
 y(2) = x(2);
 y(3) = x(3);
+y(4) = wrapToPi(x(4));
 
 dx(1) = x(3)* cos(x(4));
 dx(2) = x(3)* sin(x(4));

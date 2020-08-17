@@ -5,7 +5,7 @@ from race.msg import drive_param
 
 import sys, select, termios, tty
 
-pub = rospy.Publisher('drive_parameters', drive_param, queue_size=10)
+pub = rospy.Publisher('racecar/drive_parameters', drive_param, queue_size=10)
 
 keyBindings = {
   'w':(1,0),
