@@ -9,7 +9,7 @@ ylabel('y')
 title("Position of Vehicle")
 
 figure();
-plot(t,y(:,4));
+plot(t,wrapToPi(y(:,4)));
 xlabel('t') 
 ylabel('theta') 
 title("heading vehicle")

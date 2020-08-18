@@ -15,9 +15,10 @@ y(1) = x(1);
 y(2) = x(2);
 y(3) = x(3);
 y(4) = wrapToPi(x(4));
+theta = wrapToPi(x(4));
 
-dx(1) = x(3)* cos(x(4));
-dx(2) = x(3)* sin(x(4));
+dx(1) = x(3)* cos(theta);
+dx(2) = x(3)* sin(theta);
 dx(3) = -ca *x(3) + (ca*cm)*(u(1)-ch);
 dx(4) = (x(3)/(lf+lr))*tan(u(2));
 end 
