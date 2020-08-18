@@ -51,7 +51,7 @@ u = T{:,6};
 delta = T{:,7};
 
 figure();
-plot(time,theta);
+plot(time(157:400),theta(157:400));
 xlabel('t') 
 ylabel('theta') 
 title("vehicle heading racecar_walker clockwise")

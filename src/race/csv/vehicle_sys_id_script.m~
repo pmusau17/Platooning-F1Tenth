@@ -1,5 +1,5 @@
 % load the data
-T = readtable('racecar_walker_clockwise_1.5.csv');
+T = readtable('racecar_walker_clockwise_1.0.csv');
 
 % boolean to enable plotting 
 ENABLE_PLOTS = false;
@@ -7,11 +7,11 @@ ENABLE_PLOTS = false;
 % The order of the data (time,x,y,speed,theta,u,delta)
 time = T{:,1};
 x = T{:,2}(157:400);
-y = T{:,3}(157:400);
-speed = T{:,4}(157:400);
-theta = T{:,5}(157:400);
-u = T{:,6}(157:400);
-delta = T{:,7}(157:400);
+y = T{:,3};
+speed = T{:,4};
+theta = T{:,5};
+u = T{:,6};
+delta = T{:,7};
 
 % create the input and output matrices
 
@@ -88,7 +88,7 @@ setpar(nonlinear_model,'Fixed',{false, false,false,true,true});
 opt = nlgreyestOptions;
 opt.Display = 'Full';
 opt.SearchOptions.FunctionTolerance = 1e-10;
-opt.SearchOptions.MaxIterations = 500;
+opt.SearchOptions.MaxIterations = 5;
 nonlinear_model = nlgreyest(data,nonlinear_model,opt);
 
 % get the parameters

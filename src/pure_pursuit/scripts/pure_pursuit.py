@@ -22,7 +22,7 @@ class pure_pursuit:
         self.waypoint_file = waypoint_file
 
         # pure pursuit parameters
-        self.LOOKAHEAD_DISTANCE = 1.5#1.70 # meters
+        self.LOOKAHEAD_DISTANCE = 1.1#1.70 # meters
         
         # Distance from the 
         self.distance_from_rear_wheel_to_front_wheel = 0.5
@@ -186,7 +186,7 @@ class pure_pursuit:
         msg = drive_param()
         msg.header.stamp = rospy.Time.now()
         msg.angle = angle
-        msg.velocity = np.random.uniform(0.5,1.0)
+        msg.velocity = 1.0
         self.pub.publish(msg)
 
     # find the angle bewtween two vectors    
@@ -205,7 +205,6 @@ if __name__ == '__main__':
     # get the path to the file containing the waypoints
     waypoint_file=args[1]
     C = pure_pursuit(racecar_name,waypoint_file)  
-    r = rospy.Rate(40)
 
-    while not rospy.is_shutdown():
-        r.sleep()
+    # spin
+    rospy.spin()
