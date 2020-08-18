@@ -30,7 +30,6 @@ class AnalyzeData:
     '''
 
     def __init__(self,racecar_name='racecar',vesc="vesc"):
-        r = rospkg.RosPack() 
         # The data will be stored in a csv file in the csv directory
         self.odometry_sub=Subscriber(racecar_name+"/odom", Odometry)
         self.ackermann_stamped=Subscriber(vesc+'/ackermann_cmd_mux/input/teleop',AckermannDriveStamped)
@@ -40,6 +39,9 @@ class AnalyzeData:
         self.sub.registerCallback(self.master_callback)
         self.startTime = 0
         self.count = 0
+
+        self.killatDiscontinuity = True
+        self.previous_theta = None 
 
         
         self.x = []
@@ -104,16 +106,38 @@ class AnalyzeData:
         else:
             time = rospy.Time.now()- self.startTime
             time = np.round(time.to_sec(),decimals=2)
-        self.count+=1
+        
+
+        if(self.count>2):
+            if(abs(self.previous_theta - rpy[2])>0.3):
+                rospy.logwarn("discontinuity, {}, {}".format(rpy[2],self.previous_theta))
+                if(self.killatDiscontinuity):
+                    self.reset()
+                
+
 
         print("x:",x,"y:",y,"speed:",speed,"theta:",rpy[2],"u:",u,"delta:",delta,"time:",time)
 
-        self.theta.append(rpy[2])
-        self.times.append(time)
-        self.x.append(x)
-        self.y.append(y)
-        self.velocity.append(speed)
+        if(self.count>0):
+            self.theta.append(rpy[2])
+            self.times.append(time)
+            self.x.append(x)
+            self.y.append(y)
+            self.velocity.append(speed)
+            self.previous_theta = rpy[2]
 
+        self.count+=1
+        
+
+
+    def reset(self):
+        self.previous_theta = None 
+        self.x = []
+        self.y = []
+        self.velocity = []
+        self.times=[]
+        self.theta=[]
+        self.count = -1
 
     #function that animates the plotting
     def animate(self,i,times,theta,x,y,velocity):

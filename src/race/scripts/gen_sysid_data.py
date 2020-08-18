@@ -34,13 +34,17 @@ class genSysIDData:
         self.ackermann_stamped=Subscriber(vesc+'/ackermann_cmd_mux/input/teleop',AckermannDriveStamped)
         self.sub = ApproximateTimeSynchronizer([self.odometry_sub,self.ackermann_stamped], queue_size = 20, slop = 0.020)
 
-        self.filename=self.save_path_root+'{}_{}.csv'.format("data",os.getpid())
+        self.campaign = 0
+        self.filename=self.save_path_root+'{}_{}_{}.csv'.format("data",os.getpid(),self.campaign)
         self.file = open(self.filename, 'w+')
 
         #register the callback to the synchronizer
         self.sub.registerCallback(self.master_callback)
         self.startTime = 0
+       
         self.count = 0 
+        self.killatDiscontinuity = True
+        self.previous_theta = None 
 
 
     #callback for the synchronized messages
@@ -84,14 +88,33 @@ class genSysIDData:
         else:
             time = rospy.Time.now()- self.startTime
             time = np.round(time.to_sec(),decimals=2)
-        self.count+=1
+        
+        if(self.count>2):
+            if(abs(self.previous_theta - rpy[2])>0.3):
+                rospy.logwarn("discontinuity, {}, {}".format(rpy[2],self.previous_theta))
+                if(self.killatDiscontinuity):
+                    self.reset()
 
-        print("x:",x,"y:",y,"speed:",speed,"theta:",rpy[2],"u:",u,"delta:",delta,"time:",time)
-        self.file.write('%f, %f, %f, %f, %f, %f, %f \n' % (time,x,y,speed,rpy[2],u,delta))
+     
+        if(self.count>0):
+            print("x:",x,"y:",y,"speed:",speed,"theta:",rpy[2],"u:",u,"delta:",delta,"time:",time)
+            self.file.write('%f, %f, %f, %f, %f, %f, %f \n' % (time,x,y,speed,rpy[2],u,delta))
+            self.previous_theta = rpy[2]
+
+        self.count+=1
+        
     def shutdown(self):
         self.file.close()
         print('Goodbye')
         
+
+    def reset(self):
+        self.previous_theta = None 
+        self.count = -1
+        self.file.close()
+        self.campaign+=1
+        self.filename=self.save_path_root+'{}_{}_{}.csv'.format("data",os.getpid(),self.campaign)
+        self.file = open(self.filename, 'w+')
 
 
 if __name__ == '__main__':
