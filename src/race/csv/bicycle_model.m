@@ -10,6 +10,9 @@ function [dx,y] = bicycle_model(t,x,u,ca,cm,ch,lf,lr,varargin)
 % x(3): vehicle linear velocity 
 % x(4): vehicle heading
 
+% u(1) is throttle
+% u(2) is steering angle
+
 % output equation
 y(1) = x(1);
 y(2) = x(2);
@@ -17,8 +20,8 @@ y(3) = x(3);
 y(4) = wrapToPi(x(4));
 theta = wrapToPi(x(4));
 
-dx(1) = x(3)* cos(theta);
-dx(2) = x(3)* sin(theta);
-dx(3) = -ca *x(3) + (ca*cm)*(u(1)-ch);
-dx(4) = (x(3)/(lf+lr))*tan(u(2));
+dx = [x(3)* cos(theta); 
+      x(3)* sin(theta); 
+      -ca *x(3) + (ca*cm)*(u(1)-ch);
+      (x(3)/(lf+lr))*tan(u(2))];
 end 
