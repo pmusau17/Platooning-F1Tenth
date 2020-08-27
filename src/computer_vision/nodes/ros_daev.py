@@ -11,6 +11,15 @@ import imutils
 from tensorflow.python.keras.models import load_model
 import tensorflow.keras.backend as K
 
+# sometimes GPU systems are annoying 
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import Session
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+sess = Session(config=config)
+sess.as_default()
+
+
 # import sys so we can use packages outside of this folder in
 # either python 2 or python 3, I know it's janky, chill
 import sys

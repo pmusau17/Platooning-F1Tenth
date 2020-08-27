@@ -2,7 +2,6 @@
 import rospy
 import cv2
 from std_msgs.msg import String
-from race.msg import drive_param
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np 
@@ -10,6 +9,18 @@ import imutils
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import time
+
+# sometimes GPU systems are annoying 
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import Session
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+sess = Session(config=config)
+sess.as_default()
+
+# import the custom message files defined the race package
+from race.msg import drive_param
+from race.msg import angle_msg
 
 #import the tensorflow package
 from tensorflow.python.keras.models import load_model
@@ -29,16 +40,15 @@ from preprocessing.utils import ImageUtils
 class ROS_Classify:
 
     #define the constructor 
-    def __init__(self,racecar_name,model):
+    def __init__(self,racecar_name,model,decoupled=False,plot=False):
+
+
         self.cv_bridge=CvBridge()
         self.image_topic=str(racecar_name)+'/camera/zed/rgb/image_rect_color'
         self.model=load_model(model)
-        print(self.model.layers[0].input_shape)
-        #this handles the reshaping
 
         self.count = 0
         self.util=ImageUtils()
-
         # depends how the model was trained
         try:
             self.height=self.model.layers[0].input_shape[1]
@@ -48,22 +58,31 @@ class ROS_Classify:
             self.width=self.model.layers[0].input_shape[0][2]
 
         self.classes=['left','right','straight','weak_left','weak_right']
-        self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+
+        self.decoupled=decoupled
+        if (not self.decoupled):
+            self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+        else:
+            self.pub=rospy.Publisher(racecar_name+'/angle_msg',angle_msg,queue_size=5)
+
         self.image_sub=rospy.Subscriber(self.image_topic,Image,self.image_callback)
-        #fields for plotting
-        self.commands=[]
-        self.times=[]
-        self.start_time=time.time()
-        #figure for live animation
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(1, 1, 1)
-        self.window=4000
+        
+        self.plot = plot
+        if self.plot:
+            #fields for plotting
+            self.commands=[]
+            self.times=[]
+            self.start_time=time.time()
+            #figure for live animation
+            self.fig = plt.figure()
+            self.ax = self.fig.add_subplot(1, 1, 1)
+            self.window=4000
 
 
-        #Animation
-        # Set up plot to call animate() function periodically
-        ani = animation.FuncAnimation(self.fig, self.animate, fargs=(self.commands, self.times), interval=1000)
-        #plt.show()
+            #Animation
+            # Set up plot to call animate() function periodically
+            ani = animation.FuncAnimation(self.fig, self.animate, fargs=(self.commands, self.times), interval=1000)
+            plt.show()
         
 
     #image callback
@@ -97,31 +116,36 @@ class ROS_Classify:
 
     #computes the actuation command to send to the car
     def send_actuation_command(self,pred):
-        #create the drive param message
-        msg = drive_param()
-        msg.angle = 0.0
-        msg.velocity = 1.2
         #get the label
         label=self.classes[pred[0].argmax()]
-
         if (label=="left"):
-            msg.angle=0.5108652353
+            angle=0.5108652353
         elif (label=="right"):
-            msg.angle=-0.5108652353
+            angle=-0.5108652353
         elif (label=="straight"):
-            msg.angle=0.0
+            angle=0.0
         elif (label=="weak_left"):
-            msg.angle=0.10179
+            angle=0.10179
         elif (label=="weak_right"):
-            msg.angle=-0.10179
+            angle=-0.10179
         else: 
             print("error:",label)
-            msg.velocity=0
-            msg.angle=0
-        self.commands.append(msg.angle)
-        self.times.append(time.time()-self.start_time)
+            angle=0
+
+        if (self.plot):
+            self.commands.append(angle)
+            self.times.append(time.time()-self.start_time)
+
+        if (not self.decoupled):
+            msg = drive_param()
+            msg.header.stamp=rospy.Time.now()
+            msg.angle = angle
+            msg.velocity = 1.0
+        else:
+            msg=angle_msg()
+            msg.header.stamp=rospy.Time.now()
+            msg.steering_angle=angle
         self.pub.publish(msg)
-        #plt.show()
 
     #function that animates the plotting
     def animate(self,i,commands,times):
@@ -148,9 +172,15 @@ if __name__=='__main__':
     racecar_name=args[0]
     #get the keras model
     model=args[1]
-    il=ROS_Classify(racecar_name,model)
+
+
+    #if there's more than two arguments then its decoupled
+    if len(args)>2:
+        il=ROS_Classify(racecar_name,model,decoupled=True)
+    else:
+        il=ROS_Classify(racecar_name,model)
     try: 
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting Down")
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
