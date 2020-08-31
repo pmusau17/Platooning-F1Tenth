@@ -2,7 +2,7 @@
 <launch>
   
     <!--initialize the arguments-->
-    <arg name="world_name" default="racecar_cones"/>
+    <arg name="world_name" default="track_porto_cones"/>
     <arg name="car_name" default="racecar"/>
     <arg name="model_name" default="minivgg_1.hdf5"/>
 
