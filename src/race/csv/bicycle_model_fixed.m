@@ -5,7 +5,7 @@ function dx = bicycle_model_fixed(t,x)
 % Assumes that Slip angle B= 0. Valid at low speeds.
 
 
-u = [16;0.266]; % simulates the car going in a circle
+u = [16;0.26666]; % simulates the car going in a circle
 
 ca = 1.633;
 cm = 0.2;
@@ -20,8 +20,8 @@ lr = 0.225;
 % x(4): vehicle heading
 
 x(4);
-theta = wrapToPi(x(4));
-
+%theta = wrapToPi(x(4));
+theta = x(4);
 
 dx = [x(3)* cos(theta); x(3)* sin(theta); -ca *x(3) + (ca*cm)*(u(1)-ch);
     

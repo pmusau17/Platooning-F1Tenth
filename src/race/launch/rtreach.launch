@@ -2,9 +2,9 @@
 <launch>
   
     <!--initialize the arguments-->
-    <arg name="world_name" default="track_barca"/>
+    <arg name="world_name" default="racecar_cones"/>
     <arg name="car_name" default="racecar"/>
-    <arg name="model_name" default="minivgg_3.hdf5"/>
+    <arg name="model_name" default="minivgg_1.hdf5"/>
 
 
     <!--launch the simulator-->

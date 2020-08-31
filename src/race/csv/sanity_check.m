@@ -1,4 +1,4 @@
-tspan = [0 10];
+tspan = [0 2];
 y0 = [0;0.0;0;0];
 [t,y] = ode45(@(t,y) bicycle_model_fixed(t,y), tspan, y0);
 

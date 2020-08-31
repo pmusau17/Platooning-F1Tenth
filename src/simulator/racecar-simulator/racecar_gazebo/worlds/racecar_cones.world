@@ -16,7 +16,7 @@
         <geometry>
           <plane>
             <normal>0 0 1</normal>
-            <size>150 150</size>
+            <size>200 200</size>
           </plane>
         </geometry>
         <surface>
@@ -33,7 +33,7 @@
         <geometry>
           <plane>
             <normal>0 0 1</normal>
-            <size>150 150</size>
+            <size>200 200</size>
           </plane>
         </geometry>
         <material>
@@ -48,27 +48,27 @@
 
   <include>
     <uri>model://racecar_description/models/cone</uri>
-    <pose>1 0 0 0 0 0</pose>
+    <pose>1.5 0 0 0 0 0</pose>
     <name>cone_1</name>
   </include>
   <include>
     <uri>model://racecar_description/models/cone</uri>
-    <pose>2 0 0 0 0 0</pose>
+    <pose>3.5 0 0 0 0 0</pose>
     <name>cone_2</name>
   </include>
   <include>
     <uri>model://racecar_description/models/cone</uri>
-    <pose>3 0 0 0 0 0</pose>
+    <pose>5.5 0 0 0 0 0</pose>
     <name>cone_3</name>
   </include>
   <include>
     <uri>model://racecar_description/models/cone</uri>
-    <pose>4 0 0 0 0 0</pose>
+    <pose>7.5 0 0 0 0 0</pose>
     <name>cone_4</name>
   </include>
   <include>
     <uri>model://racecar_description/models/cone</uri>
-    <pose>5 0 0 0 0 0</pose>
+    <pose>9.5 0 0 0 0 0</pose>
     <name>cone_5</name>
   </include>
 </world>
