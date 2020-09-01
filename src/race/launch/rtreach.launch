@@ -12,10 +12,14 @@
         <arg name ="world_name" value="$(arg world_name)"/>
     </include>
 
-    <!--launch the speed node it will be constant in this case-->
-    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" args='$(arg car_name)'/>
+    <!--launch the speed node it will be constant in this case
+    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" args='$(arg car_name)'/>-->
 
-    <!--launch the lec model node-->
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" output="screen"/>
+    <!--launch the lec model node
+    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" output="screen"/>-->
+
+    <!-- Run map server -->
+	<arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
  
 </launch>
