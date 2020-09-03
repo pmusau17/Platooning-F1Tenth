@@ -5,6 +5,7 @@
     <arg name="world_name" default="track_porto_cones"/>
     <arg name="car_name" default="racecar"/>
     <arg name="model_name" default="minivgg_1.hdf5"/>
+    <arg name="csv_filename" default="track_porto_26780.csv"/>
 
 
     <!--launch the simulator-->
@@ -21,5 +22,7 @@
     <!-- Run map server -->
 	<arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+    <node pkg="race" type="safety_controller.py" name="safety_node" args="$(arg csv_filename)"/>
  
 </launch>
