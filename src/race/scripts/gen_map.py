@@ -62,15 +62,15 @@ class GenerateMap:
             x_point = res*occ_x[i] + origin[0]
             y_point = res*occ_y[i] + origin[0]
             self.points.append((x_point,y_point))
-            self.x.append(x_point)
-            self.y.append(y_point)
+            self.x.append(y_point)
+            self.y.append(x_point)
         self.save_points()
 
         for i in range(len(occ_x_free)):
             x_point = res*occ_x_free[i] + origin[0]
             y_point = res*occ_y_free[i] + origin[0]
-            self.x_free.append(x_point)
-            self.y_free.append(y_point)
+            self.x_free.append(y_point)
+            self.y_free.append(x_point)
             
         
         plt.plot(self.x,self.y,'ro')

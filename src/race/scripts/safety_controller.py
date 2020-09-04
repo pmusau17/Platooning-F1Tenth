@@ -1,215 +1,319 @@
 #!/usr/bin/env python
+from sensor_msgs.msg import LaserScan
+import time
 import rospy
-from ackermann_msgs.msg import AckermannDriveStamped
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Point
-from visualization_msgs.msg import Marker
-from visualization_msgs.msg import MarkerArray
-import math
+import copy
 import numpy as np
-from numpy import linalg as la
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
-import csv
-import os
-import rospkg 
+import math
+from ackermann_msgs.msg import AckermannDriveStamped
 
-class pure_pursuit:
+""" 
+The goal of this script is to implement the disparity extender used by UNC on our own car from previous tests just using their code out of the box, we were not so lucky
+Credit to their team this code is largely inspired by the post (https://www.nathanotterness.com/2019/04/the-disparity-extender-algorithm-and.html)
+"""
 
-    def __init__(self,waypoint_file,display_goal=False):
-        # initialize class fields 
-        self.waypoint_file = waypoint_file
-        self.display_goal = display_goal
+class DisparityExtenderDriving(object):
 
-        # pure pursuit parameters
-        self.LOOKAHEAD_DISTANCE = 1.50#1.70 # meters
-        self.distance_from_rear_wheel_to_front_wheel = 0.5
-        self.VELOCITY = 3.2 # m/s
-        self.read_waypoints()
-       
-        # Publisher for 'drive_parameters' (speed and steering angle)
-        self.pub = rospy.Publisher('racecar/safety', AckermannDriveStamped, queue_size=100)
-        rospy.Subscriber("racecar/odom", Odometry, self.callback, queue_size=100)
 
-        if(self.display_goal):
-            # Publisher for the goal point
-            self.goal_pub = rospy.Publisher('/goal_point', MarkerArray, queue_size="1")
-            self.considered_pub= rospy.Publisher('/considered_points', MarkerArray, queue_size="1")
-            self.point_in_car_frame= rospy.Publisher('/goal_point_car_frame', MarkerArray, queue_size="1")
-            # Subscriber to vehicle position 
+    #constructor for our DisparityExtenderDrivng Object
+    #stores configuration parameters neccessary for successful execution of our algorithm
+    def __init__(self,scan_topic,drive_topic):
+        # This is actually "half" of the car width, plus some tolerance.
+        # Controls the amount disparities are extended by.
+        self.scan_topic = scan_topic
+        self.drive_topic = drive_topic
+        self.car_width = 0.50 #0.50
+
+        # This is the difference between two successive LIDAR scan points that
+        # can be considered a "disparity". (As a note, at 7m there should be
+        # ~0.04m between scan points.)
+
+        self.disparity_threshold = 0.3
+
+        # This is the arc width of the full LIDAR scan data, in degrees, We are using the Hokuyo UST-10LX
+        self.scan_width = 270.0
+
+        # The maximum range for our LIDAR is 10m
+        self.lidar_max_range=10.0
+
+        # This is the radius to the left or right of the car that must be clear
+        # when the car is attempting to turn left or right.
+        self.turn_clearance = 0.000001
+
+        # This is the maximum steering angle of the car, in degrees.
+
+        self.max_turn_angle = 34.0
+
+        # The slowest speed the car will go
+        # Good value here is 0.1
+
+        self.min_speed = 0.37
+
+        # The maximum speed the car will go (the absolute max for the motor is
+        # 0.5, which is *very* fast). 0.15 is a good max for slow testing.
+
+        self.max_speed = 3.5 #.20
+        self.absolute_max_speed = 6.00 # 0.3
+
+        # The forward distance at which the car will go its minimum speed.
+        # If there's not enough clearance in front of the car it will stop.
+        self.min_distance = 0.15
+
+        # The forward distance over which the car will go its maximum speed.
+        # Any distance between this and the minimum scales the speed linearly.
+        self.max_distance = 3.0
+        self.absolute_max_distance=6.0
+        # The forward distance over which the car will go its *absolute
+        # maximum* speed. This distance indicates there are no obstacles in
+        # the near path of the car. Distance between this and the max_distance
+        # scales the speed linearly.
+
+        self.no_obstacles_distance = 6.0
+
+
+        #publisher for speed and angles 
+
+        self.pub_drive_param = rospy.Publisher(self.drive_topic,AckermannDriveStamped, queue_size=10)
+
+        # visualize the chosen point 
+        #self.debug_publisher = rospy.Publisher(self.scan_topic+'_debug',LaserScan,queue_size=10)
+
+        #this functionality depends on a functioning LIDAR so it subscribes to the lidar scans
+        rospy.Subscriber(self.scan_topic, LaserScan, self.lidar_callback,queue_size=100)
+
+        #create a variable that will store the lidar distances
+        self.lidar_distances=None
+
+        #store the value of 0.25 degrees in radians
+        self.angle_step=(0.25)*(math.pi/180)
+
         
+        #Experimental Section
 
-    # Import waypoints.csv into a list (path_points)
-    def read_waypoints(self):
-
-        # get an instance of RosPack with the default search paths
-        rospack = rospkg.RosPack()
-        #get the path for this paackage
-        package_path=rospack.get_path('pure_pursuit')
-        filename=os.path.sep.join([package_path,'waypoints',waypoint_file])
-
-        with open(filename) as f:
-            path_points = [tuple(line) for line in csv.reader(f)]
-
-        # Turn path_points into a list of floats to eliminate the need for casts in the code below.
-        self.path_points_x   = np.asarray([float(point[0]) for point in path_points])
-        self.path_points_y   = np.asarray([float(point[1]) for point in path_points])
-
-        # list of xy pts 
-        self.xy_points = np.hstack((self.path_points_x.reshape((-1,1)),self.path_points_y.reshape((-1,1)))).astype('double')
-   
-    def visualize_point(self,pts,publisher,frame='/map',r=1.0,g=0.0,b=1.0):
-        # create a marker array
-        markerArray = MarkerArray()
-
-        idx = np.random.randint(0,len(pts))
-        pt = pts[idx]
-
-        x = float(pt[0])
-        y = float(pt[1])
-		
-        marker = Marker()
-        marker.header.frame_id = frame
-        marker.type = marker.SPHERE
-        marker.action = marker.ADD
-        marker.scale.x = 0.2
-        marker.scale.y = 0.2
-        marker.scale.z = 0.2
-        marker.color.a = 1.0
-        marker.color.r = r
-        marker.color.g = g
-        marker.color.b = b
-        marker.pose.orientation.w = 1.0
-        marker.pose.position.x = x
-        marker.pose.position.y = y
-        marker.pose.position.z = 0
-        markerArray.markers.append(marker)
-        publisher.publish(markerArray)
+        self.coefficient_of_friction=0.62
+        self.wheelbase_width=0.328
+        self.gravity=9.81998#sea level
 
 
-    # Input data is PoseStamped message from topic racecar_name/odom.
-    # Runs pure pursuit and publishes velocity and steering angle.
-    def callback(self,data):
+    """ Main function callback for the car"""
+    def lidar_callback(self,data):
+        # not exactly sure how I'm getting the other car's messages 
+        # so I filter them out
+        ranges=data.ranges
+        #convert the range to a numpy array so that we can process the data
+        limited_ranges=np.asarray(ranges)
+        #ignore everything outside the -90 to 90 degree range
+        limited_ranges[0:180]=0.0
+        limited_ranges[901:]=0.0
+        #add this so that the last element is not detected as a disparity
+        limited_ranges[901]=limited_ranges[900]
+        indices=np.where(limited_ranges>=10.0)[0]
+        limited_ranges[indices]=(10)-0.1
 
-        qx=data.pose.pose.orientation.x
-        qy=data.pose.pose.orientation.y
-        qz=data.pose.pose.orientation.z
-        qw=data.pose.pose.orientation.w
+        #calculate the disparities between samples
+        disparities=self.find_disparities(limited_ranges,self.disparity_threshold)
+            
+        #go through the disparities and extend the disparities 
+        new_ranges=self.extend_disparities(limited_ranges,disparities)
 
-        quaternion = (qx,qy,qz,qw)
-        euler = euler_from_quaternion(quaternion)
-        yaw   = np.double(euler[2])
+        #compute the max_value of the new limited values
+        max_value=np.max(new_ranges)
+        target_indices=np.where(new_ranges>=max_value)[0]
+            
+        #figure out which direction we should target based on the max distances we computed from disparities
+        target_index=self.calculate_target_distance(target_indices)
+            
+        driving_angle=self.calculate_angle(target_index)
 
-        x = data.pose.pose.position.x
-        y = data.pose.pose.position.y
+        #threshold the angle we can turn as the maximum turn we can make is 35 degrees
+        thresholded_angle=self.threshold_angle(driving_angle)
 
-        ## finding the distance of each way point from the current position 
-        curr_pos= np.asarray([x,y]).reshape((1,2))
-        dist_arr = np.linalg.norm(self.xy_points-curr_pos,axis=-1)
+        #look at the data behind the car to make sure that if we are too close to the wall we don't turn
+        behind_car=np.asarray(data.ranges)
+            
+        #the lidar sweeps counterclockwise so right is [0:180] and left is [901:]
+        behind_car_right=behind_car[0:180]
+        behind_car_left=behind_car[901:]
 
-        ##finding those points which are less than the look ahead distance (will be behind and ahead of the vehicle)
-        goal_arr = np.where((dist_arr > self.LOOKAHEAD_DISTANCE) & (dist_arr<self.LOOKAHEAD_DISTANCE+0.3))[0]
-        
-        # finding the goal point which is within the goal points 
-        pts = self.xy_points[goal_arr]
+        #change the steering angle based on whether we are safe
+        thresholded_angle=self.adjust_turning_for_safety(behind_car_left,behind_car_right,thresholded_angle)
+        #velocity=self.calculate_min_turning_radius(thresholded_angle,limited_ranges[540])
+        #velocity=self.threshold_speed(velocity,new_ranges[target_index],new_ranges[540])
 
-        # get all points in front of the car, using the orientation 
-        # and the angle between the vectors
-        pts_infrontofcar=[]
-        for idx in range(len(pts)): 
-            v1 = pts[idx] - curr_pos
-            #since the euler was specified in the order x,y,z the angle is wrt to x axis
-            v2 = [np.cos(yaw), np.sin(yaw)]
 
-            angle= self.find_angle(v1,v2)
-            if angle < np.pi/2:
-                pts_infrontofcar.append(pts[idx])
+        # specify the speed the car should move at 
+        self.publish_speed_and_angle(thresholded_angle,1.0)
 
-        pts_infrontofcar =np.asarray(pts_infrontofcar)
-        # compute new distances
-        if(pts_infrontofcar.shape[0]>0): 
-            dist_arr = np.linalg.norm(pts_infrontofcar-curr_pos,axis=-1)- self.LOOKAHEAD_DISTANCE
-        
-            # get the point closest to the lookahead distance
-            idx = np.argmin(dist_arr)
 
-            # goal point 
-            goal_point = pts_infrontofcar[idx]
-            if(self.display_goal):
-                self.visualize_point([goal_point],self.goal_pub)
-
-            # transform it into the vehicle coordinates
-            v1 = (goal_point - curr_pos)[0].astype('double')
-            xgv = (v1[0] * np.cos(yaw)) + (v1[1] * np.sin(yaw))
-            ygv = (-v1[0] * np.sin(yaw)) + (v1[1] * np.cos(yaw))
-        
-            # calculate the steering angle
-            angle = math.atan2(ygv,xgv)
-            angle= np.clip(angle,-0.610865,0.610865)
-            self.const_speed(angle)
-
-        # right now just keep going straight but it will need to be more elegant
-        # TODO: make elegant
+    """Scale the speed in accordance to the forward distance"""
+    def threshold_speed(self,velocity,forward_distance,straight_ahead_distance):
+        max_distance=3.0
+        if straight_ahead_distance>self.absolute_max_distance:
+            velocity=self.absolute_max_speed
+        elif straight_ahead_distance>max_distance:
+            velocity=velocity
+        elif forward_distance<0.25:
+            velocity=-0.5
         else:
-            self.const_speed(0.0)
+            velocity=(straight_ahead_distance/max_distance)*velocity 
+        if velocity<self.min_speed:
+                velocity=self.min_speed
+        rospy.loginfo("Chosen Distance: "+str(forward_distance)+", Velocity: "+str(velocity)+" straight ahead: "+str(straight_ahead_distance))
+        return velocity
+
    
-    # USE THIS FUNCTION IF CHANGEABLE SPEED IS NEEDED
-    def set_speed(self,angle):
+    """function that make sure we don't turn too sharply and collide with a wall
+        TODO figure out if we really need to look at all 45 degrees
+        """
+    def adjust_turning_for_safety(self,left_distances,right_distances,angle):
+        min_left=min(left_distances)
+        min_right=min(right_distances)
+        if min_left<=self.turn_clearance and angle>0.0:#.261799:
+            rospy.logwarn("Too Close Left: "+str(min_left))
+            angle=0.0
+        elif min_right<=self.turn_clearance and angle<0.0:#-0.261799:
+            rospy.logwarn("Too Close Right: "+str(min_right))
+            angle=0.0
+           
+        else:
+            angle=angle
+        return angle
+
+
+    """This next section is experimental let's see what happens,
+    The idea here is to set the speed to be just under the maximum velocity you can take a turn with based on basic physics equations
+    It's rudimentary but its also a starting point, so far it works now I just need to figure out how to include some notion of forward distance
+    """
+    def calculate_min_turning_radius(self,angle,forward_distance):
+        angle=abs(angle)
+        if(angle<0.0872665):#if the angle is less than 5 degrees just go as fast possible
+            return self.max_speed
+        else:
+            turning_radius=(self.wheelbase_width/math.sin(angle))
+            maximum_velocity=math.sqrt(self.coefficient_of_friction*self.gravity*turning_radius)
+            if(maximum_velocity<self.max_speed):
+                maximum_velocity=maximum_velocity*(maximum_velocity/self.max_speed)
+            else:
+                maximum_velocity=4.0
+        #print("angle:",angle,"maximum_velocity:",maximum_velocity,"turning_radius:",turning_radius,'forward_distance:',forward_distance)
+        return maximum_velocity
+
+
+
+    """Function that publishes the speed and angle so that the car drives around the track"""
+    def publish_speed_and_angle(self,angle,speed):
         msg = AckermannDriveStamped()
         msg.header.stamp=rospy.Time.now()
         msg.drive.steering_angle = angle
-        speed= 1.5
-        angle = abs(angle)
-        if(angle <0.01):
-            speed = 10.0#11.5
-        elif(angle<0.0336332):
-            speed = 9.0#11.1
-        elif(angle < 0.0872665):
-            speed = 7.0#7.6
-        elif(angle<0.1309):
-            speed = 6.5#6.5 
-        elif(angle < 0.174533):
-            speed = 4.8#6.0
-        elif(angle < 0.261799):
-            speed = 4.6#5.5
-        elif(angle < 0.349066):
-            speed = 4.3#3.2
-        elif(angle < 0.436332):
-            speed = 4.0#5.1
-        else:
-            print("more than 25 degrees",angle)
-            speed = 3.0
-        print(speed)
-
         msg.drive.speed = speed
-        self.pub.publish(msg)
+        self.pub_drive_param.publish(msg)
 
+
+    """This function returns the angle we are targeting depending on which index corresponds to the farthest distance"""
+    def calculate_angle(self,index):
+        angle=(index-540)/4.0
+        rad=(angle*math.pi)/180
+        #print(angle,rad)
+        return rad
+
+    "Threshold the angle if it's larger than 35 degrees"
+    def threshold_angle(self,angle):
+        max_angle_radians=35*(math.pi/180)
+        if angle<(-max_angle_radians):
+            return -max_angle_radians
+        elif angle>max_angle_radians:
+            return max_angle_radians
+        else:
+            return angle
+    
+    """This function computes which direction we should be targeting"""
+    def calculate_target_distance(self,arr):
+        if(len(arr)==1):
+            return arr[0]
+        else:
+            mid=int(len(arr)/2)
+            return arr[mid]
+
+    """ Scans each pair of subsequent values, and returns an array of indices
+        where the difference between the two values is larger than the given
+        threshold. The returned array contains only the index of the first value
+        in pairs beyond the threshold. 
         
+        returns list of indices where disparities exist
+        """
 
+    def find_disparities(self,arr,threshold):
+        to_return = []
+        values = arr
+        #print("Why would you consider disparities behind the car",len(values))
+        for i in range(180,901):
+            if abs(values[i] - values[i + 1]) >= threshold:
+                #print("disparity: ",(values[i], values[i + 1]))
+                #print("indices: ",(i, i + 1))
+                to_return.append(i)
+        return to_return
 
-    # USE THIS FUNCTION IF CONSTANT SPEED IS NEEDED
-    def const_speed(self,angle):
-        msg = AckermannDriveStamped()
-        msg.header.stamp=rospy.Time.now()
-        msg.drive.steering_angle = angle
-        msg.drive.speed = 1.0
-        self.pub.publish(msg)
+    """ Returns the number of points in the LIDAR scan that will cover half of
+        the width of the car along an arc at the given distance. """
+    def calculate_samples_based_on_arc_length(self,distance):
+        
+        # This isn't exact, because it's really calculated based on the arc length
+        # when it should be calculated based on the straight-line distance.
+        # However, for simplicty we can just compensate for it by inflating the
+        # "car width" slightly.
 
-    # find the angle bewtween two vectors    
-    def find_angle(self, v1, v2):
-        cosang = np.dot(v1, v2).astype('double')
-        sinang = la.norm(np.cross(v1, v2)).astype('double')
-        return np.arctan2(sinang, cosang).astype('double')
+         #store the value of 0.25 degrees in radians
+        angle_step=(0.25)*(math.pi/180)
+        arc_length=angle_step*distance
+        return int(math.ceil(self.car_width/ arc_length))
 
+    """Extend the disparities and don't go outside the specified region"""
+    def extend_disparities(self,arr,disparity_indices):
+        ranges=np.copy(arr)
+        for i in disparity_indices:
+            #get the values corresponding to the disparities
+            value1=ranges[i]
+            value2=ranges[i+1]
+            #Depending on which value is greater we either need to extend left or extend right
+            if(value1<value2):
+                nearer_value=value1
+                nearer_index=i
+                extend_positive=True
+            else:
+                nearer_value=value2
+                extend_positive=False
+                nearer_index=i+1
+            #compute the number of samples needed to "extend the disparity"
+            samples_to_extend=self.calculate_samples_based_on_arc_length(nearer_value)
+            #print("Samples to Extend:",samples_to_extend)
+
+            #loop through the array replacing indices that are larger and making sure not to go out of the specified regions   
+            current_index = nearer_index
+            for i in range(samples_to_extend):
+                    # Stop trying to "extend" the disparity point if we reach the
+                    # end of the array.
+                    if current_index < 180:
+                        current_index = 180
+                        break
+                    if current_index >=901:
+                        current_index =900
+                        break
+                    # Don't overwrite values if we've already found a nearer point
+                    if ranges[current_index] > nearer_value:
+                        ranges[current_index] = nearer_value
+                    # Finally, move left or right depending on the direction of the
+                    # disparity.
+                    if extend_positive:
+                        current_index += 1
+                    else:
+                        current_index -= 1
+        return ranges
 
 if __name__ == '__main__':
-    rospy.init_node('pure_pursuit')
     #get the arguments passed from the launch file
     args = rospy.myargv()[1:]
-    # get the racecar name so we know what to subscribe to
-    # get the path to the file containing the waypoints
-    waypoint_file=args[0]
-    C = pure_pursuit(waypoint_file)  
-    r = rospy.Rate(80)
-
-    while not rospy.is_shutdown():
-        r.sleep()
+    scan_topic=args[0]
+    drive_topic=args[1]
+    rospy.init_node('disparity_extender', anonymous=True)
+    extendObj=DisparityExtenderDriving(scan_topic,drive_topic)
+    rospy.spin()
