@@ -25,18 +25,13 @@ def vesc_odom_callback(data):
     global racecar_name
 
     currentTime=data.header.stamp
-    rospy.loginfo("currentTime: "+str(currentTime))
     frameID=data.header.frame_id
-    rospy.loginfo("Frame ID: "+frameID)
     childFrame=data.child_frame_id
-    rospy.loginfo("Child Frame ID: "+childFrame)
     pose=data.pose.pose
-    rospy.loginfo("pose: "+str(pose))
     twist=data.twist.twist
-    rospy.loginfo("twist: "+str(twist))
 
     odom_trans=TransformStamped()
-    odom_trans.header.stamp=currentTime
+    odom_trans.header.stamp=rospy.Time.now()
     odom_trans.header.frame_id=racecar_name+"/odom"
     odom_trans.child_frame_id=racecar_name+"/base_link"
 

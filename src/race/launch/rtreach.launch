@@ -6,6 +6,8 @@
     <arg name="car_name" default="racecar"/>
     <arg name="model_name" default="minivgg_1.hdf5"/>
     <arg name="csv_filename" default="track_porto_26780.csv"/>
+    <arg name="lec_only" default="false"/>
+    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
 
 
     <!--launch the simulator-->
@@ -14,16 +16,17 @@
     </include>
 
     <!--launch the speed node it will be constant in this case-->
-    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" args='$(arg car_name)'/>
+    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" unless="$(arg lec_only)" args='$(arg car_name)'/>
 
     <!--launch the lec model node-->
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" output="log"/>
+    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" unless="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" output="log"/>
+    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" if="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name)" output="log"/>
 
     <!-- Run map server -->
-	<arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
-	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+	
+	<node name="map_server" pkg="map_server" type="map_server" unless="$(arg lec_only)" args="$(arg map_file)" />
 
-    <!--<node pkg="race" type="safety_controller.py" name="safety_node" args="racecar/scan racecar/safety" output="screen"/>-->
-    <node pkg="race" type="safety_controller1.py" name="safety_node" args="$(arg csv_filename)" output="screen"/>
+    <node pkg="race" type="safety_controller.py" name="safety_node" args="racecar/scan racecar/safety" output="screen"/>
+    <!--<node pkg="race" type="safety_controller1.py" name="safety_node" unless="$(arg lec_only)" args="$(arg csv_filename)" output="screen"/>-->
 
 </launch>
