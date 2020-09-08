@@ -44,6 +44,8 @@ $  rosrun race collision_tracker.py /racecar 1
 - Node that generates system identification data for the f1tenth model. It logs (x,y,linear_speed,theta) (throttle, steering angle)
 ### [Safety Controller](scripts/safety_conroller.py)
 - Simplistic safety controller based on the disparity extender.
+### [System Identification](https://github.com/pmusau17/Platooning-F1Tenth/tree/master/src/race/sys_id)
+- Matlab System Identification packages for the f1tenth simulator.
 
 <br/>
 
