@@ -11,5 +11,5 @@ So far the best parameters, we've found for this model are:
 ca = 1.9569, cm = 0.0342, ch = -37.1967, lf = 0.225, lr = 0.225
 ```
 
-<img src="plots/data_15870_0.jpg" width="30%">
+<img src="plots/data_15870_0.jpg" width="70%">
 
