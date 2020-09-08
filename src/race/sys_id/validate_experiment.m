@@ -15,6 +15,9 @@ end
 xe =cell2mat(xe);
 % plot the results
 
+
+err = immse(x,xe);
+
 fig= figure();
 set(gcf, 'Position',  [100, 100, 900, 900])
 subplot(2,2,1);
@@ -45,6 +48,7 @@ xlabel('x')
 ylabel('y') 
 title("Experiment 1: Position of Vehicle")
 legend
+sgtitle(strcat('State-Vector MSE=',string(err)))
 figname = split(strrep(csv_filename,'csv/',''),".");
 savename = strcat("plots/",figname(1),".jpg");
 saveas(fig,savename);
