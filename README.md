@@ -8,8 +8,9 @@
 3. [Platooning](#Platooning)
 4. [Computer Vision](#ComputerVision)
 5. [Reinforcement Learning](#ReinforcementLearning)
-6. [Docker](#Docker)
-7. [Developers](#Developers)
+6. [System Identification](https://github.com/pmusau17/Platooning-F1Tenth/tree/master/src/race/sys_id)
+7. [Docker](#Docker)
+8. [Developers](#Developers)
 
 
 # Introduction <a name="introduction"></a>
@@ -242,7 +243,7 @@ Then run:
 $ source devel/setup.bash && rosrun race keyboard.py
 ```
 
-# Developers
+# Developers <a name="Developers"></a>
 
 Our team consists of graduate and undergraduate students from Vanderbilt University working at the [Institute for Software Integrated Systems](https://www.isis.vanderbilt.edu/).
 
