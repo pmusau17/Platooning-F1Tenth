@@ -15,7 +15,7 @@ end
 xe =cell2mat(xe);
 % plot the results
 
-figure()
+fig= figure();
 subplot(2,2,1);
 plot(t,x(3,:),'DisplayName','ground-truth,gazebo')
 hold on;
@@ -44,5 +44,8 @@ xlabel('x')
 ylabel('y') 
 title("Experiment 1: Position of Vehicle")
 legend
+figname = split(strrep(csv_filename,'csv/',''),".");
+savename = strcat("plots/",figname(1),".jpg");
+saveas(fig,savename);
 end
 
