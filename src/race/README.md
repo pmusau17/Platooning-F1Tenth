@@ -28,17 +28,16 @@ This package contains the nodes, launch files, msg files, and infrastructure nee
 ### [Contact Listner](scripts/contact_tracker.py)
 The contact listener node is a component designed to detect collision between the racecar and other simulated objects in the envrionment. It has two configurations. The first configuration, simply prints a message whenever a collision occurs. The second configuration resets the envrionment. This useful for reinforcement learning tasks.
 
-    To run the node execute the following after the simulation is up and running:
+To run the node execute the following after the simulation is up and running:
 
-    ```bash
-    $  rosrun race collision_tracker.py /racecar
-    ```
+```
+$  rosrun race collision_tracker.py /racecar
+```
+To enable resetting the world run:
 
-    To enable resetting the world run: 
-
-     ```bash
-    $  rosrun race collision_tracker.py /racecar 1
-    
+```
+$  rosrun race collision_tracker.py /racecar 1
+```
 ### [Analyze Odom](scripts/analyze_odom.py)
 - Node that analyzes odometry information of the vehicle.
 ### [Generate System Id](scripts/gen_sysid_data.py)
