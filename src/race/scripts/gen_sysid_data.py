@@ -29,7 +29,7 @@ class genSysIDData:
     def __init__(self,racecar_name='racecar',vesc="vesc"):
         r = rospkg.RosPack() 
         # The data will be stored in a csv file in the csv directory
-        self.save_path_root=r.get_path('race')+'/csv/'
+        self.save_path_root=r.get_path('race')+'/sys_id/csv'
         self.odometry_sub=Subscriber(racecar_name+"/odom", Odometry)
         self.ackermann_stamped=Subscriber(vesc+'/ackermann_cmd_mux/input/teleop',AckermannDriveStamped)
         self.sub = ApproximateTimeSynchronizer([self.odometry_sub,self.ackermann_stamped], queue_size = 20, slop = 0.020)

@@ -1,12 +1,12 @@
 %% Load data
-exp1 = load_experiment_data('data_25775.csv',1);
-exp2 = load_experiment_data('data_27180.csv',1);
-exp3 = load_experiment_data('data_27980.csv',1);
-exp4 = load_experiment_data('data_29749.csv',1);
-exp5 = load_experiment_data('data_28177.csv',1);
-exp6 = load_experiment_data('racecar_walker_cclockwise_1.5.csv',1);
-exp7 = load_experiment_data('racecar_walker_clockwise_1.0.csv',1);
-exp8 = load_experiment_data('racecar_walker_clockwise_1.5.csv',1);
+exp1 = load_experiment_data('csv/data_25775.csv',1);
+exp2 = load_experiment_data('csv/data_27180.csv',1);
+exp3 = load_experiment_data('csv/data_27980.csv',1);
+exp4 = load_experiment_data('csv/data_29749.csv',1);
+exp5 = load_experiment_data('csv/data_28177.csv',1);
+exp6 = load_experiment_data('csv/racecar_walker_cclockwise_1.5.csv',1);
+exp7 = load_experiment_data('csv/racecar_walker_clockwise_1.0.csv',1);
+exp8 = load_experiment_data('csv/racecar_walker_clockwise_1.5.csv',1);
 
 %% Visualize experiments
 plot_race(exp1);

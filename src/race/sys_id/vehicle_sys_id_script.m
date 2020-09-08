@@ -1,11 +1,11 @@
 % load the data
-exp1 = load_experiment_data('data_15870_0.csv',1);
-exp2 = load_experiment_data('data_15870_2.csv',1);
-exp3 = load_experiment_data('data_15870_3.csv',1);
-exp4 = load_experiment_data('data_15870_5.csv',1);
-exp5 = load_experiment_data('data_15870_6.csv',1);
-exp6 = load_experiment_data('data_15870_8.csv',1);
-exp7 = load_experiment_data('data_15870_9.csv',1);
+exp1 = load_experiment_data('csv/data_15870_0.csv',1);
+exp2 = load_experiment_data('csv/data_15870_2.csv',1);
+exp3 = load_experiment_data('csv/data_15870_3.csv',1);
+exp4 = load_experiment_data('csv/data_15870_5.csv',1);
+exp5 = load_experiment_data('csv/data_15870_6.csv',1);
+exp6 = load_experiment_data('csv/data_15870_8.csv',1);
+exp7 = load_experiment_data('csv/data_15870_9.csv',1);
 
 % Merge the data
 data_est = merge(exp1,exp2,exp3,exp4,exp5,exp6,exp7);
