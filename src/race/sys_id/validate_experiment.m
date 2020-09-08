@@ -16,6 +16,7 @@ xe =cell2mat(xe);
 % plot the results
 
 fig= figure();
+set(gcf, 'Position',  [100, 100, 900, 900])
 subplot(2,2,1);
 plot(t,x(3,:),'DisplayName','ground-truth,gazebo')
 hold on;
