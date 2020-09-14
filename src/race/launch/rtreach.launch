@@ -28,4 +28,7 @@
 
     <node pkg="race" type="safety_controller.py" name="safety_node" unless="$(arg lec_only)" args="racecar/scan racecar/safety" output="screen"/>
 
+    <!--launch rviz to visualize reachable set-->
+    <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
+
 </launch>
