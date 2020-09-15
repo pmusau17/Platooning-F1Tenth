@@ -31,4 +31,6 @@
     <!--launch rviz to visualize reachable set-->
     <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
 
+    <node pkg="race" type="plot_cones.py" name="cone_visualization" unless="$(arg lec_only)" output="screen"/>
+
 </launch>

@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /Odometry1
       Splitter Ratio: 0.5
     Tree Height: 567
   - Class: rviz/Selection
@@ -147,39 +146,21 @@ Visualization Manager:
       Transport Hint: raw
       Unreliable: false
       Value: true
-    - Angle Tolerance: 0.100000001
-      Class: rviz/Odometry
-      Covariance:
-        Orientation:
-          Alpha: 0.5
-          Color: 255; 255; 127
-          Color Style: Unique
-          Frame: Local
-          Offset: 1
-          Scale: 1
-          Value: true
-        Position:
-          Alpha: 0.300000012
-          Color: 204; 51; 204
-          Scale: 1
-          Value: true
-        Value: true
+    - Class: rviz/Marker
       Enabled: true
-      Keep: 100
-      Name: Odometry
-      Position Tolerance: 0.100000001
-      Shape:
-        Alpha: 1
-        Axes Length: 1
-        Axes Radius: 0.100000001
-        Color: 255; 25; 0
-        Head Length: 0.300000012
-        Head Radius: 0.100000001
-        Shaft Length: 1
-        Shaft Radius: 0.0500000007
-        Value: Arrow
-      Topic: /racecar/odom
-      Unreliable: false
+      Marker Topic: /reach_hull
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /porto_cones
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
@@ -206,7 +187,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.20020962
+      Distance: 25.2379646
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
