@@ -4,6 +4,7 @@ build/
 devel/
 datasets/
 data/
+*.vscode/
 
 #ignore jupyter checkpoints
 *.ipynb_checkpoints/

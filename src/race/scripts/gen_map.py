@@ -31,14 +31,23 @@ class GenerateMap:
         package_path=rospack.get_path('race')
         # get the pid to create "unique" filenames
         self.filename=package_path+'/maps/{}_obstacles.txt'.format(self.name)
+        self.filename2=package_path+'/maps/{}_freespace.txt'.format(self.name)
 
 
     def save_points(self):
         self.file = open(self.filename, 'w')
+        self.file2 = open(self.filename2, 'w')
         for i in range(len(self.x)):
             xp = self.x[i] 
             yp = self.y[i]
             self.file.write('%f, %f\n' % (xp,yp))
+
+        for i in range(0,len(self.x_free),100):
+            xp = self.x_free[i] 
+            yp = self.y_free[i]
+            self.file2.write('%f, %f\n' % (xp,yp))
+
+        self.file2.close()
         self.file.close()
         print("Done")
             
@@ -64,17 +73,26 @@ class GenerateMap:
             self.points.append((x_point,y_point))
             self.x.append(y_point)
             self.y.append(x_point)
-        self.save_points()
+
+        
+        self.points=np.asarray(self.points)
 
         for i in range(len(occ_x_free)):
             x_point = res*occ_x_free[i] + origin[0]
             y_point = res*occ_y_free[i] + origin[0]
-            self.x_free.append(y_point)
-            self.y_free.append(x_point)
+
+            pp = np.asarray([x_point,y_point])
+            
+            dists = np.linalg.norm((self.points - pp),axis = -1)
+            if(dists.min()>1.0):
+                self.x_free.append(y_point)
+                self.y_free.append(x_point)
+        print(len(self.x_free))
+        self.save_points()
             
         
         plt.plot(self.x,self.y,'ro')
-        #plt.plot(self.x_free,self.y_free,'bo')
+        plt.plot(self.x_free,self.y_free,'bo')
         plt.title('Plot of obstacles in track: {}'.format(self.name))
         plt.ylabel('x')
         plt.xlim([-15,15])

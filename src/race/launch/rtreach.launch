@@ -2,12 +2,13 @@
 <launch>
   
     <!--initialize the arguments-->
-    <arg name="world_name" default="track_porto_cones"/>
+    <arg name="world_name" default="track_porto"/>
     <arg name="car_name" default="racecar"/>
     <arg name="model_name" default="minivgg_1.hdf5"/>
     <arg name="csv_filename" default="track_porto_26780.csv"/>
     <arg name="lec_only" default="false"/>
     <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+    <arg name="random_seed" default = "1516"/>
 
 
     <!--launch the simulator-->
@@ -31,6 +32,6 @@
     <!--launch rviz to visualize reachable set-->
     <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
 
-    <node pkg="race" type="plot_cones.py" name="cone_visualization" unless="$(arg lec_only)" output="screen"/>
+    <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed)" output="screen"/>
 
 </launch>
