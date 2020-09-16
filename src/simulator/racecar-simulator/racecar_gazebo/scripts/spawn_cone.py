@@ -14,22 +14,27 @@ from visualization_msgs.msg import Marker, MarkerArray
 
 
 class SpawnCones():
-    def __init__(self,seed):
+    def __init__(self,seed,free_space_path,obstacle_count):
         """ Randomly spawn a cone within the car's environment so that I can generate scenarios with cones in random locations 
         seed (int) - seed used for random location of the boxes
         """
         np.random.seed(seed)
         self.model_path = RosPack().get_path('racecar_description')
+        self.freespace_path = RosPack().get_path('race')
         # open and read the cone file
-        self.cone_model = open(os.path.join(self.model_path,"models","cone","model.sdf")).read()
+        self.cone_file = open(os.path.join(self.model_path,"models","cone","model.sdf"))
+        self.cone_model = self.cone_file.read()
+        self.free_space_file = open(os.path.join(self.freespace_path,"maps",free_space_path))
+        self.free_space= self.free_space_file.read().split("\n")
         self.gazebo_namespace = "/gazebo"
 
         self.cone_markers = markerArray = MarkerArray()
-        self.cones_pub = rospy.Publisher('porto_cones', MarkerArray, queue_size="1")
+        self.cones_pub = rospy.Publisher('obstacle_locations', MarkerArray, queue_size="1")
         self.count =0 
         self.cone_name = "Cone"
         self.robot_namespace  = rospy.get_namespace().replace('/', '')
         self.reference_frame = "/map"
+        self.num_obsatcles = obstacle_count
 
 
 
@@ -70,10 +75,18 @@ class SpawnCones():
     def publish_markers(self):
          self.cones_pub.publish( self.cone_markers)
 
-    def call_spawn_service(self,x,y):
+    def calculate_intervals(self,center,width=0.13,height=0.13):
 
+        """
+        Sanity Check for intervals representing obstacles
+        """
+
+        x_int = [center[0]-width/2, center[0]+width/2]
+        y_int = [center[1]-height/2, center[1]+height/2]
+
+    def call_spawn_service(self,x,y,index):
         cp, marker = self.specify_cone_pose_and_marker(x,y)
-        gazebo_interface.spawn_sdf_model_client(self.cone_name + str(self.count),self.cone_model,
+        gazebo_interface.spawn_sdf_model_client(self.cone_name + str(index),self.cone_model,
                                                     self.robot_namespace,
                                                     cp,
                                                     self.reference_frame,
@@ -82,10 +95,21 @@ class SpawnCones():
         print("done")
 
     def generate_cones(self):
-        spawn_locations = [[2.0,2.0],[4.7,2.7],[11.36,-1.46],[3.0,6.4],[-9.64,2.96]]
-        spawn_locations = np.asarray(spawn_locations)
-        for i in range(spawn_locations.shape[0]):
-            self.call_spawn_service(spawn_locations[i][0],spawn_locations[i][1])
+        #spawn_locations = [[2.0,2.0],[4.7,2.7],[11.36,-1.46],[3.0,6.4],[-9.64,2.96]]
+        num_free = len(self.free_space)
+        randindexes= np.arange(num_free)
+        np.random.shuffle(randindexes)
+        randindexes = list(randindexes)
+        for i in range(self.num_obsatcles):
+            point = self.free_space[randindexes.pop(0)].split(',')
+            x,y = float(point[0]),float(point[1])
+
+
+            self.call_spawn_service(x,y,randindexes[i])
+
+        # clean up nice
+        self.free_space_file.close()
+        self.cone_file.close()
 
 
 
@@ -95,7 +119,9 @@ if __name__ == "__main__":
     rospy.loginfo("spawn obstacles script started")
     args = rospy.myargv()[1:]
     random_seed=int(args[0])
-    sp = SpawnCones(random_seed)
+    free_space_path=args[1]
+    obstacle_count =int(args[2])
+    sp = SpawnCones(random_seed,free_space_path,obstacle_count)
     sp.generate_cones()
     while not rospy.is_shutdown():
         sp.publish_markers()

@@ -146,17 +146,9 @@ Visualization Manager:
       Transport Hint: raw
       Unreliable: false
       Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /reach_hull
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /porto_cones
+      Marker Topic: /obstacle_locations
       Name: MarkerArray
       Namespaces:
         "": true

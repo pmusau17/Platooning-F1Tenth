@@ -8,7 +8,9 @@
     <arg name="csv_filename" default="track_porto_26780.csv"/>
     <arg name="lec_only" default="false"/>
     <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
-    <arg name="random_seed" default = "1516"/>
+    <arg name="random_seed" default = "15"/>
+    <arg name="freespace_file" default ="porto_freespace.txt"/>
+    <arg name="num_obstacles" default="5"/>
 
 
     <!--launch the simulator-->
@@ -32,6 +34,6 @@
     <!--launch rviz to visualize reachable set-->
     <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
 
-    <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed)" output="screen"/>
+    <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed) $(arg freespace_file) $(arg num_obstacles)" output="screen"/>
 
 </launch>
