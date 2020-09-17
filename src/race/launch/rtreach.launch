@@ -10,7 +10,8 @@
     <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
     <arg name="random_seed" default = "15"/>
     <arg name="freespace_file" default ="porto_freespace.txt"/>
-    <arg name="num_obstacles" default="5"/>
+    <arg name="num_obstacles" default="6"/>
+    <arg name="timeout" default = "5"/>
 
 
     <!--launch the simulator-->
@@ -35,5 +36,7 @@
     <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
 
     <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed) $(arg freespace_file) $(arg num_obstacles)" output="screen"/>
+
+    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
 
 </launch>
