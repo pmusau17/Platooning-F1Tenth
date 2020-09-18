@@ -30,6 +30,9 @@
     <!--how long to run each experiment before timeout-->
     <arg name="timeout" default = "5"/>
 
+    <!-- name of collision log file-->
+    <arg name="collision_file" default ="collisions.txt"/>
+
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
         <arg name ="world_name" value="$(arg world_name)"/>
@@ -56,5 +59,13 @@
 
     <!--time out node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
+
+    <!--launch rviz to visualize reachable set-->
+    <node pkg="rtreach" type="reach_node" name="reach_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>
+
+    <!--launch rviz to visualize reachable set-->
+    <node pkg="rtreach" type="visualize_node" name="visualization_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>
+
+    <node pkg = "race" name= "collision_logger_$(arg car_name1)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name1) $(arg num_obstacles) $(arg random_seed) $(arg collision_file)"/>
 
 </launch>

@@ -119,6 +119,7 @@ if __name__ == "__main__":
     rospy.loginfo("spawn obstacles script started")
     args = rospy.myargv()[1:]
     random_seed=int(args[0])
+    rospy.logwarn("random_seed: "+str(random_seed))
     free_space_path=args[1]
     obstacle_count =int(args[2])
     sp = SpawnCones(random_seed,free_space_path,obstacle_count)
