@@ -154,10 +154,10 @@ Visualization Manager:
         "": true
       Queue Size: 100
       Value: true
-    - Class: rviz/Marker
+    - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /reach_hull
-      Name: Marker
+      Name: MarkerArray
       Namespaces:
         "": true
       Queue Size: 100

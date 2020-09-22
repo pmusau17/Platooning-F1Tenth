@@ -27,8 +27,9 @@
     <!-- how many obstacles (cones) to allocate in the environment-->
     <arg name="num_obstacles" default="6"/>
 
-    <!--how long to run each experiment before timeout-->
-    <arg name="timeout" default = "5"/>
+    <!--how long to run each experiment before timeout
+        a negative number denotes no timeout-->
+    <arg name="timeout" default = "-1"/>
 
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
