@@ -31,6 +31,8 @@
         a negative number denotes no timeout-->
     <arg name="timeout" default = "-1"/>
 
+    <!--docker requirements-->
+    <arg name="use_sim_time" default = "false"/>
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
         <arg name ="world_name" value="$(arg world_name)"/>
