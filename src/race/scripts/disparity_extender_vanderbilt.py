@@ -155,8 +155,11 @@ class DisparityExtenderDriving(object):
 
         """Yeah nah this aint working for us: velocity=self.duty_cycle_from_distance(limited_ranges[540])
         print(velocity)"""
-        self.publish_speed_and_angle(thresholded_angle,velocity)
 
+        if(min(limited_ranges[480:601])<0.5):
+            self.publish_speed_and_angle(thresholded_angle,0.0)
+        else:
+            self.publish_speed_and_angle(thresholded_angle,1.0)
 
     """Scale the speed in accordance to the forward distance"""
     def threshold_speed(self,velocity,forward_distance,straight_ahead_distance):
@@ -220,7 +223,7 @@ class DisparityExtenderDriving(object):
     def publish_speed_and_angle(self,angle,speed):
         msg = drive_param()
         msg.angle = angle
-        msg.velocity = 1.5 #right now I want constant speed
+        msg.velocity = speed #right now I want constant speed
         self.pub_drive_param.publish(msg)
 
 

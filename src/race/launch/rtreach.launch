@@ -25,7 +25,7 @@
     <arg name="freespace_file" default ="porto_freespace.txt"/>
 
     <!-- how many obstacles (cones) to allocate in the environment-->
-    <arg name="num_obstacles" default="6"/>
+    <arg name="num_obstacles" default="30"/>
 
     <!--how long to run each experiment before timeout
         a negative number denotes no timeout-->

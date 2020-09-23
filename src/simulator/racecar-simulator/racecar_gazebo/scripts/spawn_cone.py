@@ -96,14 +96,17 @@ class SpawnCones():
 
     def generate_cones(self):
         #spawn_locations = [[2.0,2.0],[4.7,2.7],[11.36,-1.46],[3.0,6.4],[-9.64,2.96]]
-        num_free = len(self.free_space)
+        num_free = len(self.free_space)-1
         randindexes= np.arange(num_free)
         np.random.shuffle(randindexes)
         randindexes = list(randindexes)
         for i in range(self.num_obsatcles):
-            point = self.free_space[randindexes.pop(0)].split(',')
-            x,y = float(point[0]),float(point[1])
-
+            ind = randindexes.pop(0)
+            point = self.free_space[ind].split(',')
+            try:
+                x,y = float(point[0]),float(point[1])
+            except:
+                print(point)
 
             self.call_spawn_service(x,y,randindexes[i])
 

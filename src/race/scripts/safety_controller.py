@@ -150,7 +150,10 @@ class DisparityExtenderDriving(object):
         thresholded_angle = np.clip(thresholded_angle,-0.5108652353,0.5108652353)
 
         # specify the speed the car should move at 
-        self.publish_speed_and_angle(thresholded_angle,0.4)
+        if(min(limited_ranges[480:601])<0.7):
+            self.publish_speed_and_angle(thresholded_angle,0.0)
+        else:
+            self.publish_speed_and_angle(thresholded_angle,0.4)
 
 
     """Scale the speed in accordance to the forward distance"""
@@ -322,6 +325,6 @@ if __name__ == '__main__':
     args = rospy.myargv()[1:]
     scan_topic=args[0]
     drive_topic=args[1]
-    rospy.init_node('disparity_extender', anonymous=True)
+    rospy.init_node('safety_controller', anonymous=True)
     extendObj=DisparityExtenderDriving(scan_topic,drive_topic)
     rospy.spin()
