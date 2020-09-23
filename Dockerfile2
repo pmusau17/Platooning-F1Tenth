@@ -93,7 +93,6 @@ RUN pip install imutils
 
 #navigate to the home directory
 WORKDIR home
-RUN mkdir -p catkin_ws
-WORKDIR catkin_ws
-RUN git clone https://github.com/pmusau17/Platooning-F1Tenth src
+RUN git clone https://github.com/pmusau17/Platooning-F1Tenth 
+WORKDIR Platooning-F1Tenth 
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash && catkin_make'
