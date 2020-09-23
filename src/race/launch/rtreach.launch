@@ -33,9 +33,12 @@
 
     <!--docker requirements-->
     <arg name="use_sim_time" default = "false"/>
+    <arg name="verbose" default ="false"/>
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
         <arg name ="world_name" value="$(arg world_name)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
     </include>
 
     <!--launch the speed node it will be constant in this case-->
