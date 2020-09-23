@@ -9,7 +9,7 @@
   <arg name="gui" default="true" />
   <arg name="run_camera" default="false"/>
   <arg name="reset_on_crash" default = "false"/>
-  <arg name="verbose" value="false"/>
+  <arg name="verbose" default="false"/>
 
   <!--flag to enable/disable keyboard-->
   <arg name="enable_keyboard" default="false"/>
