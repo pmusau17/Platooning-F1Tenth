@@ -29,8 +29,8 @@
 		              publishes on /pf/pose/odom
 	 -->
 	<!--<include file="$(find particle_filter)/launch/map_server.launch"/>-->
-	<arg name="scan_topic" default="/scan"/>
-	<arg name="odometry_topic" default="/vesc/odom"/>
+	<arg name="scan_topic" default="racecar/scan"/>
+	<arg name="odometry_topic" default="racecar/odom"/>
 	<!-- <arg name="odometry_topic" default="/odom"/> -->
 	<arg name="angle_step" default="18"/>
 	<arg name="max_particles" default="4000"/>
@@ -45,7 +45,7 @@
 		<param name="max_particles" value="$(arg max_particles)"/>
 		<param name="max_viz_particles" value="60"/>
 		<!-- <param name="range_method" value="pcddt"/> -->
-		<param name="range_method" value="pcddt"/>
+		<param name="range_method" value="rmgpu"/>
 		<param name="squash_factor" value="$(arg squash_factor)"/>
 		<param name="theta_discretization" value="112"/>
 		<!-- max sensor range in meters -->
