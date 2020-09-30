@@ -11,5 +11,5 @@ pause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
 
 reset_world = rospy.ServiceProxy('/gazebo/reset_world', Empty)
 
-#reset_world()
-pause()
+reset_world()
+# pause()
