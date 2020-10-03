@@ -18,6 +18,7 @@ Then:
 
 ```
 $ cd carto_ws
+$ wstool init src
 $ wstool merge -t src ../cartographer_ros.rosinstall
 $ src/cartographer/scripts/install_proto3.sh
 $ sudo rosdep init
