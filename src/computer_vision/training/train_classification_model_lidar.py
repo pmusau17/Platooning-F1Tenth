@@ -46,12 +46,10 @@ BATCH_SIZE = 64
 
 #load the data
 iu=ImageUtils()
-data,labels=iu.load_from_directory(args['dataset'],HEIGHT,WIDTH,verbose=1)
+data,labels=iu.load_from_directory(args['dataset'],HEIGHT,WIDTH,verbose=1,concatenate_images=True)
 
 
 #normalize the images
-data=data/255.0
-
 #convert the labels from integers to vectors
 lb = LabelBinarizer()
 labels=lb.fit_transform(labels)
@@ -68,7 +66,7 @@ print(lb.classes_,classTotals,classWeight)
 
 # initialize the model
 print("[INFO] compiling model...")
-model=MiniVGGNet.build(height=HEIGHT,width=WIDTH,depth=3,classes=len(lb.classes_))
+model=MiniVGGNet.build(height=HEIGHT,width=WIDTH,depth=4,classes=len(lb.classes_))
 #number of epochs
 num_epochs=NUM_EPOCHS
 opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
