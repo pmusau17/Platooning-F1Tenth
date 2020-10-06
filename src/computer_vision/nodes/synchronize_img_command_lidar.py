@@ -70,7 +70,6 @@ class MessageSynchronizer:
         #save path 
         save_path=os.path.join(self.save_path_root,self.label_image(ackermann_msg.drive.steering_angle),str(rospy.Time.now())+'~'+command+'.png')
 
-        #print(save_path)
         limited_ranges=np.asarray(lidar_msg.ranges)
         indices=np.where(limited_ranges>=10.0)[0]
         limited_ranges[indices]=10.0
@@ -79,9 +78,11 @@ class MessageSynchronizer:
         limited_ranges = limited_ranges
         
         if(self.count % 1==0):
-            self.save_image(cv_image,save_path)
-            np.save(save_path.replace(".png",".npy"),limited_ranges)
-            self.save_count+=1
+            dirPath = os.path.split(save_path)[0]
+            if  not 'straight' in dirPath and 'weak_right' not in dirPath and 'weak_left' not in dirPath:
+                self.save_image(cv_image,save_path)
+                np.save(save_path.replace(".png",".npy"),limited_ranges)
+                self.save_count+=1
         self.count+=1
         
     #function that categorizes images into left, weak_left, straight, weak_right, right
@@ -104,11 +105,8 @@ class MessageSynchronizer:
         if not os.path.exists(dirPath):
             os.makedirs(dirPath)
             print('does not exist')
-
-        #if  not 'straight' in dirPath and 'weak_right' not in dirPath and 'weak_left' not in dirPath:
-        if  not 'straight' in dirPath and 'weak_right' not in dirPath and 'weak_left' not in dirPath:
-            print(path)
-            cv2.imwrite(path,image)
+        print(path)
+        cv2.imwrite(path,image)
 
 if __name__=='__main__':
     rospy.init_node('image_command_sync')
