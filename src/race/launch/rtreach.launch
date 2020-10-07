@@ -63,4 +63,7 @@
     <!--time out node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
 
+     <!--ttc node-->
+    <node pkg="race" type="ttc.py" name="ttc" unless="$(arg lec_only)" required="true" args = "$(arg car_name)" output="screen"/>
+
 </launch>
