@@ -25,11 +25,10 @@ class Safety(object):
 
         self.ttc_pub=rospy.Publisher(racecar_name+'/ttc',stamped_ttc,queue_size=10)
         # Initialize subscribers
-        self.scan_subscriber=Subscriber(racecar_name+'/scan',LaserScan,queue_size=10)
-        self.odom_subscriber=Subscriber(racecar_name+'/odom',Odometry,queue_size=10)
-
+        self.scan_subscriber=Subscriber(racecar_name+'/scan',LaserScan)
+        self.odom_subscriber=Subscriber(racecar_name+'/odom',Odometry)
         #create the time synchronizer
-        self.sub = ApproximateTimeSynchronizer([self.scan_subscriber,self.odom_subscriber], queue_size = 100, slop = 0.05)
+        self.sub = ApproximateTimeSynchronizer([self.scan_subscriber,self.odom_subscriber], queue_size = 1, slop = 20)
         #register the callback to the synchronizer
         self.sub.registerCallback(self.master_callback)
 
@@ -53,6 +52,7 @@ class Safety(object):
         
         # minimum ttc
         minimum_ttc = min(ttc)
+        #print(minimum_ttc)
 
         msg= stamped_ttc()
         msg.header.stamp=rospy.Time.now()
