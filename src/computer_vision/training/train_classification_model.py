@@ -39,8 +39,8 @@ ap.add_argument("-o", "--output", required=True,help="directory where we will ou
 args = vars(ap.parse_args())
 
 #desired height, width, epochs
-HEIGHT= 64
-WIDTH= 64
+HEIGHT= 128
+WIDTH= 128
 NUM_EPOCHS = 100
 BATCH_SIZE = 128
 
@@ -64,7 +64,7 @@ print(lb.classes_,classTotals,classWeight)
 # partition the data into training and testing splits using 80% of
 # the data for training and the remaining 20% for testing
 #classification data
-(trainX, testX, trainY, testY) = train_test_split(data,labels, test_size=0.20, stratify=labels, random_state=42)
+(trainX, testX, trainY, testY) = train_test_split(data,labels, test_size=0.10, stratify=labels, random_state=42)
 
 # initialize the model
 print("[INFO] compiling model...")
@@ -83,7 +83,7 @@ callbacks=[checkpoint]
 
 
 # define the image augmentation generator
-aug= ImageDataGenerator(rotation_range=2, brightness_range=[0.5,1.5], zoom_range=[0.9,1.1],rescale=1.0/255.0,fill_mode="nearest")
+aug= ImageDataGenerator(rotation_range=2, brightness_range=[0.3,1.5], zoom_range=[0.9,1.1],rescale=1.0/255.0,fill_mode="nearest")
 
 
 # train the network
