@@ -32,7 +32,7 @@
     <arg name="timeout" default = "-1"/>
 
     <!--docker requirements-->
-    <arg name="use_sim_time" default = "false"/>
+    <arg name="use_sim_time" default = "true"/>
     <arg name="verbose" default ="false"/>
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
@@ -62,5 +62,8 @@
 
     <!--time out node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
+
+     <!--ttc node-->
+    <node pkg="race" type="ttc.py" name="ttc" unless="$(arg lec_only)" required="true" args = "$(arg car_name)" output="screen"/>
 
 </launch>

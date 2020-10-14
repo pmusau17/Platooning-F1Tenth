@@ -17,14 +17,14 @@ class MessageSynchronizer:
 
         /camera/zed/rgb/image_rect_color/compressed: 18 hz
         /camera/zed/rgb/image_rect_color: 18 hz
-        /racecar/drive_parameters: 40 hz
+        /vesc/ackermann_cmd_mux/input/teleop: 40 hz
     '''
-    def __init__(self,racecar_name,vesc_name):
+    def __init__(self,racecar_name,vesc_name,data_path):
         self.image_rect_color=Subscriber(racecar_name+'/camera/zed/rgb/image_rect_color',Image)
         self.drive_parameters=Subscriber(racecar_name+'/drive_parameters',drive_param)
         self.ackermann_stamped=Subscriber(vesc_name+'/ackermann_cmd_mux/input/teleop',AckermannDriveStamped)
         r = rospkg.RosPack()
-        self.save_path_root=r.get_path('computer_vision')+'/data/'
+        self.save_path_root=os.path.sep.join([r.get_path('computer_vision'),data_path])
         self.cv_bridge=CvBridge()
         self.count=0
         self.save_count=0
@@ -44,8 +44,6 @@ class MessageSynchronizer:
         except CvBridgeError as e:
             print(e)
 
-        #print(cv_image.shape,(ackermann_msg.drive.steering_angle,self.label_image(ackermann_msg.drive.steering_angle)),self.count)
-
         #convert the steering command to a string to I can store it with the image name
         #for efficient data storage
         command='%.10f' % ackermann_msg.drive.steering_angle
@@ -57,7 +55,7 @@ class MessageSynchronizer:
         print(self.label_image(ackermann_msg.drive.steering_angle))
         #print(save_path)
         
-        if(self.count % 3==0):
+        if(self.count % 1==0):
             self.save_image(cv_image,save_path)
         
     #function that categorizes images into left, weak_left, straight, weak_right, right
@@ -76,21 +74,17 @@ class MessageSynchronizer:
     
     def save_image(self,image,path):
         dirPath = os.path.split(path)[0]
-        #print(dirPath)
         # if the output directory does not exist, create it
         if not os.path.exists(dirPath):
             os.makedirs(dirPath)
             print('does not exist')
 
-        
-        # 
-        #if cv2.waitKey(25) & 0xFF == ord('q'):
-        #        exit()
-        if  not 'straight' in dirPath and 'weak_right' not in dirPath and 'weak_left' not in dirPath:
+        #if  not 'straight' in dirPath and 'weak_right' not in dirPath and 'weak_left' not in dirPath:
+        if  (not 'straight' in dirPath) and (not "weak_right" in dirPath) and (not "weak_left" in dirPath):
             print(path)
             self.save_count+=1
             cv2.imwrite(path,image)
-        print(self.save_count)
+            print(self.save_count)
 
 if __name__=='__main__':
     rospy.init_node('image_command_sync')
@@ -102,9 +96,12 @@ if __name__=='__main__':
     
     # get the name of the vesc for the car
     vesc_name=args[1]
+
+    # path where to store the dataset
+    data_path = args[2]
     
     # initialize the message filter
-    mf=MessageSynchronizer(racecar_name,vesc_name)
+    mf=MessageSynchronizer(racecar_name,vesc_name,data_path)
     
     # spin so that we can receive messages
     rospy.spin()    
