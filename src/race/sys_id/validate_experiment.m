@@ -1,4 +1,4 @@
-function validate_experiment(csv_filename)
+function err= validate_experiment(csv_filename)
 % load the data from the csv 
 [x,u] = load_csv(csv_filename);
 
