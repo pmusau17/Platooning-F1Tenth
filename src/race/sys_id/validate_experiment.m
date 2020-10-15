@@ -36,11 +36,11 @@ plot(x(1,:),x(2,:),'DisplayName','ground-truth,gazebo')
 hold on;
 plot(xe(1,:),xe(2,:),'DisplayName','sys-id model')
 hold off;
-xlabel('x') 
-ylabel('y') 
-title("Position of Vehicle")
+xlabel('x (meters)') 
+ylabel('y (meters)') 
+title("Vehicle Position (map frame)")
 legend
-sgtitle(strcat('State-Vector MSE=',string(err)))
+sgtitle(strcat('Validation MSE=',string(err)))
 figname = split(strrep(csv_filename,'csv/',''),".");
 savename = strcat("plots/",figname(1),".jpg");
 saveas(fig,savename);
