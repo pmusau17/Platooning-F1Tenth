@@ -41,6 +41,7 @@ class ARSController(object):
 
         # Initialize useful variables
         self.indices = None
+        self.lidar_ranges = None
 
         # Initialize publisher for speed and angle commands
         self.pub_drive_param = rospy.Publisher(control_pub_name, angle_msg, queue_size=5)
