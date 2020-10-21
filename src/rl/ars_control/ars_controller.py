@@ -21,7 +21,7 @@ class ARSController(object):
                  min_turn_angle=(-34.0 * np.pi / 180.),
                  max_turn_angle=(34.0 * np.pi / 180.),
                  constant_velocity=1.0,
-                 lidar_angle=(np.pi / 2), max_lidar_range=10.0):
+                 lidar_angle=(np.pi / 2), max_lidar_range=10.0,decoupled=True):
         """
         TODO explain the inputs
         """
@@ -34,6 +34,7 @@ class ARSController(object):
         self.constant_velocity = constant_velocity
         self.lidar_angle = lidar_angle
         self.max_lidar_range = max_lidar_range
+        self.decoupled = decoupled
 
         # Load the control policy
         if policy_file_name is not None:
@@ -44,7 +45,11 @@ class ARSController(object):
         self.lidar_ranges = None
 
         # Initialize publisher for speed and angle commands
-        self.pub_drive_param = rospy.Publisher(control_pub_name, angle_msg, queue_size=5)
+        if(self.decoupled):
+            self.pub_drive_param = rospy.Publisher(control_pub_name, angle_msg, queue_size=5)
+        else:
+            self.pub_drive_param = rospy.Publisher(control_pub_name, drive_param, queue_size=5)
+
 
         # Initialize subscriber for the Lidar
         rospy.Subscriber(lidar_sub_name, LaserScan, self.__callback_lidar)
@@ -135,12 +140,15 @@ class ARSController(object):
         :param steering_angle:
         :return:
         """
-        msg=angle_msg()
-        msg.header.stamp=rospy.Time.now()
-        msg.steering_angle=steering_angle
-        # msg = drive_param()
-        # msg.angle = steering_angle
-        # msg.velocity = velocity
+        if(self.decoupled):
+            msg=angle_msg()
+            msg.header.stamp=rospy.Time.now()
+            msg.steering_angle=steering_angle
+        else:
+            msg = drive_param()
+            msg.header.stamp = rospy.Time.now()
+            msg.angle = steering_angle
+            msg.velocity = velocity
         self.pub_drive_param.publish(msg)
 
         return
@@ -163,18 +171,32 @@ if __name__ == '__main__':
     rospy.init_node('ars_controller', anonymous=True)
     package_path=rospkg.RosPack().get_path('rl')
     load_name = os.path.join(package_path,"ars_control","final_models","step_7062_model.pth")
-    lidar_sub_name = 'racecar/scan'
     
-    #control_pub_name = 'racecar/drive_parameters'
-    control_pub_name= 'racecar/angle_msg'
     mode = 1
     vel = 1.0
-    extendObj = ARSController(policy_file_name=load_name, lidar_sub_name=lidar_sub_name, 
+
+    #get the arguments passed from the launch file
+    args = rospy.myargv()[1:]
+    #get the racecar name so we know what to subscribe to
+    racecar_name=args[0]
+    lidar_sub_name = racecar_name+'/scan'
+    #if there's more than two arguments then its decoupled
+    if len(args)>1:
+        control_pub_name= racecar_name+'/angle_msg'
+        extendObj = ARSController(policy_file_name=load_name, lidar_sub_name=lidar_sub_name, 
                               control_pub_name=control_pub_name, rate=20, mode=mode,
                               min_turn_angle=(-34.0 * np.pi / 180.),
                               max_turn_angle=(34.0 * np.pi / 180.),
                               constant_velocity=vel,
-                              lidar_angle=(np.pi / 2), max_lidar_range=10.0)
+                              lidar_angle=(np.pi / 2), max_lidar_range=10.0,decoupled=True)
+    else:
+        control_pub_name = 'racecar/drive_parameters'
+        extendObj = ARSController(policy_file_name=load_name, lidar_sub_name=lidar_sub_name, 
+                              control_pub_name=control_pub_name, rate=20, mode=mode,
+                              min_turn_angle=(-34.0 * np.pi / 180.),
+                              max_turn_angle=(34.0 * np.pi / 180.),
+                              constant_velocity=vel,
+                              lidar_angle=(np.pi / 2), max_lidar_range=10.0,decoupled=False)
     
     if mode == 0:
 
