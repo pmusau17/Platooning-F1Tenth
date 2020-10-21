@@ -1,5 +1,6 @@
 #pull from the osrf full kinetic build
-FROM nvidia/cudagl:9.0-base-ubuntu16.04
+#FROM nvidia/cudagl:9.0-base-ubuntu16.04
+FROM nvidia/cudagl:10.0-base-ubuntu16.04
 ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},display
 
 #install ros
@@ -43,12 +44,12 @@ RUN apt-get install -y python-pip && apt-get install -y python3-pip
 RUN pip install rospkg defusedxml PySide2
 RUN pip install empy 
 
+#Need these packages for debugging
+RUN apt-get install -y nano
+RUN apt-get install -y net-tools
+
 #navigate to the home directory
 WORKDIR home
-RUN mkdir -p catkin_ws
-WORKDIR catkin_ws
-RUN git clone https://github.com/pmusau17/Platooning-F1Tenth src
+RUN git clone https://github.com/pmusau17/Platooning-F1Tenth 
+WORKDIR Platooning-F1Tenth 
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash && catkin_make'
-
-
-

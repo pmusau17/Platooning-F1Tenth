@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# cython and anaconda GG
+import sys
+sys.path.insert(0,"/usr/local/lib/python2.7")
+sys.path.insert(0,'/usr/local/lib/python2.7/dist-packages')
 # packages
 import rospy
 import numpy as np

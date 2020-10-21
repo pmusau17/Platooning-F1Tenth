@@ -1,0 +1,22 @@
+#Don't track content of these folders
+__pycache__
+build/
+devel/
+datasets/
+data/
+*.vscode/
+
+#ignore jupyter checkpoints
+*.ipynb_checkpoints/
+
+#ignore .pyc files
+*.pyc
+
+#ignore all zip files
+*.zip
+
+#ignore catkin_workspace
+.catkin_workspace
+
+#Ignore Specific files
+VGG16transfer.hdf5

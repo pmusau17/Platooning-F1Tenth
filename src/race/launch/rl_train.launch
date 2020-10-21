@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  
+    <!--initialize the arguments-->
+    <arg name="world_name" default="track_porto"/>
+    <arg name="car_name" default="racecar"/>
+
+    <!--docker requirements-->
+    <arg name="use_sim_time" default = "true"/>
+    <arg name="verbose" default ="false"/>
+    <!--launch the simulator-->
+    <include file="$(find race)/launch/f1_tenth_rl.launch">
+        <arg name ="world_name" value="$(arg world_name)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
+    </include>
+
+</launch>

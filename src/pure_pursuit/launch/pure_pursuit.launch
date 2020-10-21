@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!--world name-->
+	<arg name="world_name" default="track_porto"/>
+	<arg name="csv_filename" default="track_porto_26780.csv"/>
+	<arg name="car_name" default="racecar"/>
+	
+	<include file="$(find race)/launch/f1_tenth_devel.launch">
+		<arg name="enable_keyboard" value="true"/>
+		<arg name="world_name" value="$(arg world_name)"/>
+	</include>
+  	
+  	<!-- start rviz -->
+  	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find pure_pursuit)/rviz_cfg/pure_pursuit.rviz" output="screen"/>
+
+	<!--launch visualizing node-->
+	<node pkg="pure_pursuit" type="visualize_markers.py" name="visualization_node" args="$(arg csv_filename)"/>
+
+	<!--launch pure pursuit node-->
+	<node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_node" args="$(arg car_name) $(arg csv_filename)"/>
+
+
+</launch>
