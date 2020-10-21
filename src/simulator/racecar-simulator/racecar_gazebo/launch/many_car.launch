@@ -2,8 +2,6 @@
 <launch>
   <!--This world name that is spawned in gazebo-->
   <arg name="world_name" default="racecar" />
-
-
   <arg name="gui" default="true" />
   <arg name="run_camera" default="false"/>
 

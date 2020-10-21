@@ -147,10 +147,10 @@ class DisparityExtenderDriving(object):
 
         #change the steering angle based on whether we are safe
         thresholded_angle=self.adjust_turning_for_safety(behind_car_left,behind_car_right,thresholded_angle)
-        thresholded_angle = np.clip(thresholded_angle,-0.5108652353,0.5108652353)
+        thresholded_angle,too_close = np.clip(thresholded_angle,-0.6108652353,0.6108652353)
 
         # specify the speed the car should move at 
-        if(min(limited_ranges[480:601])<0.7):
+        if(min(limited_ranges[480:601])<0.7 or too_close):
             self.publish_speed_and_angle(thresholded_angle,0.0)
         else:
             self.publish_speed_and_angle(thresholded_angle,0.4)
@@ -179,16 +179,20 @@ class DisparityExtenderDriving(object):
     def adjust_turning_for_safety(self,left_distances,right_distances,angle):
         min_left=min(left_distances)
         min_right=min(right_distances)
+        too_close = False
         if min_left<=self.turn_clearance and angle>0.0:#.261799:
             rospy.logwarn("Too Close Left: "+str(min_left))
             angle=0.0
         elif min_right<=self.turn_clearance and angle<0.0:#-0.261799:
             rospy.logwarn("Too Close Right: "+str(min_right))
-            angle=0.0
-           
+            angle=0.0 
         else:
             angle=angle
-        return angle
+
+        if(min_left <0.25 or min_right<0.25):
+            too_close = True
+            rospy.logwarn("STOP")
+        return angle,too_close
 
 
     """This next section is experimental let's see what happens,
