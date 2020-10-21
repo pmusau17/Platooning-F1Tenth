@@ -191,7 +191,7 @@ class PotentialFieldController(object):
         # Publish the command
         msg = drive_param()
         msg.angle = angle_cmd
-        msg.velocity = speed_cmd
+        msg.velocity = 2.0  # speed_cmd
         self.pub_drive_param.publish(msg)
         rospy.loginfo('speed [force, cmd]: [' + str(speed_force) + ', ' + str(speed_cmd) + '] angle [force, cmd]: [' + str(angle_force) + ', ' + str(angle_cmd) + ']')
         return
