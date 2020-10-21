@@ -5,15 +5,14 @@
     <arg name="world_name" default="track_porto"/>
     <arg name="car_name" default="racecar"/>
 
-    <!--network model utilized for end-to-end driving-->
-    <arg name="model_name" default="minivgg_1.hdf5"/>
-
     <!--waypoint file used by pure pursuit algorithm-->
     <arg name="csv_filename" default="track_porto_26780.csv"/>
     
     <!--flag that limits experiment to LEC only control-->
     <arg name="lec_only" default="false"/>
     
+    <!--flag that toggles rl or end to end experiments-->
+
     <!--occupancy grid of selected track-->
     <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
 
@@ -45,8 +44,8 @@
     <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" unless="$(arg lec_only)" args='$(arg car_name)'/>
 
     <!--launch the lec model node-->
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" unless="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" if="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name)"  required="true" output="log"/>
+    <node pkg="rl" name="lec_model" type="ars_controller.py" unless="$(arg lec_only)" args="$(arg car_name)" required="true" output="log"/>
+    <!--<node pkg="rl" name="lec_model" type="ros_classifier.py" if="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name)"  required="true" output="log"/>-->
 
     <!-- Run map server -->
 	<node name="map_server" pkg="map_server" type="map_server" unless="$(arg lec_only)" args="$(arg map_file)" />

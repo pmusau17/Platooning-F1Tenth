@@ -62,7 +62,7 @@ print(lb.classes_,classTotals,classWeight)
 # partition the data into training and testing splits using 80% of
 # the data for training and the remaining 20% for testing
 #classification data
-(trainX, testX, trainY, testY) = train_test_split(data,labels, test_size=0.20, stratify=labels, random_state=1738)
+(trainX, testX, trainY, testY) = train_test_split(data,labels, test_size=0.20, stratify=labels, random_state=17)
 
 # initialize the model
 print("[INFO] compiling model...")
@@ -90,7 +90,7 @@ print("[INFO] training network...")
 
 #the batch size you are using
 batch_size=BATCH_SIZE
-H = model.fit_generator(aug.flow(trainX,trainY,batch_size=batch_size), validation_data=(testX,testY), steps_per_epoch=len(trainX)//batch_size,epochs =num_epochs,verbose=1,callbacks=callbacks)
+H = model.fit(trainX,trainY,batch_size=batch_size, validation_data=(testX,testY),epochs =num_epochs,verbose=1,callbacks=callbacks)
 
 # evaluate the network
 print("[INFO] evaluating network...")

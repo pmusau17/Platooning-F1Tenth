@@ -1,7 +1,4 @@
-"""
-HEADER TODO
-"""
-
+#!/usr/bin/env python
 import time
 import gc
 import os
@@ -10,9 +7,11 @@ import copy
 import torch
 from numpy.core.multiarray import ndarray
 from sensor_msgs.msg import LaserScan
+from race.msg import angle_msg
 import rospy
 import copy
 import math
+import rospkg 
 
 from race.msg import drive_param # For simulator
 #from racecar.msg import drive_param # For actual car
@@ -44,7 +43,7 @@ class ARSController(object):
         self.indices = None
 
         # Initialize publisher for speed and angle commands
-        self.pub_drive_param = rospy.Publisher(control_pub_name, drive_param, queue_size=5)
+        self.pub_drive_param = rospy.Publisher(control_pub_name, angle_msg, queue_size=5)
 
         # Initialize subscriber for the Lidar
         rospy.Subscriber(lidar_sub_name, LaserScan, self.__callback_lidar)
@@ -135,10 +134,12 @@ class ARSController(object):
         :param steering_angle:
         :return:
         """
-
-        msg = drive_param()
-        msg.angle = steering_angle
-        msg.velocity = velocity
+        msg=angle_msg()
+        msg.header.stamp=rospy.Time.now()
+        msg.steering_angle=steering_angle
+        # msg = drive_param()
+        # msg.angle = steering_angle
+        # msg.velocity = velocity
         self.pub_drive_param.publish(msg)
 
         return
@@ -159,13 +160,16 @@ class ARSController(object):
 
 if __name__ == '__main__':
     rospy.init_node('ars_controller', anonymous=True)
-    load_name = '/home/nate/rl_library/applications/f1_10_simplex/ars/final_models/step_7062_model.pth'
+    package_path=rospkg.RosPack().get_path('rl')
+    load_name = os.path.join(package_path,"ars_control","final_models","step_7062_model.pth")
     lidar_sub_name = 'racecar/scan'
-    control_pub_name = 'racecar/drive_parameters'
+    
+    #control_pub_name = 'racecar/drive_parameters'
+    control_pub_name= 'racecar/angle_msg'
     mode = 1
     vel = 1.0
     extendObj = ARSController(policy_file_name=load_name, lidar_sub_name=lidar_sub_name, 
-                              control_pub_name=control_pub_name, rate=10, mode=mode,
+                              control_pub_name=control_pub_name, rate=20, mode=mode,
                               min_turn_angle=(-34.0 * np.pi / 180.),
                               max_turn_angle=(34.0 * np.pi / 180.),
                               constant_velocity=vel,
