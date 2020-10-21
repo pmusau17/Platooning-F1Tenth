@@ -32,6 +32,11 @@ If you have any questions or run into any problems. Feel free to send me an [ema
 
 The computer vision packages assume your system is GPU enabled. If your system is not gpu enabled, change the requirements in [setup.sh](setup.sh) to requirements-cpu.txt.
 
+
+### Installing Pytorch
+
+To install pytorch kindly visit the following [link](https://pytorch.org/get-started/locally/).
+
 ### Install the Repo
 
 If you already have these environments set up, then go with this choice. We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
