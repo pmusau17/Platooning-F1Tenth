@@ -16,7 +16,7 @@ class ImageUtils:
         self.labels=[]
         self.count=0
 
-    def load_from_directory(self,dataset,height,width,verbose=0,regression=False):
+    def load_from_directory(self,dataset,height,width,verbose=0,regression=False,concatenate_images=False):
         #count to show the user progress
         count=0
         # loop over the input images
@@ -31,14 +31,20 @@ class ImageUtils:
             classification= os.path.basename(split_path[0])
 
             #get the command
-            command=split_path[1].replace('.jpg','').split('~')[1:]
+            command=split_path[1].replace('.png','').replace(".jpg",'').split('~')[1:]
             #convert it back to the command
             command=float('.'.join(command))
 
             #load the image
             image = cv2.imread(imagePath)
             #reshape the image
-            image=self.reshape_image(image,height,width)
+            if(not concatenate_images):
+                image=self.reshape_image(image,height,width)
+            else:
+                image=self.reshape_image(image,32,32)/255.0
+                lidar_image=np.load(imagePath.replace(".png",".npy"))
+                image = np.concatenate((image,lidar_image),axis=-1)
+
             #append the image, classification, command
             self.data.append(image)
             if(not regression):

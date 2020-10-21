@@ -5,7 +5,7 @@
   <arg name="world_name" default="track_porto"/>
   <!-- <arg name="world_name" value="lab_track2"/> -->
   <!--<arg name="world_name" value="track_levine"/>-->
-  <arg name="use_sim_time" default = "false"/>
+  <arg name="use_sim_time" default = "true"/>
   <arg name="gui" default="true" />
   <arg name="run_camera" default="false"/>
   <arg name="reset_on_crash" default = "false"/>
