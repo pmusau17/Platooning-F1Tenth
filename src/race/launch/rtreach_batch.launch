@@ -27,15 +27,23 @@
     <!-- how many obstacles (cones) to allocate in the environment-->
     <arg name="num_obstacles" default="6"/>
 
+    <!--reset on crash-->
+    <arg name="reset_on_crash" default="false"/>
+
     <!--how long to run each experiment before timeout-->
-    <arg name="timeout" default = "5"/>
+    <arg name="timeout" default = "-1"/>
 
     <!-- name of collision log file-->
     <arg name="collision_file" default ="collisions.txt"/>
 
+      <!--docker requirements-->
+    <arg name="use_sim_time" default = "true"/>
+    <arg name="verbose" default ="true"/>
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
         <arg name ="world_name" value="$(arg world_name)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
     </include>
 
     <!--launch the speed node it will be constant in this case-->
@@ -61,11 +69,10 @@
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rtreach" type="reach_node" name="reach_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>
+    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>
 
-    <!--launch rviz to visualize reachable set-->
-    <node pkg="rtreach" type="visualize_node" name="visualization_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>
+    <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file)"/>
 
-    <node pkg = "race" name= "collision_logger_$(arg car_name1)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name1) $(arg num_obstacles) $(arg random_seed) $(arg collision_file)"/>
-
+    <!--ttc node-->
+    <node pkg="race" type="ttc.py" name="ttc" unless="$(arg lec_only)" required="true" args = "$(arg car_name)" output="screen"/>
 </launch>
