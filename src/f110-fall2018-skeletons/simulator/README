@@ -1,4 +1,0 @@
-/simulator is a meta-package which contains many packages inside of it. After 
-you have git cloned the f110-upenn-course, you will want to copy and paste the
-/simulator folder into the /src folder within your workspace. If you have not
-yet created a workspace, a name you could use is sims_ws.

@@ -1,16 +1,27 @@
-# Car-Platooning
+# F1Tenth: Platooning, Computer Vision, Reinforcement Learning, Path Planning
+
+
+# Table of Contents
+
+1. [Introduction](#introduction)
+2. [Installation](#Installation)
+3. [Platooning](#Platooning)
+4. [Computer Vision](#ComputerVision)
+5. [Reinforcement Learning](#ReinforcementLearning)
+6. [System Identification](https://github.com/pmusau17/Platooning-F1Tenth/tree/master/src/race/sys_id)
+7. [Docker](#Docker)
+8. [Developers](#Developers)
+
+
+# Introduction <a name="introduction"></a>
+
+Welcome! This repository contains a host of [ROS](http://wiki.ros.org/ROS/Introduction) packages for the [F1Tenth Autonomous Racing Competition](http://f1tenth.org/). In this repository you will find ROS packages designed for both simulation and the F1Tenth hardware platform. The simulation is based on a Gazebo based virtual racing environment. Our goal is to develop the F1Tenth platform for AI research to experiment with deep learning, computer vision, reinforcement learning, and path planning for autonomous racing.  
+
+If you have any questions or run into any problems. Feel free to send me an [email](mailto:patrick.musau@vanderbilt.edu) or to post an issue and I'll do my best to get back to you promptly.
 
 ![Three_Car_Sim](./images/three_car_platoon.gif "Three Car Simulation")
 
-# Repository Organization
-
-**f110-fall2018-skeletons**: F1Tenth Simulation Code
-
-**particle_filter**: A fast particle filter localization algorithm developped by Corey Walsh et al.
-
-**a_stars_pure_pursuit**: ROS package for a pure pursuit motion planner developped by Siddharth Singh
-
-# Installation 
+# Installation <a name="Installation"></a>
 
 ### Install Necessary Environments
  
@@ -18,6 +29,13 @@
 
 `chmod +x setup_cuda_ros_opencv_conda.sh`
 `./setup_cuda_ros_opencv_conda.sh`
+
+The computer vision packages assume your system is GPU enabled. If your system is not gpu enabled, change the requirements in [setup.sh](setup.sh) to requirements-cpu.txt.
+
+
+### Installing Pytorch
+
+To install pytorch kindly visit the following [link](https://pytorch.org/get-started/locally/).
 
 ### Install the Repo
 
@@ -38,8 +56,11 @@ $ ./setup.sh
 $ catkin_make
 $ source devel/setup.bash
 ```
+### Troubleshooting 
 
-# Algorithms
+If you get the error: ImportError: No module named catkin_pkg.packages and you are using anaconda. Run the following command: ```conda install -c auto catkin_pkg```
+
+# Platooning Algorithms<a name="Platooning"></a>
  
  **Disparity Extender**
  
@@ -58,25 +79,183 @@ $ source devel/setup.bash
 
  **Following Algorithm**
  
- The task of this project was to get a series of 1/10 scales RC cars to platoon in a reliable manner. As a proof of concept we made a few assumptions. The first assumption is that each car precisely knows its own position and orientaion in the map frame. The second assumption is that the the cars could reliably communicate their position and velocity with each other. However the platooning would occur on a racetrack. Thus there would be times that the following cars would not be able to see the lead car. Thus we needed to design boh a lateral and longitudnal controller that maintained a specified distance between the ego car and the lead car. However if any failures occured in the system, the cars would need to be able to switch to a fallback controller from the following controller. The following controller makes use of the pure pursuit algorith proposed by R. Craig Coulter in the paper ["Implementation of the Pure Pursuit Path 'hcking Algorithm"](https://www.ri.cmu.edu/pub_files/pub3/coulter_r_craig_1992_1/coulter_r_craig_1992_1.pdf). To compute the steering angle we use the pure pursuit algorithm to find a goal point in the lead car's position history that consists of the most recent 100 positions. These positions are transmitted from the lead car to the ego car via TCP. The longitudnal distance is observed using the ego car's LIDAR and a PD controller is used to control the ego car's velocity. The fallback controller is the disparity extender controller. One of the benefits of this algorithm is that it can do some obstacle avoidance "out of the box" making it a reliable fallback controller. 
+ The task of this project was to get a series of 1/10 scales RC cars to platoon in a reliable manner. As a proof of concept we made a few assumptions. The first assumption is that each car precisely knows its own position and orientaion in the map frame. The second assumption is that the the cars could reliably communicate their position and velocity with each other. However the platooning would occur on a racetrack. Thus there would be times that the following cars would not be able to see the lead car. Thus we needed to design boh a lateral and longitudnal controller that maintained a specified distance between the ego car and the lead car. However if any failures occured in the system, the cars would need to be able to switch to a fallback controller from the following controller. The following controller makes use of the pure pursuit algorithm proposed by R. Craig Coulter in the paper ["Implementation of the Pure Pursuit Path Tracking Algorithm"](https://www.ri.cmu.edu/pub_files/pub3/coulter_r_craig_1992_1/coulter_r_craig_1992_1.pdf). To compute the steering angle we use the pure pursuit algorithm to find a goal point in the lead car's position history that consists of the most recent 100 positions. These positions are transmitted from the lead car to the ego car via TCP. The longitudnal distance is observed using the ego car's LIDAR and a PD controller is used to control the ego car's velocity. The fallback controller is the disparity extender controller. One of the benefits of this algorithm is that it can do some obstacle avoidance "out of the box" making it a reliable fallback controller. 
  
  To see a demonstration of this algorithm run the following in two seperate terminals:
  
+ Terminal 1: 
  ```bash
  $ roslaunch race multi_parametrizeable.launch  
- $ roslaunch race platoon.launch
  ```
  
-**Object Tracking**
+ Terminal 2: 
+ ```bash  
+ $ roslaunch race platoon.launch
+ ```
 
-One of the ways that we can switch from the following controller to the disparity extender controller is by using an object tracking algorithm. If our assumption about having accurate information about the position of each car is no longer valid then we can also platoon visually. Thus we also provide object tracking capabilities. The object tracking code is found in the Object_Tracking folder.
+# Changing The Number of Cars and The Track
+
+Changing the number of cars can be done in the [multi_parametrizeable.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/multi_parametrizeable.launch) at the top of the file. You can experiment with two or three car experiments. Beyond that Gazebo operates painfully slow. 
+
+To experiment with two or three cars, pass the argument number_of_cars to the multi_paramterizable launch file as shown below:
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=2
+```
+
+or 
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=3
+```
+
+At the moment, the launch files are designed to use the track_porto world file. However you can change this in the launch files by editing the world_name parameter.
+
+For single car experiments you can change the track by editing the world_name parameter in [f1_tenth_devel.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/f1_tenth_devel.launch) at the top of the file.
+
+# Running the Experiments manually. 
+If you would like to run the platooning experiments without the launch files. You can execute the following commands in seperate terminals. 
+
+Terminal 1:
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=2
+```
+
+or 
+
+```
+$ roslaunch race multi_parametrizable.launch number_of_cars:=3
+```
+
+Terminal 2:
+
+The lead car will use whatever driving algorithm you select to navigate the track. In this case we utilized the disparity extender. 
+
+``` 
+$ rosrun race disparity_extender_vanderbilt.py
+```
+Terminal 3:
+
+The syntax for running the following algorithm is the following:
+
+``` 
+$ rosrun race follow_lead_gen.py (lead_car name) (ego car name)
+```
+
+Example: 
+
+``` 
+$ rosrun race follow_lead_gen.py racecar racecar2
+```
+
+Terminal 4:
+
+``` 
+$ rosrun race follow_lead_gen.py racecar2 racecar3
+```
+
+# Computer Vision <a name="ComputerVision"></a>
+
+Right now most things are limited to a single car. Multi-car experiments are a work in progress. Details can be found in the [Computer Vision](src/computer_vision) package.
+
+![Error Analysis](./images/Figure_2.png "Error Analysis")
+
+# Reinforcement Learning <a name="ReinforcementLearning"></a>
+These methods are designed for training a vehicle follower, which we plan on expanding to platooning. However, we might 
+expand this to train a single racer in the future.
+
+Details can be found in the [Reinforcement Learning](src/rl) package.
+
+# Reset the Environment 
+
+If the car crashes or you want to start the experiment again. Simply run:
 
 
-# Running Keyboard nodes
+
+to restart the experiment.
+
+# Running teleoperation nodes
 
 To run a node to tele-operate the car via the keyboard run the following in a new terminal:
 
-``rosrun race keyboard_gen.py racecar1``
+```bash
+$ rosrun race keyboard_gen.py racecar
+```
 
-'racecar1' can be replaced with 'racecar' 'racecar2' as well. 
+'racecar' can be replaced with 'racecar1' 'racecar2' if there are multiple cars. 
 
+Additionally if using the f1_tenth_devel.launch file, simply type the following:
+
+```bash
+$ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
+```
+
+# Docker <a name="Docker"></a>
+
+Install [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) to containerize and run GPU accelerated workloads. In order to run the simulation please install it. 
+
+Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/install/)  to define and run the simulation. Kindly install this as well. 
+
+To build the docker image use the Dockerfile located in this repository. 
+
+```bash
+$ docker build -t platoon_test .
+```
+
+To build the image with tensorflow and ros image run:
+
+```bash
+$ docker build -t tfros -f Dockerfile2 .
+```
+
+Test if the image builds correctly by running: 
+
+```bash
+$ docker container run --rm --runtime=nvidia -it -e DISPLAY  --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
+```
+
+In order to  enable the use of graphical user interfaces within Docker containers such as Gazebo and Rviz give docker the rights to access the X-Server with:
+
+```bash
+$ xhost +local:root
+``` 
+
+This command allows one to connect a container to a host's X server for display **but it is not secure.** It compromises the access control to X server on your host. So with a little effort, someone could display something on your screen, capture user input, in addition to making it easier to exploit other vulnerabilities that might exist in X.
+ 
+**So When you are done run :** 
+
+```bash
+$ xhost -local:root 
+``` 
+
+to return the access controls that were disabled with the previous command
+
+To run the simulation: 
+
+```bash
+$ docker-compose up
+```
+
+To teleoperate the car or run experiments run the following:
+
+```bash
+$ docker container exec -it keyboard bash 
+```
+
+Then run: 
+```bash 
+$ source devel/setup.bash && rosrun race keyboard.py
+```
+
+# Developers <a name="Developers"></a>
+
+Our team consists of graduate and undergraduate students from Vanderbilt University working at the [Institute for Software Integrated Systems](https://www.isis.vanderbilt.edu/).
+
+* [Patrick Musau](https://www.linkedin.com/in/musaup/)
+* [Diego Manzanas Lopez](https://www.linkedin.com/in/diego-manzanas-3b4841106/)
+* [Nathaniel (Nate) Hamilton](https://www.linkedin.com/in/nathaniel-hamilton-b01942112/)
+* [Diandry Rutayisire](https://www.linkedin.com/in/diandry-rutayisire-298a45153/)
+* [Tim Darrah](https://www.linkedin.com/in/timothydarrah/)
+* [Shreyas Ramakrishna](https://www.linkedin.com/in/shreyasramakrishna/)
+* [Tim Krentz](https://www.linkedin.com/in/tim-krentz-15042585/)
