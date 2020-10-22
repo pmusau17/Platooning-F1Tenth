@@ -150,7 +150,7 @@ class DisparityExtenderDriving(object):
         thresholded_angle,too_close = np.clip(thresholded_angle,-0.6108652353,0.6108652353)
 
         # specify the speed the car should move at 
-        if(min(limited_ranges[480:601])<0.7 or too_close):
+        if(min(limited_ranges[480:601])<0.5 or too_close):
             self.publish_speed_and_angle(thresholded_angle,0.0)
         else:
             self.publish_speed_and_angle(thresholded_angle,0.4)
@@ -189,7 +189,7 @@ class DisparityExtenderDriving(object):
         else:
             angle=angle
 
-        if(min_left <0.25 or min_right<0.25):
+        if(min_left <0.20 or min_right<0.20):
             too_close = True
             rospy.logwarn("STOP")
         return angle,too_close
