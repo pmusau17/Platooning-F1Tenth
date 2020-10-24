@@ -3,7 +3,13 @@ __pycache__
 build/
 devel/
 datasets/
-data/
+
+# prevent large files from being tracked unneccessarily
+
+*.png
+*.jpg
+*.bag
+*.npy
 *.vscode/
 
 #ignore jupyter checkpoints
@@ -11,6 +17,9 @@ data/
 
 #ignore .pyc files
 *.pyc
+
+#ignore model files, I'll force add the ones I want to include
+*.hdf5
 
 #ignore all zip files
 *.zip
@@ -20,3 +29,5 @@ data/
 
 #Ignore Specific files
 VGG16transfer.hdf5
+
+

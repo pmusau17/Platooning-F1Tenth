@@ -189,7 +189,7 @@ class DisparityExtenderDriving(object):
         else:
             angle=angle
 
-        if(min_left <0.20 or min_right<0.20):
+        if(min_left <0.25 or min_right<0.25):
             too_close = True
             rospy.logwarn("STOP")
         return angle,too_close
