@@ -210,22 +210,16 @@ To build the docker image use the Dockerfile located in this repository.
 $ docker build -t platoon_test -f docker/Dockerfile .
 ```
 
-To build the image with tensorflow and ros image run:
-
-```bash
-$ docker build -t tfros -f docker/Dockerfile2 .
-```
-
 Test if the image builds correctly by running: 
 
 ```bash
-$ docker container run --rm --runtime=nvidia -it -e DISPLAY  --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
+$ docker container run --rm --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
 ```
 
 In order to  enable the use of graphical user interfaces within Docker containers such as Gazebo and Rviz give docker the rights to access the X-Server with:
 
 ```bash
-$ xhost +local:root
+$ xhost +local:docker
 ``` 
 
 This command allows one to connect a container to a host's X server for display **but it is not secure.** It compromises the access control to X server on your host. So with a little effort, someone could display something on your screen, capture user input, in addition to making it easier to exploit other vulnerabilities that might exist in X.
@@ -233,7 +227,7 @@ This command allows one to connect a container to a host's X server for display 
 **So When you are done run :** 
 
 ```bash
-$ xhost -local:root 
+$ xhost -local:docker 
 ``` 
 
 to return the access controls that were disabled with the previous command
@@ -241,13 +235,13 @@ to return the access controls that were disabled with the previous command
 To run the simulation: 
 
 ```bash
-$ docker-compose up
+$ docker container run --rm --name=sim --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
 ```
 
 To teleoperate the car or run experiments run the following:
 
 ```bash
-$ docker container exec -it keyboard bash 
+$ docker container exec -it sim bash 
 ```
 
 Then run: 
@@ -264,5 +258,6 @@ Our team consists of graduate and undergraduate students from Vanderbilt Univers
 * [Nathaniel (Nate) Hamilton](https://www.linkedin.com/in/nathaniel-hamilton-b01942112/)
 * [Diandry Rutayisire](https://www.linkedin.com/in/diandry-rutayisire-298a45153/)
 * [Tim Darrah](https://www.linkedin.com/in/timothydarrah/)
+* [Latif Gbadamoshie](https://www.linkedin.com/in/abdul-latif-gbadamoshie/)
 * [Shreyas Ramakrishna](https://www.linkedin.com/in/shreyasramakrishna/)
 * [Tim Krentz](https://www.linkedin.com/in/tim-krentz-15042585/)
