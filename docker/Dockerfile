@@ -67,6 +67,6 @@ RUN apt-get install -y ros-kinetic-gazebo-ros-pkgs
 
 # Pytorch python 2.7
 RUN pip install torch torchvision
-pip install future
+RUN pip install future
 
 CMD /bin/bash -c "source devel/setup.bash && roslaunch race f1_tenth_devel.launch"
