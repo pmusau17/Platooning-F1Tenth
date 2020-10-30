@@ -207,13 +207,13 @@ Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/ins
 To build the docker image use the Dockerfile located in this repository. 
 
 ```bash
-$ docker build -t platoon_test .
+$ docker build -t platoon_test -f docker/Dockerfile .
 ```
 
 To build the image with tensorflow and ros image run:
 
 ```bash
-$ docker build -t tfros -f Dockerfile2 .
+$ docker build -t tfros -f docker/Dockerfile2 .
 ```
 
 Test if the image builds correctly by running: 
