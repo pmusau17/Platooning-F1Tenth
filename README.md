@@ -235,7 +235,7 @@ to return the access controls that were disabled with the previous command
 To run the simulation: 
 
 ```bash
-$ docker container run --rm --name=sim --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
+$ docker container run --rm --name=sim --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix platoon_test
 ```
 
 To teleoperate the car or run experiments run the following:
