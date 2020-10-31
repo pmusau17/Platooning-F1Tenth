@@ -11,8 +11,6 @@
     <!--flag that limits experiment to LEC only control-->
     <arg name="lec_only" default="false"/>
     
-    <!--flag that toggles rl or end to end experiments-->
-
     <!--occupancy grid of selected track-->
     <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
 
