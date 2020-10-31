@@ -4,6 +4,7 @@
     <!--initialize the arguments-->
     <arg name="world_name" default="track_porto"/>
     <arg name="car_name" default="racecar"/>
+    <arg name="gui" default="true" />
 
     <!--network model utilized for end-to-end driving-->
     <arg name="model_name" default="minivgg_1.hdf5"/>
@@ -44,6 +45,7 @@
         <arg name ="world_name" value="$(arg world_name)"/>
         <arg name="verbose" value="$(arg verbose)"/>
         <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
+        <arg name="gui" value="$(arg gui)" />
     </include>
 
     <!--launch the speed node it will be constant in this case-->
@@ -60,7 +62,7 @@
     <node pkg="race" type="safety_controller.py" name="safety_node" unless="$(arg lec_only)" args="racecar/scan racecar/safety" output="screen"/>
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
+    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
 
     <!--generation of obtacles and visualization in rviz -->
     <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed) $(arg freespace_file) $(arg num_obstacles)" output="screen"/>
