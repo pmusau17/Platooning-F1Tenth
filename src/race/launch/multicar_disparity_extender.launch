@@ -7,7 +7,7 @@
     <!--Launch a node for each car-->
         <node pkg="race" name="disparity_extender_$(arg car_name)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name)"/>
         <node pkg="race" name="disparity_extender_$(arg car_name2)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name2)"/>
-        <node pkg="race" name="disparity_extender_$(arg car_name3)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name3)"/>
+        <!--<node pkg="race" name="disparity_extender_$(arg car_name3)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name3)"/>-->
 
 
 </launch>
