@@ -13,5 +13,7 @@
   <!--joint state publisher for rviz and the tf transforms-->
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
   <!--robot state publisher is needed-->
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen"/>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+    <param name="publish_frequency" value="100.0" />
+  </node>
 </launch>

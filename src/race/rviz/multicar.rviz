@@ -255,6 +255,14 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /viz
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -280,7 +288,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 24.317894
+      Distance: 28.7070332
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1

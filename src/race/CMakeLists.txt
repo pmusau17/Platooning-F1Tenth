@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   geometry_msgs
   tf
+  laser_geometry
 )
 
 ## System dependencies are found with CMake's conventions
@@ -211,3 +212,14 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+find_package(PCL REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(PkgConfig)
+pkg_search_module(Eigen3 REQUIRED eigen3)
+include_directories(  ${catkin_INCLUDE_DIRS}  ${PCL_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
+add_executable(laser_converter_node src/laser_to_pointcloud.cpp)
+target_link_libraries(laser_converter_node ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${EIGEN3_INCLUDE_DIR})
