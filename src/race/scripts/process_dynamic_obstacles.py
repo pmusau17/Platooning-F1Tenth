@@ -23,6 +23,14 @@ class ProcessDynamicObstacles:
 
         self.sub.registerCallback(self.master_callback)
 
+    def calculate_intervals(self,center,width=1,height=1):
+        '''
+            Addition by Patrick for RealTime Reachability
+        '''
+        x_int = [center[0]-width/2, center[0]+width/2]
+        y_int = [center[1]-height/2, center[1]+height/2]
+        return x_int,y_int 
+
     def master_callback(self,marker_array_msg,odom_msg):
         # position 
         x = odom_msg.pose.pose.position.x
@@ -52,6 +60,10 @@ class ProcessDynamicObstacles:
                 marker.id = marker.id+1
                 marker.lifetime = rospy.Duration(0.05)
                 markerArray.markers.append(marker)
+                xi,yi = self.calculate_intervals((mx,my),width=marker.scale.x,height=marker.scale.y)
+                print(xi,yi)
+                
+
         self.pub.publish(markerArray)
 
 
