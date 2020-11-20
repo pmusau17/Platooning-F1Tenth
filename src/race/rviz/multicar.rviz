@@ -257,7 +257,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /viz
+      Marker Topic: /racecar/processed_obstacles
       Name: MarkerArray
       Namespaces:
         "": true
