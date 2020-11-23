@@ -2,6 +2,8 @@
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from nav_msgs.msg import Odometry
+from race.msg import obstacle_list
+from race.msg import interval
 import rospy
 import math
 import rospkg
@@ -16,6 +18,7 @@ class ProcessDynamicObstacles:
         self.racecar_name = racecar_name
         self.wallpoints = wallpoints
         self.pub = rospy.Publisher(self.racecar_name+"/processed_obstacles", MarkerArray, queue_size="1")
+        self.interval_pub = rospy.Publisher(self.racecar_name+"/obstacles", obstacle_list, queue_size="1")
 
         #subscribe to the viz and the odom message
         self.marker_sub=Subscriber('viz',MarkerArray)
@@ -83,6 +86,7 @@ class ProcessDynamicObstacles:
 
         # markers
         markerArray = MarkerArray()
+        obs_list = []
         markers = marker_array_msg.markers
         for marker in markers:
             mx = marker.pose.position.x
@@ -93,14 +97,27 @@ class ProcessDynamicObstacles:
 
             # Ignore obstacles that are more than 5.0 meters away, 
             # Change this if needed
-            if(diff<5.0):
+            if(diff<5.0 and diff>0.2):
                 marker.id = marker.id+1
                 marker.lifetime = rospy.Duration(0.05)
                 xi,yi = self.calculate_intervals((mx,my),width=marker.scale.x,height=marker.scale.y)
+                # define interval list
+                obs_interval = interval()
+                obs_interval.x_min = xi[0]
+                obs_interval.x_max = xi[1]
+                obs_interval.y_min = yi[0]
+                obs_interval.y_max = yi[1]
                 if(self.check_intersection_walls(xi,yi)):
                     markerArray.markers.append(marker)
+                    if(obs_interval not in obs_list):
+                        obs_list.append(obs_interval)
                 
+        obs_msg = obstacle_list()
+        obs_msg.count = len(obs_list)
+        obs_msg.obstacle_list = obs_list
+        obs_msg.header.stamp = rospy.Time.now()
 
+        self.interval_pub.publish(obs_msg)
         self.pub.publish(markerArray)
 
 
