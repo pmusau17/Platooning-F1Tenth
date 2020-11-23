@@ -16,6 +16,12 @@
 <arg name='world_name' default='track_porto'/> 
 <arg name='number_of_cars' default='2'/>
 
+<!--waypoint file used by pure pursuit algorithm-->
+<arg name="csv_filename" default="porto_obstacles.txt"/>
+
+<!--network model utilized for end-to-end driving-->
+    <arg name="model_name" default="minivgg_1.hdf5"/>
+
 <!--occupancy grid of selected track-->
 <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
 
@@ -27,10 +33,15 @@
   </include>
   
 
-    <!--<node pkg="race" name="laser_converter" type="laser_converter.py" output="screen"/>-->
+    <!--the dynamic obstacle package uses point_clouds so this node converts LaserScan to PointCloud2-->
 
     <node pkg="race" name="laser_converter" type="laser_converter_node" output="screen"/>
-    
+
+    <!--process the dynamic obstacles -->
+    <node pkg="race" name="process_obstacles" type="process_dynamic_obstacles.py" args='$(arg car_name2) $(arg csv_filename)' output="screen"/>
+
+    <!--dynamic obstacle package-->
+    <node pkg="multi_object_tracking_lidar" name="object_tracker" type="kf_tracker"/>
   
   <include file="$(find racecar_gazebo)/launch/two_car.launch" if = "$(eval arg('number_of_cars') ==2)" >
     <arg name="world_name" value="$(arg world_name)"/>
@@ -48,10 +59,17 @@
       Additionally you can run a node from the command line via rosrun race keyboard_gen.py racecar2 with the appropriate
       car_name
   -->
+  
+  <!--<node pkg="race" name="keyboard_node_$(arg car_name)" type="keyboard_gen.py" output="screen" args="$(arg car_name)" if = "$(arg enable_keyboard)"/>-->
+  <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name2) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
+  <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name2)" output="screen"/>
+
+  <!--launch the speed node it will be constant in this case-->
+  <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" args='$(arg car_name2)'/>
 
 
   <!--Launch the visualizitation rviz-->
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find race)/rviz/multicar.rviz"/>
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find race)/rviz/dynamic_obs.rviz"/>
 
 
 </launch>
