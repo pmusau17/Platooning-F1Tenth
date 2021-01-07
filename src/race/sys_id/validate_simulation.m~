@@ -1,0 +1,31 @@
+file1 = 'csv/data_15870_0.csv';
+file2 = 'csv/data_15870_2.csv';
+file3 = 'csv/data_15870_3.csv';
+file4 = 'csv/data_15870_5.csv';
+file5 = 'csv/data_15870_6.csv';
+file6 = 'csv/data_15870_8.csv';
+
+
+
+[x,u] = load_csv(file1);
+
+
+xe = {};
+timeStep = 1.0;
+% 
+sim_time = 2.0; 
+step_size = 0.05;
+simrange=0:step_size:sim_time;
+
+xj = {};
+
+for j=1:length(u)
+    xe = {x(:,j)};
+    for i=1:length(simrange)
+        xe{i+1} = simulate_bicycle_euler(x(:,j),u(:,j),timeStep);
+    end
+    xj{j,1} = xe; 
+end
+
+
+
