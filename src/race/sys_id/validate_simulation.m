@@ -5,7 +5,7 @@ file4 = 'csv/data_15870_5.csv';
 file5 = 'csv/data_15870_6.csv';
 file6 = 'csv/data_15870_8.csv';
 
-
+set(gcf,'color','w');
 
 [x,u] = load_csv(file3);
 
@@ -29,16 +29,20 @@ for j=1:incr:length(u)
     xj{j,1} = xe; 
 end
 
-plot(x(1,:),x(2,:),'b','DisplayName','ground-truth,gazebo','LineWidth',2)
+plot(x(1,:),x(2,:),'-','Color', [157, 158, 157]/255,'DisplayName','ground-truth,gazebo','LineWidth',2)
 hold on 
 
 
  for k=1:incr:length(u)
-    plot(x(1,k),x(2,k),'bo','LineWidth',1); 
+    %plot(x(1,k),x(2,k),'bo','LineWidth',1); 
     x_sim = cell2mat(xj{k,:})';
-    plot(x_sim(:,1),x_sim(:,2),'--','LineWidth',2)
-end 
+    plot(x_sim(:,1),x_sim(:,2),'--','Color', [70, 143, 199]/255,'LineWidth',2)
+ end 
 
+
+ax = gca % Get handle to current axes.
+ax.XColor = [87, 93, 97]/255; % Red
+ax.YColor = [87, 93, 97]/255; % Blue
 xlabel('x (meters)') 
 ylabel('y (meters)') 
-title("Vehicle Position (map frame)")
+title("Vehicle Position (map frame)",'Color',[87, 93, 97]/255)
