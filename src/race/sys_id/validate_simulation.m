@@ -6,8 +6,9 @@ file5 = 'csv/data_15870_6.csv';
 file6 = 'csv/data_15870_8.csv';
 
 set(gcf,'color','w');
+set(gcf, 'Position',  [100, 100, 1200, 900])
 
-[x,u] = load_csv(file3);
+[x,u] = load_csv(file1);
 
 
 xe = {};
@@ -29,8 +30,9 @@ for j=1:incr:length(u)
     xj{j,1} = xe; 
 end
 
-plot(x(1,:),x(2,:),'-','Color', [157, 158, 157]/255,'DisplayName','ground-truth,gazebo','LineWidth',2)
+plot(x(1,1),x(2,1),'*','Color', [38, 38, 38]/255,'DisplayName','ground-truth,gazebo','LineWidth',2)
 hold on 
+plot(x(1,:),x(2,:),'-','Color', [157, 158, 157]/255,'DisplayName','ground-truth,gazebo','LineWidth',2)
 
 
  for k=1:incr:length(u)
@@ -40,9 +42,19 @@ hold on
  end 
 
 
-ax = gca % Get handle to current axes.
+ax = gca; % Get handle to current axes.
 ax.XColor = [87, 93, 97]/255; % Red
 ax.YColor = [87, 93, 97]/255; % Blue
 xlabel('x (meters)') 
 ylabel('y (meters)') 
-title("Vehicle Position (map frame)",'Color',[87, 93, 97]/255)
+t = title("Vehicle Position (map frame)",'Color',[87, 93, 97]/255);
+
+set(t, 'horizontalAlignment', 'left')
+set(t, 'units', 'normalized')
+%h1 = get(t, 'position');
+set(t, 'position', [0.01 1.01 0]);
+
+legend('init','ground-truth,gazebo','prediction','Location','northwest')
+legend boxoff 
+
+set(gca,'box','off')
