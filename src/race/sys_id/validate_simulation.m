@@ -5,6 +5,7 @@ file4 = 'csv/data_15870_5.csv';
 file5 = 'csv/data_15870_6.csv';
 file6 = 'csv/data_15870_8.csv';
 
+fig = figure();
 set(gcf,'color','w');
 set(gcf, 'Position',  [100, 100, 1200, 900])
 
@@ -58,3 +59,7 @@ legend('init','ground-truth,gazebo','prediction','Location','northwest')
 legend boxoff 
 
 set(gca,'box','off')
+
+figname = split(strrep(file1,'csv/',''),".");
+savename = strcat("plots/",'sim_',figname{1},".png");
+saveas(fig,savename);
