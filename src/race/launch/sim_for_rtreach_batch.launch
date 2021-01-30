@@ -7,7 +7,8 @@
     <arg name="gui" default="true" />
 
     <!--network model utilized for end-to-end driving-->
-    <arg name="model_name" default="minivgg_1.hdf5"/>
+    <!--<arg name="model_name" default="minivgg_1.hdf5"/>-->
+    <arg name="model_name" default="minivgg_center_data.hdf5"/>
 
     <!--waypoint file used by pure pursuit algorithm-->
     <arg name="csv_filename" default="track_porto_26780.csv"/>
