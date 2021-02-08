@@ -1,0 +1,75 @@
+
+VGG4
+[INFO] evaluating network...
+              precision    recall  f1-score   support
+
+        left       0.88      0.86      0.87       225
+       right       0.84      0.88      0.86       238
+    straight       0.92      0.85      0.88       224
+   weak_left       0.83      0.80      0.81       232
+  weak_right       0.79      0.85      0.82       234
+
+   micro avg       0.85      0.85      0.85      1153
+   macro avg       0.85      0.85      0.85      1153
+weighted avg       0.85      0.85      0.85      1153
+
+
+VGG5 
+[INFO] evaluating network...
+              precision    recall  f1-score   support
+
+        left       0.91      0.85      0.88       225
+       right       0.87      0.90      0.88       238
+    straight       0.95      0.86      0.90       224
+   weak_left       0.81      0.88      0.85       232
+  weak_right       0.84      0.86      0.85       234
+
+   micro avg       0.87      0.87      0.87      1153
+   macro avg       0.88      0.87      0.87      1153
+weighted avg       0.87      0.87      0.87      1153
+
+
+VGG6
+[INFO] evaluating network...
+              precision    recall  f1-score   support
+
+        left       0.90      0.90      0.90       225
+       right       0.92      0.91      0.91       238
+    straight       0.93      0.85      0.89       224
+   weak_left       0.85      0.85      0.85       232
+  weak_right       0.85      0.92      0.88       234
+
+   micro avg       0.89      0.89      0.89      1153
+   macro avg       0.89      0.89      0.89      1153
+weighted avg       0.89      0.89      0.89      1153
+
+
+
+VGG 7 
+
+[INFO] evaluating network...
+              precision    recall  f1-score   support
+
+        left       0.89      0.89      0.89        45
+       right       0.96      0.90      0.93        49
+    straight       0.96      0.97      0.96       224
+   weak_left       0.97      0.96      0.96       266
+  weak_right       0.97      0.98      0.97       291
+
+   micro avg       0.96      0.96      0.96       875
+   macro avg       0.95      0.94      0.94       875
+weighted avg       0.96      0.96      0.96       875
+
+VGG 8 
+[INFO] evaluating network...
+              precision    recall  f1-score   support
+
+        left       0.89      0.93      0.91        45
+       right       0.96      0.94      0.95        49
+    straight       0.97      0.98      0.98       224
+   weak_left       0.98      0.97      0.98       266
+  weak_right       0.98      0.98      0.98       291
+
+   micro avg       0.97      0.97      0.97       875
+   macro avg       0.96      0.96      0.96       875
+weighted avg       0.97      0.97      0.97       875
