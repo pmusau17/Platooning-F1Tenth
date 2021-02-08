@@ -4,10 +4,7 @@
     <!--initialize the arguments-->
     <arg name="world_name" default="track_porto"/>
     <arg name="car_name" default="racecar"/>
-
-    <!--network model utilized for end-to-end driving-->
-    <arg name="model_name" default="minivgg_1.hdf5"/>
-
+    <arg name="gui" default="true" />
     <!--waypoint file used by pure pursuit algorithm-->
     <arg name="csv_filename" default="track_porto_26780.csv"/>
     
@@ -38,6 +35,7 @@
     <include file="$(find race)/launch/f1_tenth_devel.launch">
         <arg name ="world_name" value="$(arg world_name)"/>
         <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="gui" value="$(arg gui)" />
         <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
     </include>
 
@@ -45,8 +43,8 @@
     <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" unless="$(arg lec_only)" args='$(arg car_name)'/>
 
     <!--launch the lec model node-->
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" unless="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" if="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name)"  required="true" output="log"/>
+    <node pkg="rl" name="lec_model" type="ars_controller.py" unless="$(arg lec_only)" args="$(arg car_name) 1" required="true" output="log"/>
+    <node pkg="rl" name="lec_model" type="ars_controller.py" if="$(arg lec_only)" args="$(arg car_name)"  required="true" output="log"/>
 
     <!-- Run map server -->
 	<node name="map_server" pkg="map_server" type="map_server" unless="$(arg lec_only)" args="$(arg map_file)" />
@@ -55,7 +53,7 @@
     <node pkg="race" type="safety_controller.py" name="safety_node" unless="$(arg lec_only)" args="racecar/scan racecar/safety" output="screen"/>
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
+    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
 
     <!--generation of obtacles and visualization in rviz -->
     <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed) $(arg freespace_file) $(arg num_obstacles)" output="screen"/>

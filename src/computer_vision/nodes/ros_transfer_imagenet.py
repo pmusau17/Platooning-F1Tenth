@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np 
 import imutils
+from keras.applications import imagenet_utils 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import time
@@ -89,9 +90,8 @@ class ROS_Classify:
     def image_callback(self,ros_image):
         #convert the ros_image to an openCV image
         try:
-            orig_image=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")/255.0
-            cv_image=self.util.reshape_image(orig_image,self.height,self.width)
-            #print(cv_image.shape)
+            orig_image=self.cv_bridge.imgmsg_to_cv2(ros_image,"bgr8")
+            cv_image=imagenet_utils.preprocess_input(self.util.reshape_image(orig_image,self.height,self.width))
         except CvBridgeError as e:
             print(e)
 
@@ -99,6 +99,7 @@ class ROS_Classify:
         predict_image=np.expand_dims(cv_image, axis=0)
         #make the prediction
         pred=self.model.predict(predict_image)
+        #print(pred)
         self.count+=1
         #publish the actuation command
         if(self.count>20):
@@ -111,7 +112,7 @@ class ROS_Classify:
         print("INFO prediction: {}".format(self.classes[pred[0].argmax()]))
         
         #uncomment to show the original image
-        #cv2.imshow("Original Image",orig_image)
+        #cv2.imshow("Original Image",cv_image)
         #cv2.waitKey(3) 
 
     #computes the actuation command to send to the car
@@ -140,7 +141,7 @@ class ROS_Classify:
             msg = drive_param()
             msg.header.stamp=rospy.Time.now()
             msg.angle = angle
-            msg.velocity = 1.0
+            msg.velocity = 0.7
         else:
             msg=angle_msg()
             msg.header.stamp=rospy.Time.now()
@@ -180,7 +181,7 @@ if __name__=='__main__':
     else:
         il=ROS_Classify(racecar_name,model)
     try: 
-        r = rospy.Rate((1/40.0))
+        r = rospy.Rate((1/20.0))
         while not rospy.is_shutdown():
             r.sleep()
     except KeyboardInterrupt:

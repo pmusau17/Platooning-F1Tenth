@@ -39,17 +39,10 @@ ap.add_argument("-o", "--output", required=True,help="directory where we will ou
 args = vars(ap.parse_args())
 
 #desired height, width, epochs
-<<<<<<< HEAD
 HEIGHT= 128
 WIDTH= 128
 NUM_EPOCHS = 100
 BATCH_SIZE = 128
-=======
-HEIGHT= 32
-WIDTH= 32
-NUM_EPOCHS = 170
-BATCH_SIZE = 64
->>>>>>> 3281490c10932faa713da8e0b8f2facda7f73057
 
 #load the data
 iu=ImageUtils()
@@ -71,11 +64,7 @@ print(lb.classes_,classTotals,classWeight)
 # partition the data into training and testing splits using 80% of
 # the data for training and the remaining 20% for testing
 #classification data
-<<<<<<< HEAD
 (trainX, testX, trainY, testY) = train_test_split(data,labels, test_size=0.10, stratify=labels, random_state=42)
-=======
-(trainX, testX, trainY, testY) = train_test_split(data,labels, test_size=0.20, stratify=labels, random_state=1738)
->>>>>>> 3281490c10932faa713da8e0b8f2facda7f73057
 
 # initialize the model
 print("[INFO] compiling model...")
@@ -94,11 +83,7 @@ callbacks=[checkpoint]
 
 
 # define the image augmentation generator
-<<<<<<< HEAD
-aug= ImageDataGenerator(rotation_range=2, brightness_range=[0.3,1.5], zoom_range=[0.9,1.1],rescale=1.0/255.0,fill_mode="nearest")
-=======
 aug= ImageDataGenerator(rotation_range=5, brightness_range=[0.5,1.5], zoom_range=[0.95,1.05],rescale=1.0/255.0,fill_mode="nearest")
->>>>>>> 3281490c10932faa713da8e0b8f2facda7f73057
 
 
 # train the network

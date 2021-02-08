@@ -4,11 +4,12 @@
         <arg name='car_name' value='racecar'/>
         <arg name='car_name2' value='racecar2'/>
         <arg name='car_name3' value='racecar3'/>
+        <arg name="sleep_time" value="5"/>
     <!--Launch a node for each car-->
 
         <!--The lead car will lead using the disparity extender-->
-        <node pkg="race" name="disparity_extender_$(arg car_name)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name)"/>
+        <node pkg="race" name="disparity_extender_$(arg car_name)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name) $(arg sleep_time)" output="screen"/>
         <!--The follower car will follow using the file follow_lead first parameter: lead car, second: parameter: follower_car-->
-        <node pkg="race" name="follow_$(arg car_name2)" type="follow_lead_gen.py"  args="$(arg car_name) $(arg car_name2)"/>
-        <node pkg="race" name="follow_$(arg car_name3)" type="follow_lead_gen.py" output="screen" args="$(arg car_name2) $(arg car_name3)"/>
+        <node pkg="race" name="follow_$(arg car_name2)" type="follow_lead_gen.py"  args="$(arg car_name) $(arg car_name2)" output="screen"/>
+        <!--<node pkg="race" name="follow_$(arg car_name3)" type="follow_lead_gen.py" output="screen" args="$(arg car_name2) $(arg car_name3)"/>-->
 </launch>

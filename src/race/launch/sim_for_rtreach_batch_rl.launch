@@ -4,14 +4,16 @@
     <!--initialize the arguments-->
     <arg name="world_name" default="track_porto"/>
     <arg name="car_name" default="racecar"/>
+    <arg name="gui" default="true" />
+
+    <!--network model utilized for end-to-end driving-->
+    <arg name="model_name" default="minivgg_1.hdf5"/>
 
     <!--waypoint file used by pure pursuit algorithm-->
     <arg name="csv_filename" default="track_porto_26780.csv"/>
     
     <!--flag that limits experiment to LEC only control-->
     <arg name="lec_only" default="false"/>
-    
-    <!--flag that toggles rl or end to end experiments-->
 
     <!--occupancy grid of selected track-->
     <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
@@ -24,20 +26,26 @@
     <arg name="freespace_file" default ="porto_freespace.txt"/>
 
     <!-- how many obstacles (cones) to allocate in the environment-->
-    <arg name="num_obstacles" default="5"/>
+    <arg name="num_obstacles" default="6"/>
 
-    <!--how long to run each experiment before timeout
-        a negative number denotes no timeout-->
+    <!--reset on crash-->
+    <arg name="reset_on_crash" default="false"/>
+
+    <!--how long to run each experiment before timeout-->
     <arg name="timeout" default = "-1"/>
 
-    <!--docker requirements-->
+    <!-- name of collision log file-->
+    <arg name="collision_file" default ="collisions.txt"/>
+
+      <!--docker requirements-->
     <arg name="use_sim_time" default = "true"/>
-    <arg name="verbose" default ="false"/>
+    <arg name="verbose" default ="true"/>
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
         <arg name ="world_name" value="$(arg world_name)"/>
         <arg name="verbose" value="$(arg verbose)"/>
         <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
+        <arg name="gui" value="$(arg gui)" />
     </include>
 
     <!--launch the speed node it will be constant in this case-->
@@ -46,7 +54,7 @@
     <!--launch the lec model node-->
     <node pkg="rl" name="lec_model" type="ars_controller.py" unless="$(arg lec_only)" args="$(arg car_name) 1" required="true" output="log"/>
     <node pkg="rl" name="lec_model" type="ars_controller.py" if="$(arg lec_only)" args="$(arg car_name)"  required="true" output="log"/>
-
+    
     <!-- Run map server -->
 	<node name="map_server" pkg="map_server" type="map_server" unless="$(arg lec_only)" args="$(arg map_file)" />
 
@@ -54,7 +62,7 @@
     <node pkg="race" type="safety_controller.py" name="safety_node" unless="$(arg lec_only)" args="racecar/scan racecar/safety" output="screen"/>
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rviz" type="rviz" name="rviz_display" unless="$(arg lec_only)" args="-d $(find race)/rviz/rtreach.rviz" output="log"/>
+    <node pkg="rviz" type="rviz" name="rviz_display" args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
 
     <!--generation of obtacles and visualization in rviz -->
     <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed) $(arg freespace_file) $(arg num_obstacles)" output="screen"/>
@@ -62,7 +70,11 @@
     <!--time out node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
 
-     <!--ttc node-->
-    <node pkg="race" type="ttc.py" name="ttc" unless="$(arg lec_only)" required="true" args = "$(arg car_name)" output="screen"/>
+    <!--launch rviz to visualize reachable set-->
+    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>
 
+    <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file)"/>
+
+    <!--ttc node-->
+    <node pkg="race" type="ttc.py" name="ttc" unless="$(arg lec_only)" required="true" args = "$(arg car_name)" output="screen"/>
 </launch>
