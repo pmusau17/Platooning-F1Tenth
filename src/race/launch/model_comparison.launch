@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+  
+    <!--initialize the arguments-->
+
+    <arg name="world_number" default="0"/>
+    <arg name="car_name" default="racecar"/>
+    <arg name="gui" default="true" />
+
+     <!--network model utilized for end-to-end driving-->
+    <arg name="model_name" default="fnn_lidar2.hdf5"/>
+
+    <!--handles selecting a track-->
+    <arg name="world_name" if="$(eval arg('world_number')==0)" value="track_porto"/>
+    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_tunnel"/>
+    <arg name="world_name" if="$(eval arg('world_number')==2)" value="racecar_walker"/>
+    <arg name="world_name" if="$(eval arg('world_number')==3)" value="track_barca"/>
+    <arg name="world_name" if="$(eval arg('world_number')==4)" value="track_levine"/>
+
+
+
+    <!--how long to run each experiment before timeout-->
+    <arg name="timeout" default = "30"/>
+
+
+
+    <!--docker requirements-->
+    <arg name="use_sim_time" default = "true"/>
+    <arg name="verbose" default ="true"/>
+    <!--launch the simulator-->
+    <include file="$(find race)/launch/f1_tenth_devel.launch">
+        <arg name ="world_name" value="$(arg world_name)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
+        <arg name="gui" value="$(arg gui)" />
+    </include>
+
+    <!--Timeout node-->
+    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
+    
+    <node pkg="race" type="lidar_classification_node.py" name="e2e" required='true' args="$(arg car_name) $(find race)/models/$(arg model_name)"/>
+
+   
+</launch>

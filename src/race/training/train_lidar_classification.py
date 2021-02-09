@@ -23,7 +23,7 @@ ap.add_argument("-m","--model",required=True,help="path to save the output model
 args = vars(ap.parse_args())
 
 NUM_EPOCHS = 100
-BATCH_SIZE = 256
+BATCH_SIZE = 3791
 
 
 def soft_acc(y_true, y_pred):
@@ -53,12 +53,12 @@ outputs = df[df.columns[9]].values
 print("[INFO] compiling model...")
 #number of epochs
 num_epochs=NUM_EPOCHS
-opt=SGD(lr=0.1,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
+opt=SGD(lr=0.05,decay=0.02/num_epochs,momentum=0.9,nesterov=True)
 model.compile(loss=mean_squared_error,optimizer=opt,metrics=['mae','mse','mape'])
 
 #save the best performing models
 fname=args['model']
-checkpoint = ModelCheckpoint(fname, monitor="val_loss", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
+checkpoint = ModelCheckpoint(fname, monitor="mae", mode="min",save_best_only=True,save_weights_only=False, verbose=1)
 
 #Let us now instantiate th callbacks
 callbacks=[checkpoint]
