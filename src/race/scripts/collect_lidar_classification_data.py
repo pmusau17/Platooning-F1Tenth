@@ -39,7 +39,7 @@ class MessageSynchronizer:
 
 
         self.filename=self.save_path_root+'{}.csv'.format("lidar_classification_data")
-        self.file = open(self.filename, 'w+')
+        self.file = open(self.filename, 'a')
         print(self.filename)
         #create the time synchronizer
         self.sub = ApproximateTimeSynchronizer([self.ackermann_stamped,self.lidar_sub], queue_size = 20, slop = 0.049)
@@ -62,7 +62,7 @@ class MessageSynchronizer:
         limited_ranges[indices]=10.0
         #print(limited_ranges[self.indices])
         row = list(limited_ranges[self.indices])+[command]
-        row_str = '{}, {}, {}, {}, {}, {} {} {} {} {}\n'.format(*row)
+        row_str = '{}, {}, {}, {}, {}, {}, {}, {}, {}, {}\n'.format(*row)
         self.file.write(row_str)
         
     def shutdown(self):
