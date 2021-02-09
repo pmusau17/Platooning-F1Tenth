@@ -1,6 +1,6 @@
-image: trackbarca.pgm
+image: racecar_tunnel.pgm
 resolution: 0.050000
-origin: [-17.693642, -37.279056, 0.000000]
+origin: [-22.372861, -3.858319, 0.000000]
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196
