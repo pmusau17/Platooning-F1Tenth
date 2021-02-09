@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+  
+    <!--initialize the arguments-->
+    <arg name="world_number" default="0"/>
+    <arg name="car_name" default="racecar"/>
+    <arg name="gui" default="true" />
+
+
+
+    <!--handles selecting a track-->
+    <arg name="world_name" if="$(eval arg('world_number')==0)" value="track_porto"/>
+    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_tunnel"/>
+    <arg name="world_name" if="$(eval arg('world_number')==2)" value="racecar_walker"/>
+    <arg name="world_name" if="$(eval arg('world_number')==3)" value="track_barca"/>
+
+    <arg name="map_name" if="$(eval arg('world_number')==0)" value="trackporto.yaml"/>
+    <arg name="map_name" if="$(eval arg('world_number')==1)" value="racecartunnel.yaml"/>
+    <arg name="map_name" if="$(eval arg('world_number')==2)" value="racecarwalker.yaml"/>
+    <arg name="map_name" if="$(eval arg('world_number')==3)" value="trackbarca.yaml"/>
+ 
+
+
+    <!--occupancy grid of selected track-->
+    <arg name="map_file" default="$(find race)/maps/$(arg map_name)"/>
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
+
+
+   
+      <!--docker requirements-->
+    <arg name="use_sim_time" default = "true"/>
+    <arg name="verbose" default ="true"/>
+    <!--launch the simulator-->
+    <include file="$(find race)/launch/f1_tenth_devel.launch">
+        <arg name ="world_name" value="$(arg world_name)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
+        <arg name="gui" value="$(arg gui)" />
+    </include>
+
+    
+</launch>
