@@ -38,7 +38,10 @@ class CollisionTracker(object):
         def __init__(self, tf_prefix, num_obstacles,random_seed,log_file, timeout = 0.5):
             self.active_collisions = []
             self.timeout = timeout
+
+            # We only care about collisions of the ego car
             self.tf_prefix = tf_prefix
+            # get the path to the log files
             rospack = rospkg.RosPack()
             self.collision_file = os.path.join(rospack.get_path('race'),"logs",log_file)
             rospy.logwarn(self.collision_file)
@@ -55,14 +58,16 @@ class CollisionTracker(object):
         def is_safe(self):
             return self.safe
 
-        def append_collision(self):
+        def append_collision(self,ob):
+            ob_item1 = list(ob.contacts)[0].split("::")[0]
+            ob_item2 = list(ob.contacts)[1].split("::")[0]
             if(os.path.exists(self.collision_file)):
                 fi = open(self.collision_file, "a")
-                fi.write("Collision Occured, random_seed {}, num_obstacles: {}\n".format(self.random_seed,self.num_obstacles))
+                fi.write("Collision Occured, random_seed {}, num_obstacles: {}, collision object 1: {}, collision object2: {}\n".format(self.random_seed,self.num_obstacles,ob_item1,ob_item2))
                 fi.close()
             else: 
                 fi = open(self.collision_file, "w")
-                fi.write("Collision Occured, random_seed {}, num_obstacles: {}\n".format(self.random_seed,self.num_obstacles))
+                fi.write("Collision Occured, random_seed {}, num_obstacles: {}, collision object 1: {}, collision object2: {}\n".format(self.random_seed,self.num_obstacles,ob_item1,ob_item2))
                 fi.close()
             self.safe = False
 
@@ -70,19 +75,24 @@ class CollisionTracker(object):
         def callback_func(self,msg):
             newCollisions = []
             if len(msg.states) > 0:
+                # traverse through each of the collison states and if it doesn't involve the car ignore it
                 for s in msg.states:
                     if (self.tf_prefix not in s.collision1_name) and (self.tf_prefix not in s.collision2_name):
                         continue
                     isNew = True
+
+                    # we use collision objects to handle collisions, if this collision is already in there we update the collison  
                     for coll in self.active_collisions:
                         # True means it was updated, false means it wasn't
                         if coll.update(s,msg.header.stamp):
                             isNew = False
                             break
+
+                    # if it isn't in the list it's new and we can add it to the list
                     if isNew:
                         newCollisions.append(self.Collision(s,msg.header.stamp))
                         self.count+=1
-                        self.append_collision()
+                        self.append_collision(self.Collision(s,msg.header.stamp))
                         self.collision_pub.publish("COLLISION %s %s, count: %s" %(s.collision1_name,s.collision2_name,self.count))
         
                         
