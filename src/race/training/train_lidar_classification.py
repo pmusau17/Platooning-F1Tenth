@@ -15,15 +15,20 @@ import keras.backend as K
 import argparse
 from keras.losses import mean_squared_error
 import numpy as np  
+# from keras.callbacks import EarlyStopping
 
 # construct the argument parser
 ap = argparse.ArgumentParser()
 ap.add_argument("-d","--dataset",required=True,help="path to input dataset")
 ap.add_argument("-m","--model",required=True,help="path to save the output model")
+ap.add_argument("-d1","--dataset1",required=True,help="path to input dataset")
+ap.add_argument("-d2","--dataset2",required=True,help="path to input dataset")
+ap.add_argument("-d3","--dataset3",required=True,help="path to input dataset")
 args = vars(ap.parse_args())
 
 NUM_EPOCHS = 100
-BATCH_SIZE = 3791
+# BATCH_SIZE = 3791
+BATCH_SIZE = 128
 
 
 def soft_acc(y_true, y_pred):
@@ -33,6 +38,13 @@ def soft_acc(y_true, y_pred):
 model = FNN.build(9,1,64)
 
 df=pd.read_csv(args['dataset'], sep=',',header=None).dropna()
+df1=pd.read_csv(args['dataset1'], sep=',',header=None).dropna()
+df2=pd.read_csv(args['dataset2'], sep=',',header=None).dropna()
+df3=pd.read_csv(args['dataset3'], sep=',',header=None).dropna()
+
+df = pd.concat([df,df1,df2,df3],axis=0)
+
+
 
 inputs = df[df.columns[0:9]].values
 
@@ -43,7 +55,7 @@ outputs = df[df.columns[9]].values
 # partition the data into training and testing splits using 80% of
 # the data for training and the remaining 20% for testing
 #classification data
-(trainX, testX, trainY, testY) = train_test_split(inputs,outputs, test_size=0.20,random_state=15)
+(trainX, testX, trainY, testY) = train_test_split(inputs,outputs, test_size=0.15,random_state=15)
 
 #print(trainX[0])
 #print(trainY[0])

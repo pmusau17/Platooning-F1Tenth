@@ -52,6 +52,7 @@ class LidarFNNNode:
         msg.header.stamp=rospy.Time.now()
         msg.angle = pred[0]
         msg.velocity = 1.0
+        # msg.velocity = 0.5
         self.pub.publish(msg)
         
         
