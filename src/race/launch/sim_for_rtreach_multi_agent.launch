@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<launch>
+
+<!--This prevents the gazebo from displaying in a window
+    The idea is this will help with performance. We will 
+    have to see-->
+<arg name="gui" default="false" />
+
+<!--How many boxes to let rviz visualize-->
+<arg name="box_display_limit" default="100"/>
+
+<!-- reach-time is the time we are computing reachability for-->
+<arg name="reach_time" default="2.0"/>
+
+<!--wall-time is the time we allow the reachability algorithm to run for-->
+<arg name="wall_time" default="10.0"/>
+
+<!--number of vehicles to launch in the simulation environment-->
+<arg name='number_of_cars' default='2'/>
+
+<!--Select the car we are computing reachability for-->
+<arg name='car_name' default='racecar2'/>
+
+<arg name="rviz_disp" default="multiagent_reach.rviz"/>
+
+<!--network model utilized for end-to-end driving-->
+<arg name="model_name" default="minivgg_center_data.hdf5"/>
+
+<!--Launch The Model-->
+<node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
+
+<!--  This is the main launch file that launches the world, plugins, controllers, vehicles -->
+  <include file="$(find race)/launch/multi_parametrizeable.launch">
+      <arg name="number_of_cars" value="$(arg number_of_cars)"/>
+      <arg name="gui" value="$(arg gui)"/>
+      <arg name="rviz_disp" value="$(arg rviz_disp)"/>
+  </include>
+
+  <!--launch the speed node it will be constant in this case-->
+  <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py"  args='$(arg car_name)'/>
+
+  <!-- generation of safety controller-->
+  <node pkg="race" type="safety_controller.py" name="safety_node" args="$(arg car_name)/scan $(arg car_name)/safety" output="screen"/>
+
+
+<!-- These are the nodes for publishing the reachability information for each of the vehicles-->
+<node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>
+<node name="vehicle_2" pkg="rtreach" type="visualize_obs" if = "$(eval arg('number_of_cars') ==3)" args="racecar3 $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>
+
+
+<node name="reach_agent" pkg="rtreach" type="visualize_node_dynamic" output="screen"/> <!--args="racecar $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>-->
+
+<!--ttc node-->
+<node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>
+
+</launch>
