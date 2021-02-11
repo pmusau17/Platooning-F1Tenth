@@ -23,7 +23,7 @@
 
 <!--  This is the main launch file that launches the world, plugins, controllers -->
   <include file="$(find racecar_gazebo)/launch/many_car.launch" if = "$(eval arg('number_of_cars') ==3)">
-      <arg name="world_name" value="$(arg_world_name)"/>
+      <arg name="world_name" value="$(arg world_name)"/>
   </include>
   
 
