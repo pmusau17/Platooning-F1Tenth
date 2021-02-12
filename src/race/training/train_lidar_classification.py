@@ -24,6 +24,9 @@ ap.add_argument("-m","--model",required=True,help="path to save the output model
 ap.add_argument("-d1","--dataset1",required=True,help="path to input dataset")
 ap.add_argument("-d2","--dataset2",required=True,help="path to input dataset")
 ap.add_argument("-d3","--dataset3",required=True,help="path to input dataset")
+ap.add_argument("-d4","--dataset4",required=True,help="path to input dataset")
+ap.add_argument("-d5","--dataset5",required=True,help="path to input dataset")
+ap.add_argument("-d6","--dataset6",required=True,help="path to input dataset")
 args = vars(ap.parse_args())
 
 NUM_EPOCHS = 100
@@ -41,8 +44,11 @@ df=pd.read_csv(args['dataset'], sep=',',header=None).dropna()
 df1=pd.read_csv(args['dataset1'], sep=',',header=None).dropna()
 df2=pd.read_csv(args['dataset2'], sep=',',header=None).dropna()
 df3=pd.read_csv(args['dataset3'], sep=',',header=None).dropna()
+df4=pd.read_csv(args['dataset4'], sep=',',header=None).dropna()
+df5=pd.read_csv(args['dataset5'], sep=',',header=None).dropna()
+df6=pd.read_csv(args['dataset6'], sep=',',header=None).dropna()
 
-df = pd.concat([df,df1,df2,df3],axis=0)
+df = pd.concat([df,df1,df2,df3,df4,df5,df6],axis=0)
 
 
 
