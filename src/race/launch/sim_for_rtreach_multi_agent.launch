@@ -10,10 +10,10 @@
 <arg name="box_display_limit" default="100"/>
 
 <!-- reach-time is the time we are computing reachability for-->
-<arg name="reach_time" default="2.0"/>
+<arg name="reach_time" default="0.8"/>
 
 <!--wall-time is the time we allow the reachability algorithm to run for-->
-<arg name="wall_time" default="10.0"/>
+<arg name="wall_time" default="1.0"/>
 
 <!--number of vehicles to launch in the simulation environment-->
 <arg name='number_of_cars' default='2'/>
@@ -48,8 +48,10 @@
 <node name="vehicle_2" pkg="rtreach" type="visualize_obs" if = "$(eval arg('number_of_cars') ==3)" args="racecar3 $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>
 
 
-<node name="reach_agent" pkg="rtreach" type="visualize_node_dynamic" output="screen"/> <!--args="racecar $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>-->
+<node name="reach_agent" pkg="rtreach" type="visualize_node_dynamic" output="screen"/> 
+<!--args="racecar $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>-->
 
+<node name="reach_agent_param" pkg="rtreach" type="reach_node_param" output="screen" args="$(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>
 <!--ttc node-->
 <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>
 
