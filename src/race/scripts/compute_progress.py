@@ -43,6 +43,7 @@ class ComputeProgress:
         self.start_point = []
 
         self.lap_count = 0 
+        self.total_elapsed =rospy.Time.now()
         self.start_time = rospy.Time.now()
 
         # for logging purposes
@@ -146,14 +147,15 @@ class ComputeProgress:
 
     # log the lap count to a file
     def shutdown(self):
-        print("total_laps_completed:",self.lap_count+self.progress)
+        elapsedTime = (rospy.Time.now()-self.total_elapsed).to_sec()
+        print("total_laps_completed:",self.lap_count+self.progress,'total_time_taken:',elapsedTime)
         if(os.path.exists(self.progress_file)):
             fi = open(self.progress_file, "a")
-            fi.write("total_laps_completed: {}\n".format(self.lap_count+self.progress))
+            fi.write("{}, {}\n".format(self.lap_count+self.progress,elapsedTime))
             fi.close()
         else: 
             fi = open(self.progress_file, "w")
-            fi.write("total_laps_completed: {}\n".format(self.lap_count+self.progress))
+            fi.write("{}, {}\n".format(self.lap_count+self.progress,elapsedTime))
             fi.close()
         print('Goodbye')
 

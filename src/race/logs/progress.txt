@@ -1,1 +1,2 @@
-total_laps_completed: 0.411541381929
+total_laps_completed,total_time_taken
+0.345482156416, -11.468
