@@ -66,6 +66,7 @@ class CollisionTracker(object):
                         if coll.update(s,msg.header.stamp):
                             isNew = False
                             break
+                    # if it is new we create a a collision object for it
                     if isNew:
                         newCollisions.append(self.Collision(s,msg.header.stamp))
                         self.count+=1

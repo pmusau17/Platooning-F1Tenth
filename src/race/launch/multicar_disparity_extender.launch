@@ -1,13 +1,19 @@
 <?xml version="1.0"?>
 <launch>
     <!--Specify the car names NOTE: THESE NAMES SHOULD CORRESPOND TO THOSE LAUNCHED IN many_car.launch-->
+
+        <!--The number of nodes to launch-->
+        <arg name='number_of_cars' default='2'/>
+
+        <!--Names of the Cars to Launch-->
         <arg name='car_name' value='racecar'/>
         <arg name='car_name2' value='racecar2'/>
         <arg name='car_name3' value='racecar3'/>
+        
     <!--Launch a node for each car-->
         <node pkg="race" name="disparity_extender_$(arg car_name)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name)"/>
         <node pkg="race" name="disparity_extender_$(arg car_name2)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name2)"/>
-        <!--<node pkg="race" name="disparity_extender_$(arg car_name3)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name3)"/>-->
+        <node pkg="race" name="disparity_extender_$(arg car_name3)" type="disparity_extender_vanderbilt_gen.py" args="$(arg car_name3)" if = "$(eval arg('number_of_cars') ==3)"/>
 
 
 </launch>
