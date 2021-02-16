@@ -9,6 +9,7 @@ Panels:
         - /LaserScan1
         - /TF1
         - /LaserScan2
+        - /MarkerArray7
       Splitter Ratio: 0.5
     Tree Height: 749
   - Class: rviz/Selection
@@ -300,12 +301,20 @@ Visualization Manager:
       Marker Topic: /racecar/reach_hull_obs
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /racecar2/reach_hull
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /racecar2/reach_hull_param
       Name: MarkerArray
       Namespaces:
         "": true
@@ -336,7 +345,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.03952789
+      Distance: 5.64458323
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1

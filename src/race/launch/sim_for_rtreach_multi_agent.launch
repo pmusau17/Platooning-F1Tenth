@@ -15,6 +15,8 @@
 <!--wall-time is the time we allow the reachability algorithm to run for-->
 <arg name="wall_time" default="1.0"/>
 
+<arg name="debug" default=""/>
+
 <!--number of vehicles to launch in the simulation environment-->
 <arg name='number_of_cars' default='2'/>
 
@@ -44,14 +46,19 @@
 
 
 <!-- These are the nodes for publishing the reachability information for each of the vehicles-->
-<node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>
-<node name="vehicle_2" pkg="rtreach" type="visualize_obs" if = "$(eval arg('number_of_cars') ==3)" args="racecar3 $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>
+<node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)"/>
+<node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)"/>
 
-
-<node name="reach_agent" pkg="rtreach" type="visualize_node_dynamic" output="screen"/> 
+<!-- <node name="reach_agent" pkg="rtreach" type="visualize_node_dynamic" output="screen"/>  -->
 <!--args="racecar $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>-->
 
-<node name="reach_agent_param" pkg="rtreach" type="reach_node_param" output="screen" args="$(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>
+<!--Node for Visualizing reachsets that allows customization through parameters-->
+<node name="vis_agent_param" pkg="rtreach" type="vis_node_param" output="screen" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
+
+<!--Reachability safety node that incorporates dynamic obstacles-->
+<node name="reach_agent_param" pkg="rtreach" type="reach_node_dyn" output="screen" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
+
+
 <!--ttc node-->
 <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>
 
