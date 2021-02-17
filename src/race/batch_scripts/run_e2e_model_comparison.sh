@@ -12,6 +12,12 @@
 # However, the process may decide to ignore the signal, or catch the signal and do 
 # something before exiting and/or ignore it.
 
+
+# for future reference generating a random number within a range
+# $(shuf -i 0-4 -n 1)
+
+world_number = 0
+algorithm_number = 1
 exit_status=0
 count = 0 
 _term() {
@@ -26,7 +32,7 @@ trap _term SIGINT
 while :
 do
 ((count=count+1)) 
-roslaunch race model_comparison.launch world_number:=$(shuf -i 0-4 -n 1) \
+roslaunch race model_comparison.launch algorithm:=$algorithm world_number:=$algorithm_number experiment_number:=$count\
     timeout:=60 &
      
 

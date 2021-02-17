@@ -74,8 +74,8 @@
     <!--time out node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
 
-    <!--launch rviz to visualize reachable set
-    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>-->
+    <!--launch rviz to visualize reachable set-->
+    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" unless="$(arg lec_only)" args="porto_obstacles.txt" output="screen"/>
 
     <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file) $(arg experiment_number)"/>
 

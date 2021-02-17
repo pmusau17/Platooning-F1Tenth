@@ -14,60 +14,12 @@ import rospy
 import copy
 import math
 import rospkg 
+from utils.replay_buffer import *
+from algorithms.sac.core import *
 
 from race.msg import drive_param # For simulator
 #from racecar.msg import drive_param # For actual car
 
-class ActorNN(nn.Module):
-    def __init__(self, num_inputs=4, hidden_size1=64, hidden_size2=64, num_actions=2, final_bias=3e-3):
-        super(ActorNN, self).__init__()
-        """
-        This Neural Network architecture creates a full actor, which provides the control output. The architecture is 
-        derived from the original DDPG paper.
-
-        :param num_inputs:  (int)   The desired size of the input layer. Should be the same size as the number of 
-                                        inputs to the NN. Default=4
-        :param hidden_size1:(int)   The desired size of the first hidden layer. Default=400
-        :param hidden_size2:(int)   The desired size of the second hidden layer. Default=300
-        :param num_actions: (int)   The desired size of the output layer. Should be the same size as the number of 
-                                        outputs from the NN. Default=2
-        :param final_bias:  (float) The final layers' weight and bias range for uniform distribution. Default=3e-3
-        """
-
-        # The first layer
-        self.linear1 = nn.Linear(num_inputs, hidden_size1)
-
-        # The second layer
-        self.linear2 = nn.Linear(hidden_size1, hidden_size2)
-
-        # The output layers
-        self.mu_out = nn.Linear(hidden_size2, num_actions)
-        self.log_std_out = nn.Linear(hidden_size2, num_actions)
-
-    def forward(self, state):
-        """
-        This function performs a forward pass through the network.
-
-        :param state: (tensor)   The input state the NN uses to compute an output.
-        :return mu:   (tensor)   The output of the NN, which is the action to be taken.
-        """
-
-        # Pass through layer 1
-        x = self.linear1(state)
-        x = F.relu(x)
-
-        # Pass through layer 2
-        x = self.linear2(x)
-        x = F.relu(x)
-
-        # Pass through the output layer
-        x = self.mu_out(x)
-
-        # Output is scaled using tanh
-        mu = torch.tanh(x)
-
-        # Return the result
-        return mu
 
 class SACController(object):
     def __init__(self, policy_file_name, lidar_sub_name, control_pub_name, rate=10, mode=0,
@@ -89,9 +41,9 @@ class SACController(object):
 
         # Initialize the control policy
         self.target_angles = np.asarray([-90., -60., -45., -30, 0., 30., 45., 60., 90.]) * (np.pi / 180.)
-        self.control_nn = ActorNN(num_inputs=len(self.target_angles), hidden_size1=64, hidden_size2=64,
-                                  num_actions=1, final_bias=3e-3)  #.to(self.device)
-
+        self.control_nn = SACActor(num_inputs=len(self.target_angles), hidden_size1=64, hidden_size2=64,
+                              num_actions=1)  #.to(self.device)
+        
         # Load the control policy
         if policy_file_name is not None:
             self.__load_model(policy_file_name)
@@ -163,7 +115,7 @@ class SACController(object):
         """
         # Forward pass the network
         state = torch.FloatTensor(obs)  #.to(self.device)
-        action = self.control_nn.forward(state)
+        action, _ = self.control_nn.forward(state, deterministic=True, with_logp=False)
         # action = action.cpu()
 
         # Convert to numpy array

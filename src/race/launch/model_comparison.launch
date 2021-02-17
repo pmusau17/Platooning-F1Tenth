@@ -4,23 +4,52 @@
     <!--initialize the arguments-->
 
     <arg name="world_number" default="0"/>
+    
     <arg name="car_name" default="racecar"/>
     <arg name="gui" default="true" />
 
-     <!--network model utilized for end-to-end driving-->
+    <!--flag for selecting the algorithm
+        0 is e2e
+        1 is SAC
+        2 is DDPG
+    -->
+    <arg name="algorithm" default="0"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==0)" value="e2e"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==1)" value="sac"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==2)" value="ddpg"/>
+
+    <!-- name of collision log file-->
+    <arg name="collision_file" value ="collisions_$(arg algorithm_name).csv"/>
+
+    <!-- name of progress log file-->
+    <arg name="progression_file" value ="progress_$(arg algorithm_name).csv"/>
+
+    <!-- we have the option to reset after a collision-->
+    <arg name="reset_on_crash" default="false"/>
+
+    <!--network model utilized for end-to-end driving-->
     <arg name="model_name" default="fnn_lidar2.hdf5"/>
 
     <!--handles selecting a track-->
     <arg name="world_name" if="$(eval arg('world_number')==0)" value="track_porto"/>
-    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_tunnel"/>
-    <arg name="world_name" if="$(eval arg('world_number')==2)" value="racecar_walker"/>
-    <arg name="world_name" if="$(eval arg('world_number')==3)" value="track_barca"/>
+    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_walker"/>
+    <arg name="world_name" if="$(eval arg('world_number')==2)" value="track_barca"/>
+    <arg name="world_name" if="$(eval arg('world_number')==3)" value="racecar_tunnel"/>
     <arg name="world_name" if="$(eval arg('world_number')==4)" value="track_levine"/>
 
+    <!--Select the CSV file for the waypoints needed to track progress-->
+    <arg name="csv_filename" if="$(eval arg('world_number')==0)" default="track_porto_26780.csv"/>
+    <arg name="csv_filename" if="$(eval arg('world_number')==1)" default="racecar_walker_29418.csv"/>
+    <arg name="csv_filename" if="$(eval arg('world_number')==2)" default="track_barca_4676.csv"/>
+    <arg name="csv_filename" if="$(eval arg('world_number')==3)" default="racecar_tunnel_26520.csv"/>
+    <arg name="csv_filename" if="$(eval arg('world_number')==4)" default="levine-waypoints3.csv"/>
 
-
+    
     <!--how long to run each experiment before timeout-->
-    <arg name="timeout" default = "30"/>
+    <arg name="timeout" default = "180"/>
+
+    <!--experiment_number this parameter helps associate collisions with particular experiments-->
+    <arg name="experiment_number" default="0"/>
 
 
 
@@ -38,7 +67,24 @@
     <!--Timeout node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
     
-    <node pkg="race" type="lidar_classification_node.py" name="e2e" required='true' args="$(arg car_name) $(find race)/models/$(arg model_name)"/>
+    
+    <!--collision logging-->
+    <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) 0 15 $(arg collision_file) $(arg experiment_number)"/>
+
+    <!--progress logging-->
+    <node pkg = "race" name= "progress_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="compute_progress.py" args="$(arg car_name) $(arg csv_filename) $(arg progression_file)"/>
+
+
+
+    <!--End to end learning controller-->
+    <node pkg="race" type="lidar_classification_node.py" name="e2e" required='true' if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find race)/models/$(arg model_name)"/>
+
+    <!--reinforcement learning controllers-->
+    <node pkg="rl" name="sac_controller" type="sac_controller.py" if="$(eval arg('algorithm')==1)" args="$(arg car_name)" required="true" output="log"/>
+
+
+    <node pkg="rl" name="ddpg_controller" type="ddpg_controller.py" if="$(eval arg('algorithm')==2)" args="$(arg car_name)" required="true" output="log"/>
+    
 
    
 </launch>
