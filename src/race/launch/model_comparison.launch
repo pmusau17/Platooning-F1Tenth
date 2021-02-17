@@ -55,7 +55,7 @@
 
     <!--docker requirements-->
     <arg name="use_sim_time" default = "true"/>
-    <arg name="verbose" default ="true"/>
+    <arg name="verbose" default ="false"/>
     <!--launch the simulator-->
     <include file="$(find race)/launch/f1_tenth_devel.launch">
         <arg name ="world_name" value="$(arg world_name)"/>
@@ -72,7 +72,7 @@
     <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) 0 15 $(arg collision_file) $(arg experiment_number)"/>
 
     <!--progress logging-->
-    <node pkg = "race" name= "progress_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="compute_progress.py" args="$(arg car_name) $(arg csv_filename) $(arg progression_file)"/>
+    <node pkg = "race" name= "progress_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="compute_progress.py" args="$(arg car_name) $(arg csv_filename) $(arg progression_file) $(arg experiment_number)"/>
 
 
 

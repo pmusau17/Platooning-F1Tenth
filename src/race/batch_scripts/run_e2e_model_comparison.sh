@@ -16,10 +16,10 @@
 # for future reference generating a random number within a range
 # $(shuf -i 0-4 -n 1)
 
-world_number = 0
-algorithm_number = 1
+world_number=0
+algorithm_number=1
 exit_status=0
-count = 0 
+count=14 
 _term() {
   exit_status=$? # = 130 for SIGINT
   echo "Caught SIGINT signal!"
@@ -32,7 +32,7 @@ trap _term SIGINT
 while :
 do
 ((count=count+1)) 
-roslaunch race model_comparison.launch algorithm:=$algorithm world_number:=$algorithm_number experiment_number:=$count\
+roslaunch race model_comparison.launch algorithm:=$algorithm_number world_number:=$world_number experiment_number:=$count\
     timeout:=60 &
      
 

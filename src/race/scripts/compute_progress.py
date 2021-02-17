@@ -22,7 +22,7 @@ Pure Pursuit Controller.
 
 
 class ComputeProgress:
-    def __init__(self,racecar_name,waypoint_file,log_file):
+    def __init__(self,racecar_name,waypoint_file,log_file,experiment_number=0):
 
         # initialize class fields 
         self.racecar_name = racecar_name
@@ -45,6 +45,7 @@ class ComputeProgress:
         self.lap_count = 0 
         self.total_elapsed =rospy.Time.now()
         self.start_time = rospy.Time.now()
+        self.experiment_number = experiment_number
 
         # for logging purposes
         rospack = rospkg.RosPack()
@@ -151,11 +152,11 @@ class ComputeProgress:
         print("total_laps_completed:",self.lap_count+self.progress,'total_time_taken:',elapsedTime)
         if(os.path.exists(self.progress_file)):
             fi = open(self.progress_file, "a")
-            fi.write("{}, {}\n".format(self.lap_count+self.progress,elapsedTime))
+            fi.write("{}, {}, {}\n".format(self.lap_count+self.progress,elapsedTime,self.experiment_number))
             fi.close()
         else: 
             fi = open(self.progress_file, "w")
-            fi.write("{}, {}\n".format(self.lap_count+self.progress,elapsedTime))
+            fi.write("{}, {}, {}\n".format(self.lap_count+self.progress,elapsedTime,self.experiment_number))
             fi.close()
         print('Goodbye')
 
@@ -169,7 +170,16 @@ if __name__ == '__main__':
     waypoint_file=args[1]
     # log file 
     log_file = args[2]
-    C = ComputeProgress(racecar_name,waypoint_file,log_file)  
+
+    # This will help us match up collision logs with progress files for the analysis
+    experiment_number = args[3:]
+    if(experiment_number):
+        experiment_number = experiment_number[0]
+    else:
+        experiment_number = 0 
+    rospy.logwarn("experiment number: "+str(experiment_number))
+
+    C = ComputeProgress(racecar_name,waypoint_file,log_file,experiment_number=experiment_number)  
 
     while not rospy.is_shutdown():
         pass 
