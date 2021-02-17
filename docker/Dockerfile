@@ -54,6 +54,10 @@ RUN pip install --upgrade pip && apt-get remove -y python-enum34 python-pyasn1-m
 WORKDIR home
 RUN git clone https://github.com/pmusau17/Platooning-F1Tenth
 WORKDIR Platooning-F1Tenth 
+
+# try eigen three installation
+RUN git pull && apt-get update && apt-get install -y ros-kinetic-pcl-conversions ros-kinetic-pcl-msgs ros-kinetic-pcl-ros libeigen3-dev libproj-dev libmove-base-msgs-dev
+RUN ln -s /usr/include/eigen3/Eigen /usr/local/include/Eigen
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash && catkin_make'
 
 # get the model files so that there's no lag in starting gazebo
