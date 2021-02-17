@@ -6,11 +6,11 @@ Some of the changes include the addtion of a contact sensor that enables detecti
 
 Inside the folder [racecar_simulator](racecar_simulator) you will find the following folders:
 
-- [racecar_gazebo](racecar_simulator/racecar_gazebo)
+- [racecar_gazebo](racecar-simulator/racecar_gazebo)
     - This folder contains the gazebo world files describing the various racecar environments, along with scripts that "simulate" odometry.
-- [racecar_description](racecar_simulator/racecar_description)
+- [racecar_description](racecar-simulator/racecar_description)
     - This folder contains the racecar description (.xacro,.macros,.gazebo) files that describe the cars texture and physics properties.
-- [racecar_control](racecar_description/racecar_control)
+- [racecar_control](racecar-simulator//racecar_control)
     - This folder sets up the ros_control packages used to send actuation commands to the F1Tenth Car.
 
 
