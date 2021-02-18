@@ -15,15 +15,16 @@
 <arg name='enable_keyboard' default='false'/>
 <arg name='world_name' default='track_porto'/> 
 <arg name='number_of_cars' default='2'/>
+<arg name="gui" default="true" />
+<arg name="rviz_disp" default="multicar.rviz"/>
 
 <!--occupancy grid of selected track-->
 <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
 
-<!--uncomment for three car experiments-->
-
 <!--  This is the main launch file that launches the world, plugins, controllers -->
   <include file="$(find racecar_gazebo)/launch/many_car.launch" if = "$(eval arg('number_of_cars') ==3)">
-      <arg name="world_name" value="$(arg_world_name)"/>
+      <arg name="world_name" value="$(arg world_name)"/>
+      <arg name="gui" value="$(arg gui)"/>
   </include>
   
 
@@ -34,6 +35,7 @@
   
   <include file="$(find racecar_gazebo)/launch/two_car.launch" if = "$(eval arg('number_of_cars') ==2)" >
     <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="gui" value="$(arg gui)"/>
   </include>
   
 
@@ -51,7 +53,7 @@
 
 
   <!--Launch the visualizitation rviz-->
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find race)/rviz/multicar.rviz"/>
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find race)/rviz/$(arg rviz_disp)"/>
 
 
 </launch>
