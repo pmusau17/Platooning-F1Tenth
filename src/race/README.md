@@ -27,15 +27,20 @@ The following launch files require that the following [repository](https://githu
 - [sim_for_rtreach.launch](sim_for_rtreach.launch)
    -  Creates runtime-assurance architechture for a single vehicle in the presence of a fixed number of static obstacles (cones). The controller that is used for navigation by default is a vision based end-to-end learning regime.
 - [sim_for_rtreach_batch.launch](sim_for_rtreach_batch.launch)
-   - Allows for the run-time assurance architechture to be evaluated across numerous experimental runs. In order to analyze the runtime performance as well as efficacy in preventing collisions.
+   - Allows for the runtime assurance architechture to be evaluated across numerous experimental runs. In order to analyze the runtime performance as well as efficacy in preventing collisions.
 - [sim_for_rtreach_batch_rl.launch](sim_for_rtreach_batch_rl.launch)
-   - 
+   - Similar to [sim_for_rtreach.launch](sim_for_rtreach.launch). However the controller that is used is a reinforcement learning controller trained using Augmented Random Search. 
 - [sim_for_rtreach_batch_worlds.launch](sim_for_rtreach_batch_worlds.launch)
+   - Allows for the runtime assurance architechture to be evaluated across numerous racetrack environments. Default controller is the vision-based end-to-end learning controller.
 - [sim_for_rtreach_dynamic.launch](sim_for_rtreach_dynamic.launch)
+   - This file creates the run-time assurance architechture in the presence of dynamic obstacles. It makes use of a multi-object object tracking algorithm to classify and track objects within the environment.
 - [sim_for_rtreach_multi_agent.launch](sim_for_rtreach_multi_agent.launch)
+   - Creates runtime-assurance architechture for a single vehicle in the presence of a fixed number of dynamic obstacles (other agents).
 - [sim_for_rtreach_rl.launch](sim_for_rtreach_rl.launch)
 - [slam.launch](slam.launch)
+   - Launch file for SLAM algorithms. This file makes use of the gmapping library. For simple racetracks this library is sufficient. However for large racetracks with multiple loops we recommend using Google Cartographer.
 - [sys_id.launch](sys_id.launch)
+   -  Launch file used to collect data for model estimation of the F1Tenth Vehicle.
 
 
 
