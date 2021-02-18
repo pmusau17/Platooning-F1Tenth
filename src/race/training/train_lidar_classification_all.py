@@ -19,8 +19,10 @@ import numpy as np
 
 # construct the argument parser
 ap = argparse.ArgumentParser()
-ap.add_argument("-d","--dataset",required=True,help="path to input dataset")
+ap.add_argument("-d","--dataset",required=True,help="path to input porto dataset")
 ap.add_argument("-m","--model",required=True,help="path to save the output model")
+ap.add_argument("-d1","--dataset1",required=True,help="path to input barca dataset")
+ap.add_argument("-d2","--dataset2",required=True,help="path to input walker dataset")
 args = vars(ap.parse_args())
 
 NUM_EPOCHS = 100
@@ -35,6 +37,11 @@ def soft_acc(y_true, y_pred):
 model = FNN.build(9,1,64)
 
 df=pd.read_csv(args['dataset'], sep=',',header=None).dropna()
+df1=pd.read_csv(args['dataset1'], sep=',',header=None).dropna()
+df2=pd.read_csv(args['dataset2'], sep=',',header=None).dropna()
+
+df = pd.concat([df,df1,df2],axis=0)
+
 
 
 inputs = df[df.columns[0:9]].values
