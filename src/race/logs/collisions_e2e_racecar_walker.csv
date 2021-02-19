@@ -1,3 +1,4 @@
+random_seed, num_obstacles, collision_object_1, collision_object2, experiment_number
 15, 0, racecar, walker_racecourse, 1
 15, 0, racecar, walker_racecourse, 2
 15, 0, racecar, walker_racecourse, 3
