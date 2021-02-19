@@ -137,10 +137,9 @@ class ComputeProgress:
         # current point to starting point
         norm = np.linalg.norm(self.start_point - point) 
         self.progress = idx/float(self.xy_points.shape[0])
-
         # prevent from counting laps more than once
         td = rospy.Time.now() - self.start_time
-        if(self.progress>0.97 and norm < 0.15 and td>rospy.Duration(5)):
+        if(self.progress>0.97 and td>rospy.Duration(5)):
             self.lap_count +=1
             self.start_time = rospy.Time.now()
 

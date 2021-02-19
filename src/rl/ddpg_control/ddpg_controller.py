@@ -197,9 +197,10 @@ if __name__ == '__main__':
     args = rospy.myargv()[1:]
     #get the racecar name so we know what to subscribe to
     racecar_name=args[0]
+    vel=float(args[1])
     lidar_sub_name = racecar_name+'/scan'
     #if there's more than two arguments then its decoupled
-    if len(args)>1:
+    if len(args)>2:
         control_pub_name= racecar_name+'/angle_msg'
         decouple = True
     else:

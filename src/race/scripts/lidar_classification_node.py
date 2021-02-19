@@ -23,9 +23,10 @@ class LidarFNNNode:
         /racecar/scan': 40 hz
         /vesc/ackermann_cmd_mux/input/teleop: 40 hz
     '''
-    def __init__(self,racecar_name,model):
+    def __init__(self,racecar_name,model,velocity=1.0):
         self.lidar_topic = racecar_name+'/scan'
         self.model=load_model(model)
+        self.velocity = velocity
 
         # subscripe to the ackermann commands and lidar topic
         self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
@@ -51,7 +52,7 @@ class LidarFNNNode:
         msg = drive_param()
         msg.header.stamp=rospy.Time.now()
         msg.angle = pred[0]
-        msg.velocity = 1.0
+        msg.velocity = self.velocity
         self.pub.publish(msg)
         
         
@@ -67,9 +68,11 @@ if __name__=='__main__':
 
     # path where to store the dataset
     model_path = args[1]
+
+    vel = float(args[2])
     
     # initialize the message filter
-    mf=LidarFNNNode(racecar_name,model_path)
+    mf=LidarFNNNode(racecar_name,model_path,velocity=vel)
     
     # spin so that we can receive messages
     while not rospy.is_shutdown():
