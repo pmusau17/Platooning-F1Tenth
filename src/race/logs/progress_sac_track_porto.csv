@@ -1,4 +1,4 @@
-total_laps_completed,total_time_taken, experiment_number
+laps_completed, time_elapsed, experiment_number
 2.5125284738, 62.408, 1
 2.50721336371, 62.348, 2
 2.49962034928, 62.381, 3
