@@ -21,17 +21,17 @@
 
 # Change this to evaluate on a different track 
 # 0 is porto, 1 is racecar_walker, 2 is barca
-world_number=0
+world_number=2
 
 # Change this to select the algorithm
 # 0 is e2e porto training, 1 is SAC, 2 is ddpg, 3 is e2e all tracks
-algorithm_number=0
+algorithm_number=3
 
 # ignore this
 exit_status=0
 
 # Select the velocity for evaluation 
-velocity=0.5
+velocity=1.5
 
 # this keeps track of how many experiments we have run
 count=0 
@@ -44,7 +44,7 @@ _term() {
 
 trap _term SIGINT
 
-while :
+while [ $count -lt 30 ]
 do
 ((count=count+1)) 
 roslaunch race model_comparison.launch algorithm:=$algorithm_number world_number:=$world_number velocity:=$velocity experiment_number:=$count\
