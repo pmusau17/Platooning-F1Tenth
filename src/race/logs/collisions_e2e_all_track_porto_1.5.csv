@@ -1,1 +1,2 @@
+random_seed, num_obstacles, collision_object_1, collision_object2, experiment_number
 15, 0, racecar, porto_track, 24
