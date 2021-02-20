@@ -24,13 +24,20 @@ If you have any questions or run into any problems. Feel free to send me an [ema
 # Installation <a name="Installation"></a>
 
 ### Install Necessary Environments
- 
- This interactive script will set up cuda (you'll need to download cuda 9.2 and cudnn7.6 (9.2), build opencv with cuda bindings for both python2.7 and 3.6, create two anaconda environments, and install ros-kinetic. This is your best choice for a fresh ubuntu16.04 install. Not tested with ubuntu18. 
 
-`chmod +x setup_cuda_ros_opencv_conda.sh`
-`./setup_cuda_ros_opencv_conda.sh`
+Installation has been tested on Ubuntu 16.04 and 18.04 LTS. We highly recommend using the dockerized version of the simulator. The instructions can be found at the botton of this file. For a native installation see below.
 
-The computer vision packages assume your system is GPU enabled. If your system is not gpu enabled, change the requirements in [setup.sh](setup.sh) to requirements-cpu.txt.
+The computer vision packages contained in this repository assume your system is GPU enabled. If your system is GPU enabled, you will need to install cuda and [cudnn](https://developer.nvidia.com/cudnn-download-survey). New versions of cuda are released periodically each year. Thus to keep this repo up to date, we refer you to nvidia's installation guide [here](https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604). Cudnn requires membership in the NVIDIA developer program and you can register for this program [here](https://developer.nvidia.com/cudnn-download-survey).
+
+For ease of python library installation we highly recommend using anaconda. Installation of Anaconda can be found [here](https://docs.anaconda.com/anaconda/install/linux/). ROS still uses [python 2](https://ubuntu.com/blog/psa-for-ros-users-some-things-to-know-as-python-2-approaches-eol) and if you want to use python 3, we leave that adventure to you. 
+
+Once anaconda installed run the following: 
+
+```
+$ conda create --name ros27 python=2.7 && conda activate ros27
+```
+
+**Note:** If your system is not gpu enabled, change the requirements in [setup.sh](setup.sh) to requirements-cpu.txt.
 
 
 ### Installing Pytorch
@@ -200,25 +207,19 @@ Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/ins
 To build the docker image use the Dockerfile located in this repository. 
 
 ```bash
-$ docker build -t platoon_test .
-```
-
-To build the image with tensorflow and ros image run:
-
-```bash
-$ docker build -t tfros -f Dockerfile2 .
+$ docker build -t platoon_test -f docker/Dockerfile .
 ```
 
 Test if the image builds correctly by running: 
 
 ```bash
-$ docker container run --rm --runtime=nvidia -it -e DISPLAY  --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
+$ docker container run --rm --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
 ```
 
 In order to  enable the use of graphical user interfaces within Docker containers such as Gazebo and Rviz give docker the rights to access the X-Server with:
 
 ```bash
-$ xhost +local:root
+$ xhost +local:docker
 ``` 
 
 This command allows one to connect a container to a host's X server for display **but it is not secure.** It compromises the access control to X server on your host. So with a little effort, someone could display something on your screen, capture user input, in addition to making it easier to exploit other vulnerabilities that might exist in X.
@@ -226,7 +227,7 @@ This command allows one to connect a container to a host's X server for display 
 **So When you are done run :** 
 
 ```bash
-$ xhost -local:root 
+$ xhost -local:docker 
 ``` 
 
 to return the access controls that were disabled with the previous command
@@ -234,13 +235,13 @@ to return the access controls that were disabled with the previous command
 To run the simulation: 
 
 ```bash
-$ docker-compose up
+$ docker container run --rm --name=sim --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix platoon_test
 ```
 
 To teleoperate the car or run experiments run the following:
 
 ```bash
-$ docker container exec -it keyboard bash 
+$ docker container exec -it sim bash 
 ```
 
 Then run: 
@@ -257,5 +258,6 @@ Our team consists of graduate and undergraduate students from Vanderbilt Univers
 * [Nathaniel (Nate) Hamilton](https://www.linkedin.com/in/nathaniel-hamilton-b01942112/)
 * [Diandry Rutayisire](https://www.linkedin.com/in/diandry-rutayisire-298a45153/)
 * [Tim Darrah](https://www.linkedin.com/in/timothydarrah/)
+* [Latif Gbadamoshie](https://www.linkedin.com/in/abdul-latif-gbadamoshie/)
 * [Shreyas Ramakrishna](https://www.linkedin.com/in/shreyasramakrishna/)
 * [Tim Krentz](https://www.linkedin.com/in/tim-krentz-15042585/)

@@ -55,7 +55,7 @@ class follow_lead_pure_pursuit:
         self.dist_arr=np.zeros(self.window_size)
 
         #tuning parameter for the pure_pursuit
-        self.LOOKAHEAD_DISTANCE = 0.70
+        self.LOOKAHEAD_DISTANCE = 1.10
 
         #platoon_distance
         self.platoon_distance=1.0
@@ -82,9 +82,8 @@ class follow_lead_pure_pursuit:
         #self.position_window[proper_index]=np.asarray([lead.pose.position.x,lead.pose.position.y,lead_yaw])
         self.position_window[proper_index]=np.asarray([lead.pose.pose.position.x,lead.pose.pose.position.y])
         self.window_index+=1
-
         distance=self.compute_distance(lead.pose.pose.position,ego.pose.pose.position)
-        self.pure_pursuit_following(lead.pose.pose,ego.pose.pose,distance)
+        self.pure_pursuit_following(lead,ego,distance)
 
     def scan_callback(self,data):
         self.scan_msg=data
@@ -141,22 +140,23 @@ class follow_lead_pure_pursuit:
     
 
     def pure_pursuit_following(self,lead_position,ego_position,distance):
-        qx=ego_position.orientation.x
-        qy=ego_position.orientation.y
-        qz=ego_position.orientation.z
-        qw=ego_position.orientation.w
+        qx=ego_position.pose.pose.orientation.x
+        qy=ego_position.pose.pose.orientation.y
+        qz=ego_position.pose.pose.orientation.z
+        qw=ego_position.pose.pose.orientation.w
 
         quaternion = (qx,qy,qz,qw)
         euler = euler_from_quaternion(quaternion)
         yaw   = euler[2] 
 
-        x = ego_position.position.x
-        y = ego_position.position.y
+        x = ego_position.pose.pose.position.x
+        y = ego_position.pose.pose.position.y
         
 
         ## finding the distance of each way point from the current position 
         curr_pos= np.asarray([x,y]).reshape((1,2))
         dist_arr = np.linalg.norm(self.position_window-curr_pos,axis=-1)
+        #print(dist_arr)
 
         ##finding those points which are less than the look ahead distance (will be behind and ahead of the vehicle)
         goal_arr = np.where((dist_arr > self.LOOKAHEAD_DISTANCE) & (dist_arr<self.LOOKAHEAD_DISTANCE+0.3))[0]
@@ -178,25 +178,27 @@ class follow_lead_pure_pursuit:
                 pts_infrontofcar.append(pts[idx])
 
         pts_infrontofcar =np.asarray(pts_infrontofcar)
+        print(pts_infrontofcar.shape)
 
-        # compute new distances
-        dist_arr = np.linalg.norm(pts_infrontofcar-curr_pos,axis=-1)- self.LOOKAHEAD_DISTANCE
-        
-        # get the point closest to the lookahead distance
-        idx = np.argmin(dist_arr)
+        if(pts_infrontofcar.shape[0]>0):
+            # compute new distances
+            dist_arr = np.linalg.norm(pts_infrontofcar-curr_pos,axis=-1)- self.LOOKAHEAD_DISTANCE
+            
+            # get the point closest to the lookahead distance
+            idx = np.argmin(dist_arr)
 
-        # goal point 
-        goal_point = pts_infrontofcar[idx]
-        self.visualize_point([goal_point],self.goal_pub)
+            # goal point 
+            goal_point = pts_infrontofcar[idx]
+            self.visualize_point([goal_point],self.goal_pub)
 
-        # transform it into the vehicle coordinates
-        v1 = (goal_point - curr_pos)[0].astype('double')
-        xgv = (v1[0] * np.cos(yaw)) + (v1[1] * np.sin(yaw))
-        ygv = (-v1[0] * np.sin(yaw)) + (v1[1] * np.cos(yaw))
+            # transform it into the vehicle coordinates
+            v1 = (goal_point - curr_pos)[0].astype('double')
+            xgv = (v1[0] * np.cos(yaw)) + (v1[1] * np.sin(yaw))
+            ygv = (-v1[0] * np.sin(yaw)) + (v1[1] * np.cos(yaw))
 
-        # calculate the steering angle
-        angle = math.atan2(ygv,xgv)
-        self.const_speed(angle,distance)
+            # calculate the steering angle
+            angle = math.atan2(ygv,xgv)
+            self.const_speed(angle,distance)
 
 
     #safey function for turning, if it rounds the corner first this will be used later

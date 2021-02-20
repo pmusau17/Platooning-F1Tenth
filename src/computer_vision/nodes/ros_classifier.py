@@ -119,15 +119,15 @@ class ROS_Classify:
         #get the label
         label=self.classes[pred[0].argmax()]
         if (label=="left"):
-            angle=0.5108652353
+            angle=0.6108652381980153
         elif (label=="right"):
-            angle=-0.5108652353
+            angle=-0.6108652381980153
         elif (label=="straight"):
             angle=0.0
         elif (label=="weak_left"):
-            angle=0.10179
+            angle=0.17453292519943295
         elif (label=="weak_right"):
-            angle=-0.10179
+            angle=-0.17453292519943295
         else: 
             print("error:",label)
             angle=0
@@ -180,7 +180,9 @@ if __name__=='__main__':
     else:
         il=ROS_Classify(racecar_name,model)
     try: 
-        rospy.spin()
+        r = rospy.Rate((1/40.0))
+        while not rospy.is_shutdown():
+            r.sleep()
     except KeyboardInterrupt:
         print("Shutting Down")
         cv2.destroyAllWindows()

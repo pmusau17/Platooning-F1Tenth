@@ -1,0 +1,6 @@
+random_seed, num_obstacles, collision_object_1, collision_object2, experiment_number
+15, 0, barca_track, racecar, 3
+15, 0, barca_track, racecar, 5
+15, 0, barca_track, racecar, 26
+15, 0, barca_track, racecar, 29
+15, 0, barca_track, racecar, 30

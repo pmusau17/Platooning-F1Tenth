@@ -221,7 +221,7 @@ class DisparityExtenderDriving(object):
     def publish_speed_and_angle(self,angle,speed):
         msg = drive_param()
         msg.angle = angle
-        msg.velocity = 1.0 #right now I want constant speed
+        msg.velocity = 0.5 #right now I want constant speed
         self.pub_drive_param.publish(msg)
 
 
@@ -330,6 +330,9 @@ if __name__ == '__main__':
     #get the arguments passed from the launch file
     args = rospy.myargv()[1:]
     racecar_name=args[0]
+    sleep_time = args[1:]
+    if(sleep_time):
+        rospy.sleep(float(sleep_time[0]))
 
     rospy.init_node('disparity_extender', anonymous=True)
     extendObj=DisparityExtenderDriving(racecar_name)
