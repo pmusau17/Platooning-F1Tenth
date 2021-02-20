@@ -1,1 +1,12 @@
-
+Collision Occured, random_seed 20141, num_obstacles: 6
+Collision Occured, random_seed 4881, num_obstacles: 6
+Collision Occured, random_seed 6689, num_obstacles: 6
+Collision Occured, random_seed 22397, num_obstacles: 6
+Collision Occured, random_seed 12025, num_obstacles: 6
+Collision Occured, random_seed 21609, num_obstacles: 6
+Collision Occured, random_seed 32499, num_obstacles: 6
+Collision Occured, random_seed 18509, num_obstacles: 6
+Collision Occured, random_seed 26792, num_obstacles: 6
+Collision Occured, random_seed 18958, num_obstacles: 6
+Collision Occured, random_seed 3616, num_obstacles: 6
+Collision Occured, random_seed 25397, num_obstacles: 6

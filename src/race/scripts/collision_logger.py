@@ -111,7 +111,7 @@ if __name__ == "__main__":
     num_obstacles = args[1]
     random_seed = args[2]
     log_file = args[3]
-    rospy.sleep(15)
+    rospy.sleep(20)
     CollTracker = CollisionTracker(racecar_name,num_obstacles,random_seed,log_file)
     contact_sub = rospy.Subscriber(racecar_name+'/contact_link_collisions',ContactsState,CollTracker.callback_func,queue_size=100)
     
