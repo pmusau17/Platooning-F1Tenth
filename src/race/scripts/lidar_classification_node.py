@@ -8,6 +8,7 @@ from message_filters import ApproximateTimeSynchronizer, Subscriber
 from ackermann_msgs.msg import AckermannDriveStamped
 #import the tensorflow package
 from race.msg import drive_param
+from race.msg import angle_msg
 from keras.models import load_model
 import os
 import numpy as np
@@ -23,13 +24,18 @@ class LidarFNNNode:
         /racecar/scan': 40 hz
         /vesc/ackermann_cmd_mux/input/teleop: 40 hz
     '''
-    def __init__(self,racecar_name,model,velocity=1.0):
+    def __init__(self,racecar_name,model,velocity=1.0,decoupled=False):
         self.lidar_topic = racecar_name+'/scan'
         self.model=load_model(model)
         self.velocity = velocity
 
         # subscripe to the ackermann commands and lidar topic
-        self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+        self.decoupled = decoupled
+        if(self.decoupled):
+            self.pub = rospy.Publisher(racecar_name+'/angle_msg', angle_msg, queue_size=5)
+        else:
+            self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
+
         self.lidar_sub=rospy.Subscriber(self.lidar_topic,LaserScan,self.master_callback)
 
         # get the path to where the data will be stored
@@ -49,10 +55,15 @@ class LidarFNNNode:
         pred=self.model.predict(inp)
         print(pred[0])
 
-        msg = drive_param()
-        msg.header.stamp=rospy.Time.now()
-        msg.angle = pred[0]
-        msg.velocity = self.velocity
+        if(self.decoupled):
+            msg=angle_msg()
+            msg.header.stamp=rospy.Time.now()
+            msg.steering_angle=pred[0]
+        else:
+            msg = drive_param()
+            msg.header.stamp = rospy.Time.now()
+            msg.angle = pred[0]
+            msg.velocity = self.velocity
         self.pub.publish(msg)
         
         
@@ -70,9 +81,12 @@ if __name__=='__main__':
     model_path = args[1]
 
     vel = float(args[2])
-    
-    # initialize the message filter
-    mf=LidarFNNNode(racecar_name,model_path,velocity=vel)
+
+    if (len(args)>3):
+        mf=LidarFNNNode(racecar_name,model_path,velocity=vel,decoupled=True)
+    else:
+        # initialize the message filter
+        mf=LidarFNNNode(racecar_name,model_path,velocity=vel)
     
     # spin so that we can receive messages
     while not rospy.is_shutdown():
