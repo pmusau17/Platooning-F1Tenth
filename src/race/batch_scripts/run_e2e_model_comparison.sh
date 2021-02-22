@@ -31,10 +31,10 @@ algorithm_number=3
 exit_status=0
 
 # Select the velocity for evaluation 
-velocity=1.5
+velocity=0.5
 
 # this keeps track of how many experiments we have run
-count=0 
+count=1
 _term() {
   exit_status=$? # = 130 for SIGINT
   echo "Caught SIGINT signal!"
