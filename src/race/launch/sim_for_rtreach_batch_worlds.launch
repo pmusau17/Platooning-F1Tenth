@@ -5,6 +5,8 @@
     <arg name="world_number" default="0"/>
     <arg name="car_name" default="racecar"/>
     <arg name="gui" default="true" />
+    <arg name="velocity" default="1.0"/>
+    <arg name="algorithm" default="0"/>
 
     <!--random seed used to allocte obstacles within vehicle environment-->
     <arg name="random_seed" default = "15"/>
@@ -14,9 +16,8 @@
 
     <!--network model utilized for end-to-end driving-->
     <arg name="model_name" default="minivgg_center_data.hdf5"/>
-
-    <!--Launch The Model-->
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
+    <arg name="model_name2" default="fnn_lidar_porto.hdf5"/>
+    <arg name="model_name3" default="fnn_lidar_all.hdf5"/>
 
     <!-- how many obstacles (cones) to allocate in the environment-->
     <arg name="num_obstacles" default="0"/>
@@ -41,6 +42,28 @@
     <arg name="wall_points" if="$(eval arg('world_number')==1)" value="racecar_tunnel_obstacles.txt"/>
     <arg name="wall_points" if="$(eval arg('world_number')==2)" value="racecar_walker_obstacles.txt"/>
     <arg name="wall_points" if="$(eval arg('world_number')==3)" value="track_barca_obstacles.txt"/>
+
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==0)" value="e2e_image"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==1)" value="e2e"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==2)" value="sac"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==3)" value="ddpg"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==4)" value="e2e_all"/>
+
+    <!--Launch The Controllers-->
+    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
+
+    <!--End to end learning controller-->
+    <node pkg="race" type="lidar_classification_node.py" name="e2e" required='true' if="$(eval arg('algorithm')==1)" args="$(arg car_name) $(find race)/models/$(arg model_name2) $(arg velocity) 1"/>
+
+    <!--reinforcement learning controllers-->
+    <node pkg="rl" name="sac_controller" type="sac_controller.py" if="$(eval arg('algorithm')==2)" args="$(arg car_name) $(arg velocity) 1" required="true" output="log"/>
+
+
+    <node pkg="rl" name="ddpg_controller" type="ddpg_controller.py" if="$(eval arg('algorithm')==3)" args="$(arg car_name) $(arg velocity) 1" required="true" output="log"/>
+
+    <!--End to end learning controller-->
+    <node pkg="race" type="lidar_classification_node.py" name="e2e_all" required='true' if="$(eval arg('algorithm')==4)" args="$(arg car_name) $(find race)/models/$(arg model_name3) $(arg velocity) 1"/>
+
 
 
     <!--Handles finding the obstacle map-->
@@ -73,7 +96,7 @@
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" args="$(arg wall_points)" output="screen"/>
+    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" args="$(arg wall_points) $(arg algorithm_name) $(arg world_name) $(arg velocity)" output="screen"/>
 
     <!--ttc node-->
     <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>
