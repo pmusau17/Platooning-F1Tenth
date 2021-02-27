@@ -16,8 +16,9 @@
     <!--flag that limits experiment to LEC only control-->
     <arg name="lec_only" default="false"/>
     
-    <!--occupancy grid of selected track-->
-    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+    <!--occupancy grid of selected track
+    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>-->
+    <arg name="map_file" default="$(find race)/maps/feb24.yaml"/>
 
     <!--random seed used to allocte obstacles within vehicle environment-->
     <arg name="random_seed" default = "15"/>
