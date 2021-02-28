@@ -58,6 +58,10 @@
 <!--Node for Visualizing reachsets that allows customization through parameters-->
 <node name="vis_agent_param" pkg="rtreach" type="vis_node_param" output="screen" args=" 10 $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
 
+
+<node pkg="race" name="disparity_extender_racear" type="disparity_extender_vanderbilt_gen.py" args="racecar"/>
+
+
 <!--Node for wall points-->
 <node name="wall_points" pkg="rtreach" type="publish_wall_points.py" output="screen" args="porto"/>
 
