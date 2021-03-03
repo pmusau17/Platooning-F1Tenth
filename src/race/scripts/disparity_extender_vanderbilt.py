@@ -5,6 +5,7 @@ import rospy
 import copy
 import numpy as np
 from race.msg import drive_param
+from race.msg import angle_msg
 import math
 
 """ 
@@ -17,7 +18,7 @@ class DisparityExtenderDriving(object):
 
     #constructor for our DisparityExtenderDrivng Object
     #stores configuration parameters neccessary for successful execution of our algorithm
-    def __init__(self):
+    def __init__(self,racecar_name,decoupled=False,publication_topic=None):
 
         # This is actually "half" of the car width, plus some tolerance.
         # Controls the amount disparities are extended by.
@@ -78,12 +79,16 @@ class DisparityExtenderDriving(object):
         self.no_obstacles_distance = 6.0
 
 
-        #publisher for speed and angles 
-
-        self.pub_drive_param = rospy.Publisher('racecar/drive_parameters',drive_param, queue_size=5)
+        # subscripe to the ackermann commands and lidar topic
+        self.decoupled = decoupled
+        if(self.decoupled):
+            self.pub = rospy.Publisher(publication_topic, angle_msg, queue_size=5)
+        else:
+            self.pub=rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=5)
 
         #this functionality depends on a functioning LIDAR so it subscribes to the lidar scans
-        rospy.Subscriber('scan', LaserScan, self.lidar_callback)
+        
+        #rospy.Subscriber('scan', LaserScan, self.lidar_callback)
 
         #create a variable that will store the lidar distances
         self.lidar_distances=None
@@ -155,11 +160,8 @@ class DisparityExtenderDriving(object):
 
         """Yeah nah this aint working for us: velocity=self.duty_cycle_from_distance(limited_ranges[540])
         print(velocity)"""
+        self.publish_speed_and_angle(thresholded_angle,velocity)
 
-        if(min(limited_ranges[480:601])<0.5):
-            self.publish_speed_and_angle(thresholded_angle,0.0)
-        else:
-            self.publish_speed_and_angle(thresholded_angle,1.0)
 
     """Scale the speed in accordance to the forward distance"""
     def threshold_speed(self,velocity,forward_distance,straight_ahead_distance):
@@ -221,10 +223,16 @@ class DisparityExtenderDriving(object):
 
     """Function that publishes the speed and angle so that the car drives around the track"""
     def publish_speed_and_angle(self,angle,speed):
-        msg = drive_param()
-        msg.angle = angle
-        msg.velocity = speed #right now I want constant speed
-        self.pub_drive_param.publish(msg)
+        if(self.decoupled):
+            msg=angle_msg()
+            msg.header.stamp=rospy.Time.now()
+            msg.steering_angle=angle
+        else:
+            msg = drive_param()
+            msg.header.stamp = rospy.Time.now()
+            msg.angle = angle
+            msg.velocity = speed
+        self.pub.publish(msg)
 
 
     """This function returns the angle we are targeting depending on which index corresponds to the farthest distance"""
@@ -328,9 +336,15 @@ class DisparityExtenderDriving(object):
         return ranges
 
 if __name__ == '__main__':
+
+    #get the arguments passed from the launch file
+    args = rospy.myargv()[1:]
+    racecar_name=args[0]
+    publication_topic = args[1:]
     rospy.init_node('disparity_extender', anonymous=True)
-    extendObj=DisparityExtenderDriving()
-    #wait three seconds so that the simulation sets up properly
-    rospy.sleep(1)
-    rospy.Subscriber('racecar/scan', LaserScan, extendObj.lidar_callback)
+    if(publication_topic):
+        extendObj=DisparityExtenderDriving(racecar_name,decoupled=True,publication_topic=args[1])
+    else:
+        extendObj=DisparityExtenderDriving(racecar_name)
+    rospy.Subscriber(racecar_name+'/scan', LaserScan, extendObj.lidar_callback)
     rospy.spin()

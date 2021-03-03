@@ -32,7 +32,7 @@ class DecisionManager:
         msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = racecar_name+"/base_link"
         
-        
+        #print(velocity_msg.velocity,safety_sub.drive.speed)
         msg.drive.acceleration = 1
         msg.drive.jerk = 1
         msg.drive.steering_angle_velocity = 1
