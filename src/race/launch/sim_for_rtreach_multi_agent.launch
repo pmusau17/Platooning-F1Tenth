@@ -72,6 +72,9 @@
 <!--ttc node-->
 <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>
 
+<!--ttc node
+<node pkg="race" type="compute_safety_percentage.py" name="safety_aggregator" required="false" output="screen"/>-->
+
 <!--plot reachability results-->
 <node pkg="race" type="plot_reachability_results.py" name="res_plot" required="false" output="screen"/>
 

@@ -73,15 +73,15 @@
         <arg name="gui" value="$(arg gui)" />
     </include>
 
-    <!--Timeout node-->
-    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
+    <!--Timeout node
+    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>-->
     
     
     <!--collision logging-->
     <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) 0 15 $(arg collision_file) $(arg experiment_number)"/>
 
-    <!--progress logging-->
-    <node pkg = "race" name= "progress_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="compute_progress.py" args="$(arg car_name) $(arg csv_filename) $(arg progression_file) $(arg experiment_number)"/>
+    <!--progress logging
+    <node pkg = "race" name= "progress_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="compute_progress.py" args="$(arg car_name) $(arg csv_filename) $(arg progression_file) $(arg experiment_number)"/>-->
 
 
 

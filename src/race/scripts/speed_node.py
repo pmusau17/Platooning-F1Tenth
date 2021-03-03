@@ -15,7 +15,7 @@ class SpeedManager:
         while not rospy.is_shutdown():
             msg=velocity_msg()
             msg.header.stamp=rospy.Time.now()
-            msg.velocity=1.0
+            msg.velocity=self.speed
             self.pub.publish(msg)
             r.sleep()            
 
@@ -23,8 +23,13 @@ if __name__=="__main__":
     #get the arguments passed from the launch file 
     args = rospy.myargv()[1:]   
     racecar_name=args[0]
-    rospy.init_node('speed_manager_'+racecar_name, anonymous=True)
-    sp=SpeedManager(racecar_name)
+    set_speed = args[1:]
+    if(set_speed):
+        vel = float(args[1])
+    else:
+        vel = 1.0
+    rospy.init_node('speed_manager_'+racecar_name,anonymous=True)
+    sp=SpeedManager(racecar_name,speed=vel)
     sp.publish()
     rospy.spin()
     
