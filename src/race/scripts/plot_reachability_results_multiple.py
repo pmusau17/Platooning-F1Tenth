@@ -23,7 +23,7 @@ class PlotReachability:
         self.results3 =[] 
         self.times=[]
 
-        self.fig,self.axes = plt.subplots(figsize=(25,8))
+        self.fig,self.axes = plt.subplots(figsize=(15,8))
         #self.ax = self.fig.add_subplot(1, 1, 1)
         self.window=4000
         self.count= 0
@@ -36,6 +36,7 @@ class PlotReachability:
         # Set up plot to call animate() function periodically
         ani = animation.FuncAnimation(self.fig, self.animate, fargs=(self.results, self.results,self.results,self.times), interval=1000)
         plt.show()
+        #plt.legend()
 
 
     def callback(self,lec,disp,pure_pursuit):
@@ -57,26 +58,18 @@ class PlotReachability:
         self.results = self.results[-self.window:]
         self.times = self.times[-self.window:]
 
-        self.axes.plot(self.times,self.results,color='red')
-        self.axes.plot(self.times,self.results2,color='green')
-        self.axes.plot(self.times,self.results3,color='blue')
-        # Draw x and y lists
-        #sns.lineplot(self.times,self.results,color='red', linewidth=2.5,ax=self.axes[0])
-        #self.axes[0].spines['bottom'].set_color('#dddddd')
-        #self.axes[0].spines['left'].set_color('#dddddd')
+        self.axes.plot(self.times,self.results,color='red',label='End-to-End Controller')
+        self.axes.plot(self.times,self.results2,color='green',label='Disparity Extender')
+        self.axes.plot(self.times,self.results3,color='blue',label='Pure Pursuit')
+        self.axes.legend(["End-to-End Controller","Disparity Extender","Pure Pursuit"])
         sns.despine(left=False, bottom=False, right=True)
-        # self.axes[0].tick_params(direction='out', length=6, width=2, colors="#5B5B5B",
-        #        grid_color='r', grid_alpha=0.5,labelsize=12)
-        # self.axes[0].set(ylim=(0, 1))
-        # self.axes[0].set_yticks([0,1])
-        # self.axes[0].set_title('Verification Result', color='#5B5B5B',loc='left',pad=25.0,fontweight="bold",fontsize=18)
-        # self.axes[0].set_ylabel('Verification Result (Boolean)',fontsize=16,fontweight="bold",color='#5B5B5B')
-        # self.axes[0].set_xlabel('Time (s)',fontweight="bold",color='#5B5B5B',fontsize=16)
 
-        # sns.lineplot(self.times,self.min_distances,color='blue', linewidth=2.5,ax=self.axes[1])
-        # self.axes[1].set_title('Minimum Distance to Obstacle (Lidar)', color='#5B5B5B',loc='left',pad=25.0,fontweight="bold",fontsize=18)
-        # self.axes[1].set_ylabel('Distance (m)',fontsize=16,fontweight="bold",color='#5B5B5B')
-        # self.axes[1].set_xlabel('Time (s)',fontweight="bold",color='#5B5B5B',fontsize=16)
+        self.axes.set(ylim=(0, 1))
+        self.axes.set_yticks([0,1])
+        self.axes.set_title('Online Verification of Controllers', color='#5B5B5B',loc='left',pad=25.0,fontweight="bold",fontsize=18)
+        self.axes.set_ylabel('Verification Result (Boolean)',fontsize=16,fontweight="bold",color='#5B5B5B')
+        self.axes.set_xlabel('Time (s)',fontweight="bold",color='#5B5B5B',fontsize=16)
+
         
 if __name__=='__main__':
     rospy.init_node("reachability_result",anonymous=True)
