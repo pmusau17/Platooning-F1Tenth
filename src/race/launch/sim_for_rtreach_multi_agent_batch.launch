@@ -4,7 +4,7 @@
 <!--This prevents the gazebo from displaying in a window
     The idea is this will help with performance. We will 
     have to see-->
-<arg name="gui" default="true" />
+<arg name="gui" default="false" />
 <!--How many boxes to let rviz visualize-->
 <arg name="box_display_limit" default="100"/>
 <!-- reach-time is the time we are computing reachability for-->
