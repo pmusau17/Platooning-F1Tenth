@@ -21,7 +21,7 @@
 
 # Change this to evaluate on a different track 
 # 0 is porto, 1 is racecar_walker, 2 is barca
-algorithm_number=0
+algorithm_number=2
 
 # Change this to select the algorithm
 # 0 is e2e , 1 is disparity extender 2 is pure pursuit 
@@ -30,10 +30,10 @@ algorithm_number=0
 exit_status=0
 
 # Select the velocity for evaluation 
-velocity=1.0
+velocity=1.5
 
 # this keeps track of how many experiments we have run
-count=1
+count=0
 _term() {
   exit_status=$? # = 130 for SIGINT
   echo "Caught SIGINT signal!"
