@@ -58,9 +58,9 @@ class PlotReachability:
         self.results = self.results[-self.window:]
         self.times = self.times[-self.window:]
 
-        self.axes.plot(self.times,self.results,color='red',label='End-to-End Controller')
+        self.axes.plot(self.times,self.results,color='blue',label='End-to-End Controller')
         self.axes.plot(self.times,self.results2,color='green',label='Disparity Extender')
-        self.axes.plot(self.times,self.results3,color='blue',label='Pure Pursuit')
+        self.axes.plot(self.times,self.results3,color='red',label='Pure Pursuit')
         self.axes.legend(["End-to-End Controller","Disparity Extender","Pure Pursuit"])
         sns.despine(left=False, bottom=False, right=True)
 

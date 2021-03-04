@@ -187,7 +187,7 @@ class pure_pursuit:
     def const_speed(self,angle):
         msg=angle_msg()
         msg.header.stamp=rospy.Time.now()
-        msg.steering_angle=angle
+        msg.steering_angle=np.clip(angle,-0.610865,0.610865)
         self.pub.publish(msg)
 
     # find the angle bewtween two vectors    

@@ -73,8 +73,8 @@
         <arg name="gui" value="$(arg gui)" />
     </include>
 
-    <!--Timeout node-->
-    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
+    <!--Timeout node
+    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>-->
     
     
     <!--collision logging

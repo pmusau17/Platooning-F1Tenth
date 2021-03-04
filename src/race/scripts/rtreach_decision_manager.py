@@ -12,8 +12,9 @@ from ackermann_msgs.msg import AckermannDriveStamped
 
 
 class DecisionManager:
-    def __init__(self,racecar_name,vesc_name):
+    def __init__(self,racecar_name,vesc_name,pass_anyway=False):
         self.racecar_name=racecar_name
+        self.pass_anyway = pass_anyway
 
         #subscribe to the angle and the speed message
         self.angle_sub=Subscriber('/'+self.racecar_name+'/angle_msg',angle_msg)
@@ -36,7 +37,7 @@ class DecisionManager:
         msg.drive.acceleration = 1
         msg.drive.jerk = 1
         msg.drive.steering_angle_velocity = 1
-        if(reach_result.data):
+        if(reach_result.data or self.pass_anyway):
             msg.drive.speed = velocity_msg.velocity
             msg.drive.steering_angle = angle_msg.steering_angle
         else:
@@ -53,6 +54,9 @@ if __name__=="__main__":
     args = rospy.myargv()[1:]
     racecar_name=args[0]
     vesc_name=args[1]
-    dm = DecisionManager(racecar_name,vesc_name)
+    pass_anyway = False
+    if(args[2:]):
+        pass_anyway = True
+    dm = DecisionManager(racecar_name,vesc_name,pass_anyway=pass_anyway)
     rospy.init_node('decision_manager_'+racecar_name, anonymous=True)
     rospy.spin()

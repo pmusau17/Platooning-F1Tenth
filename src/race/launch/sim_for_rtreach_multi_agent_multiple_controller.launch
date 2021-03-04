@@ -44,9 +44,8 @@
   <!-- generation of safety controller-->
   <node pkg="race" type="safety_controller.py" name="safety_node" args="$(arg car_name)/scan $(arg car_name)/safety" output="screen"/>
 
-  <!-- decision manager-->
-  <node pkg="race" type="rtreach_decision_manager.py" name="decision_manager" args="$(arg car_name) vesc2" output="screen"/>
-
+<!-- decision manager
+<node pkg="race" type="rtreach_decision_manager.py" name="decision_manager" args="$(arg car_name) vesc2" output="screen"/>-->
 
 <!-- These are the nodes for publishing the reachability information for each of the vehicles-->
 <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
@@ -59,6 +58,7 @@
 
 
 <node pkg="race" name="disparity_extender_racear" type="disparity_extender_vanderbilt_gen.py" args="racecar"/>
+<node pkg="race" name="disparity_extender_racear2" type="disparity_extender_vanderbilt_gen.py" args="racecar2"/>
 <node pkg="race" name="disparity_extender_angle_msg" type="disparity_extender_vanderbilt.py" args="racecar disparity/angle_msg"/>
 <node pkg="pure_pursuit" name="pure_pursuit_node" type="pure_pursuit_angle.py" args="racecar track_porto_26780.csv pure_pursuit/angle_msg"/>
 
