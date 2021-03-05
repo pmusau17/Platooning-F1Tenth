@@ -21,7 +21,7 @@
 
 # Change this to evaluate on a different track 
 # 0 is porto, 1 is racecar_walker, 2 is barca
-algorithm_number=2
+algorithm_number=0
 
 # Change this to select the algorithm
 # 0 is e2e , 1 is disparity extender 2 is pure pursuit 
@@ -46,7 +46,7 @@ trap _term SIGINT
 while [ $count -lt 30 ]
 do
 ((count=count+1)) 
-roslaunch race sim_for_rtreach_multi_agent_batch.launch  algorithm:=$algorithm_number velocity:=$velocity experiment_number:=$count timeout:=60 number_of_cars:=3 &
+roslaunch race sim_for_rtreach_multi_agent_batch.launch  algorithm:=$algorithm_number velocity:=$velocity experiment_number:=$count timeout:=60 number_of_cars:=2 &
 
 
     
