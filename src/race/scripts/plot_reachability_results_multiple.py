@@ -23,7 +23,7 @@ class PlotReachability:
         self.results3 =[] 
         self.times=[]
 
-        self.fig,self.axes = plt.subplots(figsize=(15,8))
+        self.fig,self.axes = plt.subplots(figsize=(20,15))
         #self.ax = self.fig.add_subplot(1, 1, 1)
         self.window=4000
         self.count= 0
@@ -62,13 +62,17 @@ class PlotReachability:
         self.axes.plot(self.times,self.results2,color='green',label='Disparity Extender')
         self.axes.plot(self.times,self.results3,color='red',label='Pure Pursuit')
         self.axes.legend(["End-to-End Controller","Disparity Extender","Pure Pursuit"])
+        self.axes.spines['bottom'].set_color('#dddddd')
+        self.axes.spines['left'].set_color('#dddddd')
         sns.despine(left=False, bottom=False, right=True)
+        self.axes.tick_params(direction='out', length=6, width=2, colors="#5B5B5B",
+               grid_color='r', grid_alpha=0.5,labelsize=20)
 
-        self.axes.set(ylim=(0, 1))
-        self.axes.set_yticks([0,1])
-        self.axes.set_title('Online Verification of Controllers', color='#5B5B5B',loc='left',pad=25.0,fontweight="bold",fontsize=18)
-        self.axes.set_ylabel('Verification Result (Boolean)',fontsize=16,fontweight="bold",color='#5B5B5B')
-        self.axes.set_xlabel('Time (s)',fontweight="bold",color='#5B5B5B',fontsize=16)
+        self.axes.set(ylim=(0.0, 1))
+        self.axes.set_yticks([0.0,1])
+        self.axes.set_title('Online Verification of Controllers', color='#5B5B5B',loc='left',pad=25.0,fontweight="bold",fontsize=30)
+        self.axes.set_ylabel('Verification Result (Boolean)',fontsize=25,fontweight="bold",color='#5B5B5B')
+        self.axes.set_xlabel('Time (s)',fontweight="bold",color='#5B5B5B',fontsize=25)
 
         
 if __name__=='__main__':
