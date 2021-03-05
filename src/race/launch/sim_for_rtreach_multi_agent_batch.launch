@@ -74,6 +74,7 @@
 
 
 <node pkg="race" name="disparity_extender_racear" type="disparity_extender_vanderbilt_gen.py" args="racecar"/>
+<node pkg="race" name="disparity_extender_racear3" if="$(eval arg('number_of_cars')==3)" type="disparity_extender_vanderbilt_gen.py" args="racecar3"/>
 
 
 <!--Node for wall points-->

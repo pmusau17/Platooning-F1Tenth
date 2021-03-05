@@ -46,7 +46,7 @@ trap _term SIGINT
 while [ $count -lt 30 ]
 do
 ((count=count+1)) 
-roslaunch race sim_for_rtreach_multi_agent_batch.launch  algorithm:=$algorithm_number velocity:=$velocity experiment_number:=$count timeout:=60 &
+roslaunch race sim_for_rtreach_multi_agent_batch.launch  algorithm:=$algorithm_number velocity:=$velocity experiment_number:=$count timeout:=60 number_of_cars:=3 &
 
 
     
