@@ -149,8 +149,36 @@ The controllers were evaluated through a variety of scenarios that test their ab
 ### Docker 
 <hr /> 
 
-Patrick add details here ASAP. 
+Build the docker containers as described here: [Docker](#Docker).
 
+Run the experiments as follows: **make sure you've run +xhost: docker**
+
+```
+./docker/run_docker.sh
+```
+
+This should open a terminal within the docker container. Run the following in the terminal:
+
+```
+source devel/setup.bash && roslaunch race model_comparison.launch world_number:=0 algorithm:=0 velocity:=1.0
+```
+
+To change the algorithm, velocity, and track edit the parameters in the above command. The mapping is as follows:
+
+```
+world_number:=0 -> track_porto
+world_number:=1 -> racecar_walker
+world_number:=2 -> track_barca
+world_number:=3 -> racear_tunnel
+world_number:=4 -> track_levine
+
+algorithm:=0 -> end-to-end controller
+algorithm:=1 -> soft actor critic (rl)
+algorithm:=2 -> ddpg (rl)
+algorithm:=3 -> end-to-end controller (trained on all tracks)
+algorithm:=4 -> end-to-end controller (trained only on track_barca)
+algorithm:=5 -> end-to-end controller (trained on only racecar walker)
+```
 
 ### Running the Experiments (Native Installation)
 <hr /> 
