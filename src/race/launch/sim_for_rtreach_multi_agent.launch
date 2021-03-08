@@ -52,15 +52,12 @@
 <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 <node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 
-<!-- <node name="reach_agent" pkg="rtreach" type="visualize_node_dynamic" output="screen"/>  -->
-<!--args="racecar $(arg reach_time) $(arg wall_time) $(arg box_display_limit)"/>-->
-
 <!--Node for Visualizing reachsets that allows customization through parameters-->
 <node name="vis_agent_param" pkg="rtreach" type="vis_node_param" output="screen" args=" 10 $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
 
 
 <node pkg="race" name="disparity_extender_racear" type="disparity_extender_vanderbilt_gen.py" args="racecar"/>
-
+<node pkg="race" name="disparity_extender_racear3" if="$(eval arg('number_of_cars')==3)" type="disparity_extender_vanderbilt_gen.py" args="racecar3"/>
 
 <!--Node for wall points-->
 <node name="wall_points" pkg="rtreach" type="publish_wall_points.py" output="screen" args="porto"/>
@@ -68,12 +65,8 @@
 <!--Reachability safety node that incorporates dynamic obstacles-->
 <node name="reach_agent_param" pkg="rtreach" type="reach_node_dyn" output="log" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
 
-
 <!--ttc node-->
 <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>
-
-<!--ttc node
-<node pkg="race" type="compute_safety_percentage.py" name="safety_aggregator" required="false" output="screen"/>-->
 
 <!--plot reachability results-->
 <node pkg="race" type="plot_reachability_results.py" name="res_plot" required="false" output="screen"/>
