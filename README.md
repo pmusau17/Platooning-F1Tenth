@@ -96,7 +96,6 @@ If you get the error: ImportError: No module named catkin_pkg.packages and you a
 
 
 # Runtime Verification<a name="RuntimeVerification"></a>
-<hr /> 
 
 Recent advances in Artificial Intelligence research have led to the emergence of machine learning models deployed within safety critical systems, where their tremendous ability to deal with complex data makes them particularly useful for sensing, actuation, and control. Despite the prolific advances enabled by machine learning methods, such systems are notoriously difficult to assure. The challenge here is that some models, such as neural networks, are "black box" in nature, making verification and validation difficult, and sometimes infeasible. In this repo, we provide the code used for our evaluation of the use of a real-time reachability algorithm in order to reason about the safety of a 1/10 scale open source autonomous vehicle platform known as F1/10. Our regime allows us to (a) provide provable guarantees of safety and (b) detect potentially unsafe scenarios in the context of autonomous racing.
 
@@ -200,7 +199,7 @@ The experiments without obstacles can be run by the following [bash script](src/
  ```
 
 # Changing The Number of Cars and The Track
-<hr /> 
+
 
 Changing the number of cars can be done in the [multi_parametrizeable.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/multi_parametrizeable.launch) at the top of the file. You can experiment with two or three car experiments. Beyond that Gazebo operates painfully slow. 
 
