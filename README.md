@@ -348,13 +348,13 @@ Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/ins
 To build the docker image use the Dockerfile located in this repository. 
 
 ```bash
-$ docker build -t platoon_test -f docker/Dockerfile .
+$ docker build -t simulator -f docker/Dockerfile .
 ```
 
 Test if the image builds correctly by running: 
 
 ```bash
-$ docker container run --rm --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d platoon_test
+$ docker container run --rm --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix -d simulator
 ```
 
 In order to  enable the use of graphical user interfaces within Docker containers such as Gazebo and Rviz give docker the rights to access the X-Server with:
@@ -376,7 +376,7 @@ to return the access controls that were disabled with the previous command
 To run the simulation: 
 
 ```bash
-$ docker container run --rm --name=sim --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix platoon_test
+$ docker container run --rm --name=sim --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix simulator
 ```
 
 To teleoperate the car or run experiments run the following:
