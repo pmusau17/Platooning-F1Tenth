@@ -2,7 +2,7 @@
 
 
 # Table of Contents
-<hr /> 
+
 
 1. [Introduction](#introduction)
 2. [Installation](#Installation)
@@ -17,7 +17,7 @@
 
 
 # Introduction <a name="introduction"></a>
-<hr /> 
+
 
 Welcome! This repository contains a host of [ROS](http://wiki.ros.org/ROS/Introduction) packages for the [F1Tenth Autonomous Racing Competition](http://f1tenth.org/). In this repository you will find ROS packages designed for both simulation and the F1Tenth hardware platform. The simulation is based on a Gazebo based virtual racing environment. Our goal is to develop the F1Tenth platform for AI research to experiment with deep learning, computer vision, reinforcement learning, and path planning for autonomous racing.  
 
@@ -26,7 +26,7 @@ If you have any questions or run into any problems. Feel free to send me an [ema
 ![Three_Car_Sim](./images/three_car_platoon.gif "Three Car Simulation")
 
 # Installation <a name="Installation"></a>
-<hr /> 
+
 
 ### Install Necessary Environments
 <hr /> 
@@ -47,10 +47,12 @@ $ conda create --name ros27 python=2.7 && conda activate ros27
 
 
 ### Installing Pytorch
+<hr /> 
 
 To install pytorch kindly visit the following [link](https://pytorch.org/get-started/locally/).
 
 ### Installing Reinforcement Learning Libraries
+<hr /> 
 
 Our reinforcement Learning Approaches leverage a couple of custom libraries. To install them run the following. 
 
@@ -139,7 +141,6 @@ We provide launch files for running the relevant experiments:
   - One of the motivations in utilizing the runtime verification approach is that it abstracts away the need to analyze the underlying controller and instead focuses on the effects of control decisions on the system's future states. Utilizing our regime, one could evaluate the safety of a set of controllers at runtime, and select the one with the highest performance that has been determined safe. This is what this launch file provides.
 
 # Zero-Shot Policy Transfer<a name="ZeroShot"></a>
-<hr /> 
 
 There are few technologies that hold as much promise in achieving safe, accessible, and convenient transportation as autonomous vehicles. However, as recent years have demonstrated, safety and reliability remain the most critical challenges, especially in complex domains. Autonomous racing has demonstrated unique benefits in that researchers can conduct research in controlled environments allowing for experimentation with approaches that are too risky to evaluate on public roads. In this repo you will find scripts for evaluating two leading methods for training neural network controllers, Reinforcement Learning and Imitation Learning, for the autonomous racing task. We compare their viability by analyzing their performance and safety when deployed in novel scenarios outside their training via zero-shot policy transfer. 
 
@@ -163,9 +164,10 @@ The experiments without obstacles can be run by the following [bash script](src/
 
 
 # Platooning Algorithms<a name="Platooning"></a>
-<hr /> 
+
  
- **Disparity Extender**
+### Disparity Extender
+<hr /> 
  
  This algorithm was originally proposed by Nathan Otterness et al. in the following [blog post](https://www.nathanotterness.com/2019/04/the-disparity-extender-algorithm-and.html). The main idea behind this algorithm is to search for the farthest distance that the car can travel in a straight line and go in that direction. The algorithm makes use of LIDAR Scans and using the array of distances given by the LIDAR we must filter the ranges in order to find the set of distances tat are safely reachable by driving in a straight line. The basis of this filtering comes from the fact that the LIDAR "thinks" of itself as a single point, but in reality it's on a car that has some width. Thus each time we get a reading from the LIDAR, we take the raw array of LIDAR samples (mapping angles to distances), and identify disparities between subsequent points in the LIDAR samples. For each pair of points around a disparity, we pick the point at the closer distance and calculate the number of LIDAR samples needed to cover half the width of the car at this distance. Using this filtered list of distances we find the index of the farthest index, compute our steering angle and drive in that direction. A more detailed analysis of this algorithm can be found in the above blog post.
  
@@ -180,8 +182,9 @@ The experiments without obstacles can be run by the following [bash script](src/
 ![Two_Car_Sim](./images/two_car_sim.gif "Two Car Simulation")
 
 
- **Following Algorithm**
- 
+### Following Algorithm
+<hr /> 
+
  The task of this project was to get a series of 1/10 scales RC cars to platoon in a reliable manner. As a proof of concept we made a few assumptions. The first assumption is that each car precisely knows its own position and orientaion in the map frame. The second assumption is that the the cars could reliably communicate their position and velocity with each other. However the platooning would occur on a racetrack. Thus there would be times that the following cars would not be able to see the lead car. Thus we needed to design boh a lateral and longitudnal controller that maintained a specified distance between the ego car and the lead car. However if any failures occured in the system, the cars would need to be able to switch to a fallback controller from the following controller. The following controller makes use of the pure pursuit algorithm proposed by R. Craig Coulter in the paper ["Implementation of the Pure Pursuit Path Tracking Algorithm"](https://www.ri.cmu.edu/pub_files/pub3/coulter_r_craig_1992_1/coulter_r_craig_1992_1.pdf). To compute the steering angle we use the pure pursuit algorithm to find a goal point in the lead car's position history that consists of the most recent 100 positions. These positions are transmitted from the lead car to the ego car via TCP. The longitudnal distance is observed using the ego car's LIDAR and a PD controller is used to control the ego car's velocity. The fallback controller is the disparity extender controller. One of the benefits of this algorithm is that it can do some obstacle avoidance "out of the box" making it a reliable fallback controller. 
  
  To see a demonstration of this algorithm run the following in two seperate terminals:
@@ -218,7 +221,6 @@ At the moment, the launch files are designed to use the track_porto world file. 
 For single car experiments you can change the track by editing the world_name parameter in [f1_tenth_devel.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/f1_tenth_devel.launch) at the top of the file.
 
 # Running the Experiments (Native Installation).
-<hr /> 
 
 If you would like to run the platooning experiments without the launch files. You can execute the following commands in seperate terminals. 
 
@@ -262,14 +264,12 @@ $ rosrun race follow_lead_gen.py racecar2 racecar3
 ```
 
 # Computer Vision <a name="ComputerVision"></a>
-<hr /> 
 
 Right now most things are limited to a single car. Multi-car experiments are a work in progress. Details can be found in the [Computer Vision](src/computer_vision) package.
 
 ![Error Analysis](./images/Figure_2.png "Error Analysis")
 
 # Reinforcement Learning <a name="ReinforcementLearning"></a>
-<hr /> 
 
 These methods are designed for training a vehicle follower, which we plan on expanding to platooning. However, we might 
 expand this to train a single racer in the future.
@@ -277,7 +277,6 @@ expand this to train a single racer in the future.
 Details can be found in the [Reinforcement Learning](src/rl) package.
 
 # Reset the Environment
-<hr /> 
 
 If the car crashes or you want to start the experiment again. Simply run:
 
@@ -286,7 +285,6 @@ If the car crashes or you want to start the experiment again. Simply run:
 to restart the experiment.
 
 # Running teleoperation nodes
-<hr /> 
 
 To run a node to tele-operate the car via the keyboard run the following in a new terminal:
 
@@ -303,7 +301,6 @@ $ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
 ```
 
 # Docker <a name="Docker"></a>
-<hr /> 
 
 Install [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) to containerize and run GPU accelerated workloads. In order to run the simulation please install it. 
 
@@ -354,10 +351,9 @@ Then run:
 $ source devel/setup.bash && rosrun race keyboard.py
 ```
 
-# Developers <a name="Developers"></a>
-<hr /> 
+# Developers <a name="Developers"></a> 
 
-Our team consists of graduate and undergraduate students from Vanderbilt University working at the [Institute for Software Integrated Systems](https://www.isis.vanderbilt.edu/).
+This work was made possible by the following team of graduate and undergraduate students from Vanderbilt University working at the [Institute for Software Integrated Systems](https://www.isis.vanderbilt.edu/).
 
 * [Patrick Musau](https://www.linkedin.com/in/musaup/)
 * [Diego Manzanas Lopez](https://www.linkedin.com/in/diego-manzanas-3b4841106/)
