@@ -5,12 +5,14 @@
 
 1. [Introduction](#introduction)
 2. [Installation](#Installation)
-3. [Platooning](#Platooning)
-4. [Computer Vision](#ComputerVision)
-5. [Reinforcement Learning](#ReinforcementLearning)
-6. [System Identification](https://github.com/pmusau17/Platooning-F1Tenth/tree/master/src/race/sys_id)
-7. [Docker](#Docker)
-8. [Developers](#Developers)
+3. [Runtime Verification](#RuntimeVerification)
+4. [Zero-Shot Policy Transfer](#ZeroShot)
+5. [Platooning](#Platooning)
+6. [Computer Vision](#ComputerVision)
+7. [Reinforcement Learning](#ReinforcementLearning)
+8. [System Identification](https://github.com/pmusau17/Platooning-F1Tenth/tree/master/src/race/sys_id)
+9. [Docker](#Docker)
+10. [Developers](#Developers)
 
 
 # Introduction <a name="introduction"></a>
@@ -66,6 +68,53 @@ $ source devel/setup.bash
 ### Troubleshooting 
 
 If you get the error: ImportError: No module named catkin_pkg.packages and you are using anaconda. Run the following command: ```conda install -c auto catkin_pkg```
+
+
+# Runtime Verification<a name="RuntimeVerification"></a>
+
+Recent advances in Artificial Intelligence research have led to the emergence of machine learning models deployed within safety critical systems, where their tremendous ability to deal with complex data makes them particularly useful for sensing, actuation, and control. Despite the prolific advances enabled by machine learning methods, such systems are notoriously difficult to assure. The challenge here is that some models, such as neural networks, are "black box" in nature, making verification and validation difficult, and sometimes infeasible. In this repo, we provide the code used for our evaluation of the use of a real-time reachability algorithm in order to reason about the safety of a 1/10 scale open source autonomous vehicle platform known as F1/10. Our regime allows us to (a) provide provable guarantees of safety and (b) detect potentially unsafe scenarios in the context of autonomous racing.
+
+There are two options for interacting with our code, a native installation or running the code through Docker. Our methods were run on a Dell Optiplex 7050 running Ubuntu 16.04 LTS, ROS Kinetic, and equipped with a GeForce GTX 1080 GPU. The real-time reachability code is avaliable here [https://github.com/pmusau17/rtreach_f1tenth] and is required in order to run experiments.
+
+### Native Install 
+
+To use runtime verification code, you must first step clone and build this repo as a rospackage. The instructions for doing so are provided above. Once this is done. Please add the path to the devel/setup.bash to your ~/.bashrc file, as shown below. **Change this path to the one on your system**.
+
+```
+source /path/to/Platooning-F1Tenth/devel/setup.bash 
+```
+
+One this is done. Either close and reopen your terminal or run the following ```source ~/.bashrc```
+
+Next clone the [rtreach_f1tenth](https://github.com/pmusau17/rtreach_f1tenth) repository outside of this one and run the following: 
+
+```
+cd rtreach_ft1enth
+ ./build_rtreach.sh
+ cd ../rtreach_ros && source devel/setup.bash
+```
+
+With that you are now ready to run the experiments. 
+
+### Docker 
+
+Instruction for building and running the dockerized version of the runtime-verification approach are provided [here](https://github.com/pmusau17/rtreach_f1tenth).
+
+
+### Running the Experiments (Native Installation)
+
+We provide a number of launch scripts that run the relevant experiments:
+- [sim_for_rtreach_multi_agent.launch](src/race/launch/sim_for_rtreach_multi_agent.launch)
+  -  This file launches a simulation with two vehicles. The vehicle for which we are reasoning about safety is racecar2. As a demonstration we have implemented a naive simplex architechture (simple switch based on safety signal). The launch file allows for various parameters to be set, such as the number of cars (2 or 3), the velocity used a setpoint for racecar2, the reach_time utilized for verification, the walltime alloted for reachset computation, and the number reachset boxes to displayed in rviz.
+- [sim_for_rtreach_multi_agent_batch.launch](src/race/launch/sim_for_rtreach_multi_agent_batch.launch)
+  -  This file is the launch file used for the empirical evaluation of our regime. It is used by the following [bash script](src/race/batch_scripts/run_model_safety_comparison.sh). The evaluation was done with respect to varying speeds and different types of controllers. The options can be found in the aformentioned bash script. The results of these experiments were stored in the [logs](src/race/logs/) folder and summarized in the following [jupyter notebook](src/race/logs/IROS_Experiments.ipynb). 
+- [sim_for_rtreach_multi_agent_multiple_controller.launch](src/race/launch/sim_for_rtreach_multi_agent_multiple_controller.launch)
+  - One of the motivations in utilizing the runtime verification approach is that it abstracts away the need to analyze the underlying controller and instead focuses on the effects of control decisions on the system's future states. Utilizing our regime, one could evaluate the safety of a set of controllers at runtime, and select the one with the highest performance that has been determined safe. This is what this launch file provides.
+
+# Zero-Shot Policy Transfer<a name="ZeroShot"></a>
+
+There are few technologies that hold as much promise in achieving safe, accessible, and convenient transportation as autonomous vehicles. However, as recent years have demonstrated, safety and reliability remain the most critical challenges, especially in complex domains. Autonomous racing has demonstrated unique benefits in that researchers can conduct research in controlled environments allowing for experimentation with approaches that are too risky to evaluate on public roads. In this repo you will find scripts for evaluating two leading methods for training neural network controllers, Reinforcement Learning and Imitation Learning, for the autonomous racing task. We compare their viability by analyzing their performance and safety when deployed in novel scenarios outside their training via zero-shot policy transfer. Our evaluation is made up of a large number of experiments in simulation and on our real-world hardware platform that analyze whether these algorithms remain effective when transferred to the real-world on our hardware platform.
+
 
 # Platooning Algorithms<a name="Platooning"></a>
  
