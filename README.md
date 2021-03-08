@@ -2,6 +2,7 @@
 
 
 # Table of Contents
+<hr /> 
 
 1. [Introduction](#introduction)
 2. [Installation](#Installation)
@@ -16,6 +17,7 @@
 
 
 # Introduction <a name="introduction"></a>
+<hr /> 
 
 Welcome! This repository contains a host of [ROS](http://wiki.ros.org/ROS/Introduction) packages for the [F1Tenth Autonomous Racing Competition](http://f1tenth.org/). In this repository you will find ROS packages designed for both simulation and the F1Tenth hardware platform. The simulation is based on a Gazebo based virtual racing environment. Our goal is to develop the F1Tenth platform for AI research to experiment with deep learning, computer vision, reinforcement learning, and path planning for autonomous racing.  
 
@@ -24,8 +26,10 @@ If you have any questions or run into any problems. Feel free to send me an [ema
 ![Three_Car_Sim](./images/three_car_platoon.gif "Three Car Simulation")
 
 # Installation <a name="Installation"></a>
+<hr /> 
 
 ### Install Necessary Environments
+<hr /> 
 
 Installation has been tested on Ubuntu 16.04 and 18.04 LTS. We highly recommend using the dockerized version of the simulator. The instructions can be found at the botton of this file. For a native installation see below.
 
@@ -46,7 +50,25 @@ $ conda create --name ros27 python=2.7 && conda activate ros27
 
 To install pytorch kindly visit the following [link](https://pytorch.org/get-started/locally/).
 
+### Installing Reinforcement Learning Libraries
+
+Our reinforcement Learning Approaches leverage a couple of custom libraries. To install them run the following. 
+
+```
+pip install gdown
+gdown https://drive.google.com/uc?id=152KL7JzDReYdg6quBznL9WtC0I5IvNx6
+```
+
+Unzip the rl_library.zip file. 
+
+```
+cd rl_library
+pip install -e .
+```
+
+
 ### Install the Repo
+<hr /> 
 
 If you already have these environments set up, then go with this choice. We assume that you have ROS Kinetic and Gazebo installed. If not please installed these packages using the following link: [Install ROS-Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu).
 
@@ -66,17 +88,20 @@ $ catkin_make
 $ source devel/setup.bash
 ```
 ### Troubleshooting 
+<hr /> 
 
 If you get the error: ImportError: No module named catkin_pkg.packages and you are using anaconda. Run the following command: ```conda install -c auto catkin_pkg```
 
 
 # Runtime Verification<a name="RuntimeVerification"></a>
+<hr /> 
 
 Recent advances in Artificial Intelligence research have led to the emergence of machine learning models deployed within safety critical systems, where their tremendous ability to deal with complex data makes them particularly useful for sensing, actuation, and control. Despite the prolific advances enabled by machine learning methods, such systems are notoriously difficult to assure. The challenge here is that some models, such as neural networks, are "black box" in nature, making verification and validation difficult, and sometimes infeasible. In this repo, we provide the code used for our evaluation of the use of a real-time reachability algorithm in order to reason about the safety of a 1/10 scale open source autonomous vehicle platform known as F1/10. Our regime allows us to (a) provide provable guarantees of safety and (b) detect potentially unsafe scenarios in the context of autonomous racing.
 
-There are two options for interacting with our code, a native installation or running the code through Docker. Our methods were run on a Dell Optiplex 7050 running Ubuntu 16.04 LTS, ROS Kinetic, and equipped with a GeForce GTX 1080 GPU. The real-time reachability code is avaliable here [https://github.com/pmusau17/rtreach_f1tenth] and is required in order to run experiments.
+There are two options for interacting with our code, a native installation or running the code through Docker. Our methods were run on a Dell Optiplex 7050 running Ubuntu 16.04 LTS, ROS Kinetic, and equipped with a GeForce GTX 1080 GPU. The real-time reachability code is avaliable [here](https://github.com/pmusau17/rtreach_f1tenth) and is required in order to run experiments.
 
 ### Native Install 
+<hr /> 
 
 To use runtime verification code, you must first step clone and build this repo as a rospackage. The instructions for doing so are provided above. Once this is done. Please add the path to the devel/setup.bash to your ~/.bashrc file, as shown below. **Change this path to the one on your system**.
 
@@ -97,13 +122,15 @@ cd rtreach_ft1enth
 With that you are now ready to run the experiments. 
 
 ### Docker 
+<hr /> 
 
 Instruction for building and running the dockerized version of the runtime-verification approach are provided [here](https://github.com/pmusau17/rtreach_f1tenth).
 
 
 ### Running the Experiments (Native Installation)
+<hr /> 
 
-We provide a number of launch scripts that run the relevant experiments:
+We provide launch files for running the relevant experiments:
 - [sim_for_rtreach_multi_agent.launch](src/race/launch/sim_for_rtreach_multi_agent.launch)
   -  This file launches a simulation with two vehicles. The vehicle for which we are reasoning about safety is racecar2. As a demonstration we have implemented a naive simplex architechture (simple switch based on safety signal). The launch file allows for various parameters to be set, such as the number of cars (2 or 3), the velocity used a setpoint for racecar2, the reach_time utilized for verification, the walltime alloted for reachset computation, and the number reachset boxes to displayed in rviz.
 - [sim_for_rtreach_multi_agent_batch.launch](src/race/launch/sim_for_rtreach_multi_agent_batch.launch)
@@ -112,11 +139,31 @@ We provide a number of launch scripts that run the relevant experiments:
   - One of the motivations in utilizing the runtime verification approach is that it abstracts away the need to analyze the underlying controller and instead focuses on the effects of control decisions on the system's future states. Utilizing our regime, one could evaluate the safety of a set of controllers at runtime, and select the one with the highest performance that has been determined safe. This is what this launch file provides.
 
 # Zero-Shot Policy Transfer<a name="ZeroShot"></a>
+<hr /> 
 
-There are few technologies that hold as much promise in achieving safe, accessible, and convenient transportation as autonomous vehicles. However, as recent years have demonstrated, safety and reliability remain the most critical challenges, especially in complex domains. Autonomous racing has demonstrated unique benefits in that researchers can conduct research in controlled environments allowing for experimentation with approaches that are too risky to evaluate on public roads. In this repo you will find scripts for evaluating two leading methods for training neural network controllers, Reinforcement Learning and Imitation Learning, for the autonomous racing task. We compare their viability by analyzing their performance and safety when deployed in novel scenarios outside their training via zero-shot policy transfer. Our evaluation is made up of a large number of experiments in simulation and on our real-world hardware platform that analyze whether these algorithms remain effective when transferred to the real-world on our hardware platform.
+There are few technologies that hold as much promise in achieving safe, accessible, and convenient transportation as autonomous vehicles. However, as recent years have demonstrated, safety and reliability remain the most critical challenges, especially in complex domains. Autonomous racing has demonstrated unique benefits in that researchers can conduct research in controlled environments allowing for experimentation with approaches that are too risky to evaluate on public roads. In this repo you will find scripts for evaluating two leading methods for training neural network controllers, Reinforcement Learning and Imitation Learning, for the autonomous racing task. We compare their viability by analyzing their performance and safety when deployed in novel scenarios outside their training via zero-shot policy transfer. 
+
+The controllers were evaluated through a variety of scenarios that test their ability to still perform optimally in scenarios outside of their training. These scenarios include changing the constant speed value, adding obstacles to the track, evaluating on a different track, and a real-world evaluation on our [hardware platform](https://github.com/pmusau17/F1TenthHardware). We tracked the number of collisions as well as the number of collisions that occured during the experiments. 
+
+
+### Docker 
+<hr /> 
+
+Patrick add details here ASAP. 
+
+
+### Running the Experiments (Native Installation)
+<hr /> 
+
+The experiments without obstacles can be run by the following [bash script](src/race/batch_scripts/run_model_comparison.sh) and those with obstacles can be run with this [script](src/race/batch_scripts/run_model_comparison_obstacles.sh).
+- [model_comparison.launch](src/race/launch/model_comparison.launch)
+  - This launch file allows for a selection of 5 different race tracks (Our experiments involved 3 of the 5), 6 different controllers (Our experiments involved 4 of the 6), the speed is also is parametrizeable.   
+- [model_comparison_obstacles.launch](src/race/launch/model_comparison_obstacles.launch)
+  - This file is similar to the above file but also allows for a number of obstacles to be randomly allocated within the environment. We set a random seed to make the experiments reproducible. 
 
 
 # Platooning Algorithms<a name="Platooning"></a>
+<hr /> 
  
  **Disparity Extender**
  
@@ -150,6 +197,7 @@ There are few technologies that hold as much promise in achieving safe, accessib
  ```
 
 # Changing The Number of Cars and The Track
+<hr /> 
 
 Changing the number of cars can be done in the [multi_parametrizeable.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/multi_parametrizeable.launch) at the top of the file. You can experiment with two or three car experiments. Beyond that Gazebo operates painfully slow. 
 
@@ -169,7 +217,9 @@ At the moment, the launch files are designed to use the track_porto world file. 
 
 For single car experiments you can change the track by editing the world_name parameter in [f1_tenth_devel.launch](src/f110-fall2018-skeletons/simulator/f1_10_sim/race/f1_tenth_devel.launch) at the top of the file.
 
-# Running the Experiments manually. 
+# Running the Experiments (Native Installation).
+<hr /> 
+
 If you would like to run the platooning experiments without the launch files. You can execute the following commands in seperate terminals. 
 
 Terminal 1:
@@ -212,18 +262,22 @@ $ rosrun race follow_lead_gen.py racecar2 racecar3
 ```
 
 # Computer Vision <a name="ComputerVision"></a>
+<hr /> 
 
 Right now most things are limited to a single car. Multi-car experiments are a work in progress. Details can be found in the [Computer Vision](src/computer_vision) package.
 
 ![Error Analysis](./images/Figure_2.png "Error Analysis")
 
 # Reinforcement Learning <a name="ReinforcementLearning"></a>
+<hr /> 
+
 These methods are designed for training a vehicle follower, which we plan on expanding to platooning. However, we might 
 expand this to train a single racer in the future.
 
 Details can be found in the [Reinforcement Learning](src/rl) package.
 
-# Reset the Environment 
+# Reset the Environment
+<hr /> 
 
 If the car crashes or you want to start the experiment again. Simply run:
 
@@ -232,6 +286,7 @@ If the car crashes or you want to start the experiment again. Simply run:
 to restart the experiment.
 
 # Running teleoperation nodes
+<hr /> 
 
 To run a node to tele-operate the car via the keyboard run the following in a new terminal:
 
@@ -248,6 +303,7 @@ $ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
 ```
 
 # Docker <a name="Docker"></a>
+<hr /> 
 
 Install [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) to containerize and run GPU accelerated workloads. In order to run the simulation please install it. 
 
@@ -299,6 +355,7 @@ $ source devel/setup.bash && rosrun race keyboard.py
 ```
 
 # Developers <a name="Developers"></a>
+<hr /> 
 
 Our team consists of graduate and undergraduate students from Vanderbilt University working at the [Institute for Software Integrated Systems](https://www.isis.vanderbilt.edu/).
 
