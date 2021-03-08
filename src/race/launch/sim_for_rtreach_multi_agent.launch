@@ -6,6 +6,8 @@
     have to see-->
 <arg name="gui" default="true" />
 
+<arg name="docker" default="false"/>
+
 <!--How many boxes to let rviz visualize-->
 <arg name="box_display_limit" default="100"/>
 
@@ -49,21 +51,21 @@
 
 
 <!-- These are the nodes for publishing the reachability information for each of the vehicles-->
-<node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
-<node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
+<node name="vehicle_1" pkg="rtreach" type="visualize_obs" unless="$(arg docker)" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
+<node name="vehicle_2" pkg="rtreach" type="visualize_obs" unless="$(arg docker)" args="racecar3  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 
 <!--Node for Visualizing reachsets that allows customization through parameters-->
-<node name="vis_agent_param" pkg="rtreach" type="vis_node_param" output="screen" args=" 10 $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
+<node name="vis_agent_param" pkg="rtreach" unless="$(arg docker)" type="vis_node_param" output="screen" args=" 10 $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
 
 
 <node pkg="race" name="disparity_extender_racear" type="disparity_extender_vanderbilt_gen.py" args="racecar"/>
 <node pkg="race" name="disparity_extender_racear3" if="$(eval arg('number_of_cars')==3)" type="disparity_extender_vanderbilt_gen.py" args="racecar3"/>
 
 <!--Node for wall points-->
-<node name="wall_points" pkg="rtreach" type="publish_wall_points.py" output="screen" args="porto"/>
+<node name="wall_points" pkg="rtreach" type="publish_wall_points.py" unless="$(arg docker)" output="screen" args="porto"/>
 
 <!--Reachability safety node that incorporates dynamic obstacles-->
-<node name="reach_agent_param" pkg="rtreach" type="reach_node_dyn" output="log" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
+<node name="reach_agent_param" pkg="rtreach" type="reach_node_dyn" output="log" unless="$(arg docker)" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
 
 <!--ttc node-->
 <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>

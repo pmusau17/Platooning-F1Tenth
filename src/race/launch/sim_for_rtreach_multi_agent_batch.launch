@@ -16,6 +16,9 @@
 <!--wall-time is the time we allow the reachability algorithm to run for-->
 <arg name="wall_time" default="1.0"/>
 
+<!--prevent reach nodes from being launched within docker. That will be done seperately-->
+<arg name="docker" default="false"/>
+
 <!--velocity-->
 <arg name="velocity" default="1.0"/>
 
