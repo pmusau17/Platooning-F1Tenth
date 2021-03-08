@@ -139,6 +139,12 @@ We provide launch files for running the relevant experiments:
 - [sim_for_rtreach_multi_agent_multiple_controller.launch](src/race/launch/sim_for_rtreach_multi_agent_multiple_controller.launch)
   - One of the motivations in utilizing the runtime verification approach is that it abstracts away the need to analyze the underlying controller and instead focuses on the effects of control decisions on the system's future states. Utilizing our regime, one could evaluate the safety of a set of controllers at runtime, and select the one with the highest performance that has been determined safe. This is what this launch file provides.
 
+Example Launch 
+
+```
+roslaunch race sim_for_rtreach_multi_agent.launch number_of_cars:=3
+```
+
 # Zero-Shot Policy Transfer<a name="ZeroShot"></a>
 
 There are few technologies that hold as much promise in achieving safe, accessible, and convenient transportation as autonomous vehicles. However, as recent years have demonstrated, safety and reliability remain the most critical challenges, especially in complex domains. Autonomous racing has demonstrated unique benefits in that researchers can conduct research in controlled environments allowing for experimentation with approaches that are too risky to evaluate on public roads. In this repo you will find scripts for evaluating two leading methods for training neural network controllers, Reinforcement Learning and Imitation Learning, for the autonomous racing task. We compare their viability by analyzing their performance and safety when deployed in novel scenarios outside their training via zero-shot policy transfer. 
