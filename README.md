@@ -189,6 +189,12 @@ The experiments without obstacles can be run by the following [bash script](src/
 - [model_comparison_obstacles.launch](src/race/launch/model_comparison_obstacles.launch)
   - This file is similar to the above file but also allows for a number of obstacles to be randomly allocated within the environment. We set a random seed to make the experiments reproducible. 
 
+Example launch: 
+
+```
+roslaunch race model_comparison.launch world_number:=0 algorithm:=0 velocity:=1.0
+```
+
 
 # Platooning Algorithms<a name="Platooning"></a>
 
