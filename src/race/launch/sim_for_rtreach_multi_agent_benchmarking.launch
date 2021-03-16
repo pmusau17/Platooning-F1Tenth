@@ -84,7 +84,7 @@
 <node name="wall_points" unless="$(arg docker)" pkg="rtreach" type="publish_wall_points.py" output="screen" args="porto"/>
 
 <!--Reachability safety node that incorporates dynamic obstacles-->
-<node name="reach_agent_param" unless="$(arg docker)" pkg="rtreach" type="reach_node_dyn" output="log" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
+<node name="benchmark_agent_param" unless="$(arg docker)" pkg="rtreach" type="benchmark_node_dyn" output="screen" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
 
 <!--kill simulation-->
 <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
