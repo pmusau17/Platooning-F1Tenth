@@ -7,7 +7,7 @@
 <arg name="gui" default="false" />
 
 <!--How many boxes to let rviz visualize-->
-<arg name="box_display_limit" default="10"/>
+<arg name="box_display_limit" default="5"/>
 
 <!-- reach-time is the time we are computing reachability for-->
 <arg name="reach_time" default="0.8"/>
@@ -26,10 +26,11 @@
 <arg name="rviz_disp" default="multiagent_rviz_multiple.rviz"/>
 
 <!--network model utilized for end-to-end driving-->
-<arg name="model_name" default="minivgg_center_data.hdf5"/>
+<arg name="model_name" default="fnn_lidar_porto.hdf5"/>
 
-<!--Launch The Model-->
-<node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
+<!--Launch The Model
+<node pkg="computer_vision" name="lec_model" type="ros_classifier.py" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>-->
+<node pkg="race" type="lidar_classification_node.py" name="e2e" required='true'  args="racecar2 $(find race)/models/$(arg model_name) 1.0 1"/>
 
 <!--  This is the main launch file that launches the world, plugins, controllers, vehicles -->
   <include file="$(find race)/launch/multi_parametrizeable.launch">

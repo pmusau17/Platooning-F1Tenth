@@ -5,6 +5,7 @@
     <arg name="world_number" default="0"/>
     <arg name="car_name" default="racecar"/>
     <arg name="gui" default="false" />
+    <arg name="lrviz" default="true"/>
     <arg name="velocity" default="1.0"/>
     <arg name="algorithm" default="0"/>
 
@@ -14,7 +15,17 @@
     <arg name="timeout" default = "-1"/>
 
     <!--network model utilized for end-to-end driving-->
-    <arg name="model_name" default="dave_center.hdf5"/>
+    <!--<arg name="model_name" default="dave_center.hdf5"/>-->
+    <arg name="model_name" default="daev_10000.hdf5"/>
+
+     <!-- we have the option to reset after a collision-->
+    <arg name="reset_on_crash" default="false"/>
+    
+
+
+    <!--experiment_number this parameter helps associate collisions with particular experiments-->
+    <arg name="experiment_number" default="0"/>
+
     <arg name="model_name2" default="fnn_lidar_porto.hdf5"/>
     <arg name="model_name3" default="fnn_lidar_all.hdf5"/>
 
@@ -39,11 +50,15 @@
     <arg name="wall_points" if="$(eval arg('world_number')==1)" value="racecar_walker_obstacles.txt"/>
     <arg name="wall_points" if="$(eval arg('world_number')==2)" value="track_barca_obstacles.txt"/>
 
-    <arg name="algorithm_name" if="$(eval arg('algorithm')==0)" value="e2e_image"/>
-    <arg name="algorithm_name" if="$(eval arg('algorithm')==1)" value="e2e"/>
-    <arg name="algorithm_name" if="$(eval arg('algorithm')==2)" value="sac"/>
-    <arg name="algorithm_name" if="$(eval arg('algorithm')==3)" value="ars"/>
-    <arg name="algorithm_name" if="$(eval arg('algorithm')==4)" value="e2e_all"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==0)" value="e2e_image_rtreach"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==1)" value="e2e_rtreach"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==2)" value="sac_rtreach"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==3)" value="ars_rtreach"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==4)" value="e2e_all_rtreach"/>
+
+
+    <!-- name of collision log file-->
+    <arg name="collision_file" value ="collisions_rteach_$(arg algorithm_name)_$(arg world_name)_$(arg velocity)_cones.csv"/>
 
     <!--Launch The Controllers-->
     <node pkg="computer_vision" name="lec_model" type="ros_dave.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
@@ -62,7 +77,7 @@
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <!--RVIZ Display-->
-    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
+    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg lrviz)" output="log"/>
     <!--docker requirements-->
     <arg name="use_sim_time" default = "true"/>
     <arg name="verbose" default ="false"/>
@@ -76,6 +91,9 @@
 
     <!--launch the speed node it will be constant in this case-->
     <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py"  args='$(arg car_name)'/>
+
+    <!--collision logging-->
+    <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file) $(arg experiment_number)"/>
 
     <!-- generation of safety controller-->
     <node pkg="race" type="safety_controller.py" name="safety_node" args="racecar/scan racecar/safety" output="screen"/>
