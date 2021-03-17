@@ -4,18 +4,17 @@
     <!--initialize the arguments-->
     <arg name="world_number" default="0"/>
     <arg name="car_name" default="racecar"/>
-    <arg name="gui" default="true" />
+    <arg name="gui" default="false" />
     <arg name="velocity" default="1.0"/>
     <arg name="algorithm" default="0"/>
 
     <!--random seed used to allocte obstacles within vehicle environment-->
     <arg name="random_seed" default = "15"/>
-    
     <!--how long to run each experiment before timeout-->
     <arg name="timeout" default = "-1"/>
 
     <!--network model utilized for end-to-end driving-->
-    <arg name="model_name" default="minivgg_center_data.hdf5"/>
+    <arg name="model_name" default="dave_center.hdf5"/>
     <arg name="model_name2" default="fnn_lidar_porto.hdf5"/>
     <arg name="model_name3" default="fnn_lidar_all.hdf5"/>
 
@@ -27,46 +26,36 @@
 
     <!--Handles selecting a track-->
     <arg name="world_name" if="$(eval arg('world_number')==0)" value="track_porto"/>
-    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_tunnel"/>
-    <arg name="world_name" if="$(eval arg('world_number')==2)" value="racecar_walker"/>
-    <arg name="world_name" if="$(eval arg('world_number')==3)" value="track_barca"/>
+    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_walker"/>
+    <arg name="world_name" if="$(eval arg('world_number')==2)" value="track_barca"/>
 
     <!--Handles finding the map file -->
     <arg name="map_name" if="$(eval arg('world_number')==0)" value="track_porto.yaml"/>
-    <arg name="map_name" if="$(eval arg('world_number')==1)" value="racecar_tunnel.yaml"/>
-    <arg name="map_name" if="$(eval arg('world_number')==2)" value="racecar_walker.yaml"/>
-    <arg name="map_name" if="$(eval arg('world_number')==3)" value="track_barca.yaml"/>
+    <arg name="map_name" if="$(eval arg('world_number')==1)" value="racecar_walker.yaml"/>
+    <arg name="map_name" if="$(eval arg('world_number')==2)" value="track_barca.yaml"/>
 
     <!--Handles finding the wall points-->
     <arg name="wall_points" if="$(eval arg('world_number')==0)" value="track_porto_obstacles.txt"/>
-    <arg name="wall_points" if="$(eval arg('world_number')==1)" value="racecar_tunnel_obstacles.txt"/>
-    <arg name="wall_points" if="$(eval arg('world_number')==2)" value="racecar_walker_obstacles.txt"/>
-    <arg name="wall_points" if="$(eval arg('world_number')==3)" value="track_barca_obstacles.txt"/>
+    <arg name="wall_points" if="$(eval arg('world_number')==1)" value="racecar_walker_obstacles.txt"/>
+    <arg name="wall_points" if="$(eval arg('world_number')==2)" value="track_barca_obstacles.txt"/>
 
     <arg name="algorithm_name" if="$(eval arg('algorithm')==0)" value="e2e_image"/>
     <arg name="algorithm_name" if="$(eval arg('algorithm')==1)" value="e2e"/>
     <arg name="algorithm_name" if="$(eval arg('algorithm')==2)" value="sac"/>
-    <arg name="algorithm_name" if="$(eval arg('algorithm')==3)" value="ddpg"/>
+    <arg name="algorithm_name" if="$(eval arg('algorithm')==3)" value="ars"/>
     <arg name="algorithm_name" if="$(eval arg('algorithm')==4)" value="e2e_all"/>
 
     <!--Launch The Controllers-->
-    <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
-
+    <node pkg="computer_vision" name="lec_model" type="ros_dave.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
     <!--End to end learning controller-->
     <node pkg="race" type="lidar_classification_node.py" name="e2e" required='true' if="$(eval arg('algorithm')==1)" args="$(arg car_name) $(find race)/models/$(arg model_name2) $(arg velocity) 1"/>
-
     <!--reinforcement learning controllers-->
     <node pkg="rl" name="sac_controller" type="sac_controller.py" if="$(eval arg('algorithm')==2)" args="$(arg car_name) $(arg velocity) 1" required="true" output="log"/>
-
-
-    <node pkg="rl" name="ddpg_controller" type="ddpg_controller.py" if="$(eval arg('algorithm')==3)" args="$(arg car_name) $(arg velocity) 1" required="true" output="log"/>
+    <node pkg="rl" name="lec_model" type="ars_controller.py" if="$(eval arg('algorithm')==3)"  args="$(arg car_name) 1" required="true" output="log"/>
+    <!--<node pkg="rl" name="ddpg_controller" type="ddpg_controller.py" if="$(eval arg('algorithm')==3)" args="$(arg car_name) $(arg velocity) 1" required="true" output="log"/>-->
 
     <!--End to end learning controller-->
     <node pkg="race" type="lidar_classification_node.py" name="e2e_all" required='true' if="$(eval arg('algorithm')==4)" args="$(arg car_name) $(find race)/models/$(arg model_name3) $(arg velocity) 1"/>
-
-
-
-    <!--Handles finding the obstacle map-->
  
     <!--occupancy grid of selected track-->
     <arg name="map_file" default="$(find race)/maps/$(arg map_name)"/>
@@ -74,7 +63,6 @@
 
     <!--RVIZ Display-->
     <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
-
     <!--docker requirements-->
     <arg name="use_sim_time" default = "true"/>
     <arg name="verbose" default ="false"/>
@@ -98,8 +86,7 @@
     <!--launch rviz to visualize reachable set-->
     <node pkg="rtreach" type="benchmark_node" name="benchmark_node" args="$(arg wall_points) $(arg algorithm_name) $(arg world_name) $(arg velocity)" output="screen"/>
 
+    <!--This will be deprecated soon-->
     <!--ttc node-->
     <node pkg="race" type="ttc.py" name="ttc" required="true" args = "$(arg car_name)" output="screen"/>
-
-    
 </launch>
