@@ -22,34 +22,53 @@ err = immse(x,xe);
 
 %change to the desired value     
 fig = figure();
+set(gcf,'color','w');
 set(gcf, 'Position',  [100, 100, 900, 900]);
 
 
 
 subplot(2,2,[1,2]);
-plot(t,x(4,:),'DisplayName','ground-truth,gazebo','LineWidth',2)
+plot(t,x(4,:),'-','Color', [157, 158, 157]/255,'DisplayName','ground-truth,gazebo','LineWidth',2)
 hold on;
-plot(t,xe(4,:),'DisplayName','sys-id model','LineWidth',2)
-xlabel('t (seconds)') 
+plot(t,xe(4,:),'--','Color', [70, 143, 199]/255,'DisplayName','sys-id','LineWidth',2)
+xlabel('Time (s)') 
 ylabel('Vehicle heading (radians)') 
-title("Vehicle heading")
+t = title("Vehicle heading (radians)",'Color',[87, 93, 97]/255);
+set(t, 'horizontalAlignment', 'left')
+set(t, 'units', 'normalized')
+set(t, 'position', [0.01 1.01 0]);
 legend
-
+ax = gca; % Get handle to current axes.
+ax.XColor = [87, 93, 97]/255; % Red
+ax.YColor = [87, 93, 97]/255; % Blue
+set(gca,'box','off')
+legend boxoff 
+xlabel('x (meters)') 
+ylabel('y (meters)') 
+t = title("Vehicle Position (map frame)",'Color',[87, 93, 97]/255);
 
 subplot(2,2,[3,4]);
-plot(x(1,:),x(2,:),'DisplayName','ground-truth,gazebo','LineWidth',2)
+plot(x(1,:),x(2,:),'-','Color', [157, 158, 157]/255,'DisplayName','ground-truth,gazebo','LineWidth',2)
 hold on;
-plot(xe(1,:),xe(2,:),'DisplayName','sys-id model','LineWidth',2)
-plot(x(1,1),x(2,1),'kx','DisplayName','init','LineWidth',3)
+plot(xe(1,:),xe(2,:),'--','Color', [70, 143, 199]/255,'DisplayName','sys-id','LineWidth',2)
+plot(x(1,1),x(2,1),'*','Color', [38, 38, 38]/255,'DisplayName','init','LineWidth',2)
 hold off;
 xlabel('x (meters)') 
 ylabel('y (meters)') 
-title("Vehicle Position (map frame)")
+ax = gca; % Get handle to current axes.
+ax.XColor = [87, 93, 97]/255; % Red
+ax.YColor = [87, 93, 97]/255; % Blue
+set(gca,'box','off')
+t = title(strcat("Vehicle Position (map frame) MSE=",string(round(err,4))),'Color',[87, 93, 97]/255);
+set(t, 'horizontalAlignment', 'left')
+set(t, 'units', 'normalized')
+set(t, 'position', [0.01 1.01 0]);
 legend
-set(findobj(gcf,'type','axes'),'FontName','Calibri','FontSize',11,'FontWeight','Bold', 'LineWidth', 2,'layer','top');
+legend boxoff 
+set(findobj(gcf,'type','axes'),'FontName','Calibri','FontSize',11,'FontWeight','Bold', 'LineWidth', 1,'layer','top');
 
-sgt =sgtitle(strcat('Validation MSE=',string(err)));
-sgt.FontSize = 20;
+%sgt =sgtitle(strcat('Validation MSE=',string(err)));
+%sgt.FontSize = 20;
 figname = split(strrep(csv_filename,'csv/',''),".");
 savename = strcat("plots/",figname(1),".png");
 saveas(fig,savename);
