@@ -39,13 +39,14 @@ from race.msg import angle_msg
 class ROS_Daev:
 
     #define the constructor 
-    def __init__(self,racecar_name,model,height,width,decoupled=False):
+    def __init__(self,racecar_name,model,height,width,decoupled=False,velocity =1.0):
         self.cv_bridge=CvBridge()
         self.image_topic=str(racecar_name)+'/camera/zed/rgb/image_rect_color'
         self.model=load_model(model,custom_objects={'customAccuracy': self.customAccuracy})
         #this handles the reshaping
         self.util=ImageUtils()
         self.width=width
+        self.velocity = velocity
         self.height=height
         #this is if we onlt want it to publish angle messages
         self.decoupled=decoupled
@@ -73,7 +74,7 @@ class ROS_Daev:
             msg = drive_param()
             msg.header.stamp=rospy.Time.now()
             msg.angle = pred
-            msg.velocity = 1.0
+            msg.velocity = self.velocity
         else:
             msg=angle_msg()
             msg.header.stamp=rospy.Time.now()
@@ -100,15 +101,24 @@ if __name__=='__main__':
     #get the keras model
     model=args[1]
 
-    #if there's more than two arguments then its decoupled
-    if len(args)>2:
-        il=ROS_Daev(racecar_name,model,66,200,decoupled=True)
+    vel = args[2:]
+    if vel:
+        vel = float(args[2])
     else:
-        il=ROS_Daev(racecar_name,model,66,200)
+        vel = 1.0 
+
+
+    #if there's more than two arguments then its decoupled
+    if len(args)>3:
+        il=ROS_Daev(racecar_name,model,66,200,decoupled=True,velocity=vel)
+    else:
+        il=ROS_Daev(racecar_name,model,66,200,velocity=vel)
         
     image_sub=rospy.Subscriber(il.image_topic,Image,il.image_callback)
-    try: 
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting Down")
-        cv2.destroyAllWindows()
+
+    r = rospy.Rate(20)
+    while not rospy.is_shutdown():
+        r.sleep()
+
+    print("Shutting Down")
+    cv2.destroyAllWindows()

@@ -74,9 +74,9 @@ print("[INFO] compiling model...")
 #number of epochs
 num_epochs=NUM_EPOCHS
 #decay=0.01/num_epochs
-opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
+#opt=SGD(lr=0.05,decay=0.01/num_epochs,momentum=0.9,nesterov=True)
 #opt=Adam(learning_rate=0.1, beta_1=0.9, beta_2=0.999, amsgrad=False)
-
+opt = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
 model = DAVE2.build(height=66, width=200, depth=3, classes=1)   
 print(model.summary())
@@ -92,7 +92,7 @@ checkpoint = ModelCheckpoint(fname,monitor="customAccuracy", mode="max",save_bes
 
 
 # Instantiate Data Augmentation Generator
-aug= ImageDataGenerator(rotation_range=2, brightness_range=[0.5,1.5], zoom_range=[0.9,1.1],rescale=1.0/255.0,fill_mode="nearest")
+aug= ImageDataGenerator(rotation_range=2, brightness_range=[0.9,1.1], zoom_range=[0.95,1.05],rescale=1.0/255.0,fill_mode="nearest")
 
 #Let us now instantiate th callbacks
 callbacks=[checkpoint]
