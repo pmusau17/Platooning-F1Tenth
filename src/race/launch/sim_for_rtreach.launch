@@ -48,7 +48,7 @@
     <!--launch the speed node it will be constant in this case-->
     <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py" unless="$(arg lec_only)" args='$(arg car_name)'/>
 
-    <node name="vis_agent_param" pkg="rtreach" type="visualize_node" output="screen" args="porto_obstacles.txt 1 1.0 25"/>
+    <node name="vis_agent_param" pkg="rtreach" type="visualize_node" output="log" args="porto_obstacles.txt 1 1.0 25"/>
 
     <!--launch the lec model node-->
     <node pkg="computer_vision" name="lec_model" type="ros_classifier.py" unless="$(arg lec_only)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="log"/>
@@ -68,6 +68,10 @@
 
     <!--time out node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
+
+    <!--Node for wall points-->
+    <node name="wall_points" pkg="rtreach" type="publish_wall_points_v2.py" output="screen" args="porto"/>
+    <node name="visualize_relevant_boundaries" pkg="rtreach" type="visualize_relevant_boundaries.py" output="screen" args="porto"/>
 
      <!--ttc node-->
     <node pkg="race" type="ttc.py" name="ttc" unless="$(arg lec_only)" required="true" args = "$(arg car_name)" output="screen"/>
