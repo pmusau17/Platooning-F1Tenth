@@ -45,7 +45,7 @@ set(gca,'box','off')
 legend boxoff 
 xlabel('x (meters)') 
 ylabel('y (meters)') 
-t = title("Vehicle Position (map frame)",'Color',[87, 93, 97]/255);
+t = title("Vehicle Heading",'Color',[87, 93, 97]/255);
 
 subplot(2,2,[3,4]);
 plot(x(1,:),x(2,:),'-','Color', [157, 158, 157]/255,'DisplayName','ground-truth,gazebo','LineWidth',2)

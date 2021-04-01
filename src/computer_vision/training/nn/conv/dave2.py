@@ -61,6 +61,7 @@ class DAVE2:
 
 if __name__=="__main__":
     model=DAVE2.build(66,200,3,1)
+    print(model.summary())
     #This is responsible for constructing a graph based on the layers inside 
     #The input model and then writing the graph to disk an image
     plot_model(model, to_file="DAVE3.png",show_shapes=True)

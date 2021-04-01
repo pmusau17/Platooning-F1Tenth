@@ -46,7 +46,7 @@
     <arg name="map_name" if="$(eval arg('world_number')==2)" value="track_barca.yaml"/>
 
     <!--Handles finding the wall points-->
-    <arg name="wall_points" if="$(eval arg('world_number')==0)" value="track_porto_obstacles.txt"/>
+    <arg name="wall_points" if="$(eval arg('world_number')==0)" value="porto_obstacles.txt"/>
     <arg name="wall_points" if="$(eval arg('world_number')==1)" value="racecar_walker_obstacles.txt"/>
     <arg name="wall_points" if="$(eval arg('world_number')==2)" value="track_barca_obstacles.txt"/>
 

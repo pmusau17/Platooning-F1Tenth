@@ -31,7 +31,6 @@ def soft_acc(y_true, y_pred):
 
 # load model without classifier layers
 model = FNN.build(9,1,64)
-
 df=pd.read_csv(args['dataset'], sep=',',header=None).dropna()
 
 inputs = df[df.columns[0:9]].values

@@ -12,7 +12,7 @@
 <arg name="box_display_limit" default="100"/>
 
 <!-- reach-time is the time we are computing reachability for-->
-<arg name="reach_time" default="0.8"/>
+<arg name="reach_time" default="1.0"/>
 
 <!--wall-time is the time we allow the reachability algorithm to run for-->
 <arg name="wall_time" default="1.0"/>
