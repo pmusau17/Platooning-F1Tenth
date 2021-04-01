@@ -32,7 +32,7 @@
     <arg name="model_name3" default="fnn_lidar_all.hdf5"/>
 
     <!-- how many obstacles (cones) to allocate in the environment-->
-    <arg name="num_obstacles" default="0"/>
+    <arg name="num_obstacles" default="6"/>
 
     <!--generation of obtacles and visualization in rviz -->
     <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" args = "$(arg random_seed) porto_freespace.txt $(arg num_obstacles)" output="screen"/>
@@ -63,7 +63,7 @@
     <arg name="collision_file" value ="collisions_rteach_$(arg algorithm_name)_$(arg world_name)_$(arg velocity)_$(arg wall_time)_$(arg num_obstacles).csv"/>
 
     <!--Launch The Controllers-->
-    <node pkg="computer_vision" name="lec_model" type="ros_dave.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) 1" required="true" output="screen"/>
+    <node pkg="computer_vision" name="lec_model" type="ros_dave.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) $(arg velocity) 1" required="true" output="log"/>
     <!--End to end learning controller-->
     <node pkg="race" type="lidar_classification_node.py" name="e2e" required='true' if="$(eval arg('algorithm')==1)" args="$(arg car_name) $(find race)/models/$(arg model_name2) $(arg velocity) 1"/>
     <!--reinforcement learning controllers-->
@@ -92,7 +92,7 @@
     </include>
 
     <!--launch the speed node it will be constant in this case-->
-    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py"  args='$(arg car_name)'/>
+    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py"  args='$(arg car_name) $(arg velocity)'/>
 
     <!--collision logging-->
     <node pkg = "race" name= "collision_logger_$(arg car_name)" output="screen" unless = "$(arg reset_on_crash)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file) $(arg experiment_number)"/>

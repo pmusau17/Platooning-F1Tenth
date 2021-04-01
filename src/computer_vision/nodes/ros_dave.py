@@ -109,7 +109,7 @@ if __name__=='__main__':
 
 
     #if there's more than two arguments then its decoupled
-    if len(args)>2:
+    if len(args)>3:
         il=ROS_Daev(racecar_name,model,66,200,decoupled=True,velocity=vel)
     else:
         il=ROS_Daev(racecar_name,model,66,200,velocity=vel)
