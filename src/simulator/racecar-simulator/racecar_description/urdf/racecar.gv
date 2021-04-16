@@ -1,0 +1,44 @@
+digraph G {
+node [shape=box];
+"base_link" [label="base_link"];
+"chassis" [label="chassis"];
+"chassis_inertia" [label="chassis_inertia"];
+"laser" [label="laser"];
+"imu_link" [label="imu_link"];
+"left_rear_wheel" [label="left_rear_wheel"];
+"left_steering_hinge" [label="left_steering_hinge"];
+"left_front_wheel" [label="left_front_wheel"];
+"right_rear_wheel" [label="right_rear_wheel"];
+"right_steering_hinge" [label="right_steering_hinge"];
+"right_front_wheel" [label="right_front_wheel"];
+"zed_camera_link" [label="zed_camera_link"];
+"camera_link" [label="camera_link"];
+"zed_camera_right_link" [label="zed_camera_right_link"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"base_link" -> "base_link_joint" [label="xyz: 0 0 0.05 \nrpy: 0 -0 0"]
+"base_link_joint" -> "chassis"
+"chassis" -> "chassis_inertia_joint" [label="xyz: 0 0 0 \nrpy: 0 -0 0"]
+"chassis_inertia_joint" -> "chassis_inertia"
+"chassis" -> "hokuyo_joint" [label="xyz: 0.265 0 0.075 \nrpy: 0 -0 0"]
+"hokuyo_joint" -> "laser"
+"chassis" -> "imu_joint" [label="xyz: 0.1 0 0.035 \nrpy: 0 -0 0"]
+"imu_joint" -> "imu_link"
+"chassis" -> "left_rear_wheel_joint" [label="xyz: 0 0.1 0 \nrpy: 1.5708 -0 0"]
+"left_rear_wheel_joint" -> "left_rear_wheel"
+"chassis" -> "left_steering_hinge_joint" [label="xyz: 0.325 0.1 0 \nrpy: 0 1.5708 -0"]
+"left_steering_hinge_joint" -> "left_steering_hinge"
+"left_steering_hinge" -> "left_front_wheel_joint" [label="xyz: 0 0 0 \nrpy: 1.5708 -0 0"]
+"left_front_wheel_joint" -> "left_front_wheel"
+"chassis" -> "right_rear_wheel_joint" [label="xyz: 0 -0.1 0 \nrpy: 1.5708 -0 0"]
+"right_rear_wheel_joint" -> "right_rear_wheel"
+"chassis" -> "right_steering_hinge_joint" [label="xyz: 0.325 -0.1 0 \nrpy: 0 1.5708 -0"]
+"right_steering_hinge_joint" -> "right_steering_hinge"
+"right_steering_hinge" -> "right_front_wheel_joint" [label="xyz: 0 0 0 \nrpy: 1.5708 -0 0"]
+"right_front_wheel_joint" -> "right_front_wheel"
+"chassis" -> "zed_camera_joint" [label="xyz: 0.39 0 0.04 \nrpy: 0 -0 0"]
+"zed_camera_joint" -> "zed_camera_link"
+"zed_camera_link" -> "zed_camera_left_joint" [label="xyz: 0 0.06 0 \nrpy: 0 -0 0"]
+"zed_camera_left_joint" -> "camera_link"
+"zed_camera_link" -> "zed_camera_right_joint" [label="xyz: 0 -0.06 0 \nrpy: 0 -0 0"]
+"zed_camera_right_joint" -> "zed_camera_right_link"
+}
