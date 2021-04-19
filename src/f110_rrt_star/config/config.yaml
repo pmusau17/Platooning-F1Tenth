@@ -1,0 +1,50 @@
+# Topics that RRT listens to
+pose_topic: "racecar/odom"
+scan_topic: "racecar/scan"
+
+# Topics that RRT publishes to
+drive_topic: "/vesc/ackermann_cmd_mux/input/teleop"
+
+# Path for CSV file
+CSV_path: "/home/musaup/Documents/Research/Platooning-F1Tenth/src/f110_rrt_star/sensor_data/track_porto.csv"
+
+#######
+# Parameters for RRT
+#######
+
+# Max Iterations of RRT before giving up
+max_rrt_iters: 2000
+
+# Max Value for steer between two nodes
+max_expansion_distance: 1.0 # in meters
+
+# Dicretization along edge joining two nodes in RRT
+collision_checking_points: 10
+
+# RRT Local Planner Goal Tolerance
+goal_tolerance: 0.1 # in meters
+
+# Lookahead Distance for tracking reference of local planner (RRT)
+lookahead_distance: 2.0 # in meters
+
+# Lookahead Distance for tracking reference of local planner (RRT)
+local_lookahead_distance: 1.5 # in meters
+
+# Near search radius for a node in the RRT* tree
+search_radius: 1.5
+
+# Enable RRT*
+enable_rrtstar: true
+
+# Obstacle Inflation
+inflation_radius: 5
+
+#######
+# Parameters for Car
+#######
+
+# Speed Variations
+high_speed: 1.0
+moderate_speed: 1.0
+low_speed: 1.0
+

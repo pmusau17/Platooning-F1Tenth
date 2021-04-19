@@ -151,7 +151,7 @@ Visualization Manager:
       Marker Topic: /obstacle_locations
       Name: MarkerArray
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -167,8 +167,7 @@ Visualization Manager:
       Marker Topic: /track_centerline
       Name: MarkerArray
       Namespaces:
-        centerline: true
-        centerline_points: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -192,10 +191,15 @@ Visualization Manager:
       Marker Topic: /HMPC
       Name: MarkerArray
       Namespaces:
-        borderlines: true
-        max_theta: true
-        predicted_positions: true
-        reference_trajectory: true
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /obstacle_locations
+      Name: MarkerArray
+      Namespaces:
+        "": true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -223,7 +227,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.56665421
+      Distance: 12.000411
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
