@@ -1,10 +1,11 @@
 local_costmap:
-  global_frame: odom
-  robot_base_frame: base_link
+  global_frame: racecar/odom
+  robot_base_frame: racecar/base_link
   update_frequency: 3.0
   publish_frequency: 3.0
-  static_map: false
+  static_map: true
   rolling_window: true
-  width: 10.0
-  height: 10.0
-  resolution: 0.025
+  width: 3.0
+  height: 3.0
+  # Note that its fine for the resolution of this grid to be different than the resolution of your static map, but most of the time we tend to set them equally.
+  resolution: 0.05

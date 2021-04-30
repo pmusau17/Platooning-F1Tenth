@@ -2,7 +2,6 @@
 import rospy
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.srv import GetMap
-from nav_msgs.msg import OccupancyGrid
 import matplotlib.pyplot as plt
 import rospkg 
 

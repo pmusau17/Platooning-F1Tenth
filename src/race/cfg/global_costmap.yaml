@@ -1,5 +1,9 @@
 global_costmap:
   global_frame: /map
-  robot_base_frame: base_link
-  update_frequency: 3.0
+  robot_base_frame: racecar/base_link
+  # The "update_frequency" parameter determines the frequency, in Hz, at which the costmap will run its update loop.
+  update_frequency: 5.0
+
+  #The "static_map" parameter determines whether or not the costmap should initialize itself based on a map served by the map_server. 
+  #If you aren't using an existing map or map server, set the static_map parameter to false.
   static_map: true
