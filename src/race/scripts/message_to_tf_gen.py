@@ -44,7 +44,8 @@ def vesc_odom_callback(data):
     odom_trans.transform.translation.y=pose.position.y
     odom_trans.transform.translation.z=pose.position.z
     odom_trans.transform.rotation=pose.orientation#Quaternion(*tf.transformations.quaternion_from_euler(0,0,0))
-    br.sendTransformMessage(odom_trans)
+    #br.sendTransformMessage(odom_trans)
+    br2.sendTransform(odom_trans)
 
     #Here I want to publish the transform between the odom frame and the map since we fix the odom frame to the map 
     #frame all the transforms are 0

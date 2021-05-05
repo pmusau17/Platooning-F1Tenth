@@ -1,6 +1,5 @@
-<?xml version="1.0"?>
 <launch>
-  
+
     <!--initialize the arguments-->
     <arg name="world_name" default="track_porto"/>
     <arg name="car_name" default="racecar"/>
@@ -14,7 +13,7 @@
     <arg name="random_seed" default = "1516"/>
 
     <!--docker requirements-->
-    <arg name="use_sim_time" default = "true"/>
+    <arg name="use_sim_time" default = "false"/>
     <arg name="verbose" default ="false"/>
     
     <!--launch the simulator-->
@@ -37,12 +36,9 @@
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <!-- launch rviz to visualize reachable set -->
-    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/mpc.rviz" output="log"/>
+    <!--<node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/move_base.rviz" output="log"/>-->
 
     <!--generation of obtacles and visualization in rviz -->
     <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" args = "$(arg random_seed) $(arg freespace_file) $(arg num_obstacles)" output="screen"/>
 
-    <!-- <node name="visualize_relevant_boundaries" pkg="rtreach" type="visualize_relevant_boundaries.py" output="screen" args="porto"/> -->
-
-
-</launch>
+</launch> 
