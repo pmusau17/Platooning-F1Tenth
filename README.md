@@ -341,7 +341,7 @@ $ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
 
 # Docker <a name="Docker"></a>
 
-Install [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) to containerize and run GPU accelerated workloads. In order to run the simulation please install it. 
+The first thing you will need to install is [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) which is used to containerize and run GPU accelerated workloads. The computer vision packages in this repository will run faster if you have a GPU. Visit the above link to do so.
 
 Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/install/)  to define and run the simulation. Kindly install this as well. 
 
