@@ -63,7 +63,7 @@
     <arg name="collision_file" value ="collisions_rteach_$(arg algorithm_name)_$(arg world_name)_$(arg velocity)_$(arg wall_time)_$(arg num_obstacles).csv"/>
 
     <!--Launch The Controllers-->
-    <node pkg="computer_vision" name="lec_model" type="ros_dave.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) $(arg velocity) 1" required="true" output="log"/>
+    <node pkg="computer_vision" name="lec_model" type="ros_dave.py" if="$(eval arg('algorithm')==0)" args="$(arg car_name) $(find computer_vision)models/$(arg model_name) $(arg velocity) 1" required="true" output="screen"/>
     <!--End to end learning controller-->
     <node pkg="race" type="lidar_classification_node.py" name="e2e" required='true' if="$(eval arg('algorithm')==1)" args="$(arg car_name) $(find race)/models/$(arg model_name2) $(arg velocity) 1"/>
     <!--reinforcement learning controllers-->
@@ -104,7 +104,7 @@
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" args="$(arg wall_points) $(arg algorithm_name) $(arg world_name) $(arg velocity) $(arg wall_time)" output="screen"/>
+    <node pkg="rtreach" type="benchmark_node" name="benchmark_node" args="$(arg wall_points) $(arg algorithm_name) $(arg world_name) $(arg velocity) $(arg wall_time) $(arg experiment_number)" output="screen"/>
 
     <!--This will be deprecated soon-->
     <!--ttc node-->
