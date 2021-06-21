@@ -1,54 +1,30 @@
 <?xml version="1.0"?>
-<package>
+<package format="3">
   <name>race</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>The race package</description>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="arc@todo.todo">arc</maintainer>
+  <!-- Maintainer -->
+  <maintainer email="patrick.musau17@gmail.com">Patrick Musau</maintainer>
 
+  <!-- License -->
+  <license>MIT</license>
 
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
-
-
-  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/race</url> -->
-
-
-  <!-- Author tags are optional, mutiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintianers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
-
-
-  <!-- The *_depend tags are used to specify dependencies -->
-  <!-- Dependencies can be catkin packages or system dependencies -->
-  <!-- Examples: -->
-  <!-- Use build_depend for packages you need at compile time: -->
-  <!--   <build_depend>message_generation</build_depend> -->
-  <!-- Use buildtool_depend for build tool packages: -->
-  <!--   <buildtool_depend>catkin</buildtool_depend> -->
-  <!-- Use run_depend for packages you need at runtime: -->
-  <!--   <run_depend>message_runtime</run_depend> -->
-  <!-- Use test_depend for packages you need only for testing: -->
-  <!--   <test_depend>gtest</test_depend> -->
-  <build_depend>message_generation</build_depend>
+  <!--build tool depend-->
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 2">python-setuptools</buildtool_depend>
+  <buildtool_depend condition="$ROS_PYTHON_VERSION == 3">python3-setuptools</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <!-- <build_depend>message_generation</build_depend>
   <run_depend>message_runtime</run_depend>  
   <build_depend>tf</build_depend>
-  <run_depend>tf</run_depend>  
-  <build_depend>laser_geometry</build_depend>
-  <build_depend>eigen</build_depend>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
+  <run_depend>tf</run_depend>   -->
+  <depend>laser_geometry</depend>
+  <!-- <build_depend>eigen</build_depend>
+  <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- <build_depend>roscpp</build_depend> -->
+  <!-- <build_depend>rospy</build_depend> -->
+  <!-- <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>gazebo_ros</build_depend>
@@ -57,13 +33,121 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
- 
-  <run_depend>gazebo_ros</run_depend>
+  <run_depend>gazebo_ros</run_depend> -->
 
-
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-
-  </export>
+  <depend>ackermann_msgs</depend>
+  <depend>armadillo</depend>
+  <depend>boost</depend>
+  <depend>carla_msgs</depend>
+  <depend>catkin</depend>
+  <depend>class_loader</depend>
+  <depend>cmake</depend>
+  <depend>cmake_modules</depend>
+  <depend>controller_manager</depend>
+  <depend>cpp_common</depend>
+  <depend>curl</depend>
+  <depend>cv_bridge</depend>
+  <depend>camera_calibration</depend>
+  <depend>diagnostic_aggregator</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>diagnostic_updater</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>effort_controllers</depend>
+  <depend>eigen_conversions</depend>
+  <depend>eigen</depend>
+  <depend>gazebo_msgs</depend>
+  <depend>gazebo_ros_control</depend>
+  <depend>genmsg</depend>
+  <depend>genpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>glut</depend>
+  <depend>gps_common</depend>
+  <depend>grid_map_cv</depend>
+  <depend>gazebo_ros</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_visualization</depend>
+  <depend>gtest</depend>
+  <depend>image_common</depend>
+  <depend>image_geometry</depend>
+  <depend>image_proc</depend>
+  <depend>image_transport</depend>
+  <depend>image_view2</depend>
+  <depend>imu_tools</depend>
+  <depend>joint_state_controller</depend>
+  <depend>jsk_recognition_msgs</depend>
+  <depend>jsk_recognition_utils</depend>
+  <depend>jsk_rviz_plugins</depend>
+  <depend>jsk_topic_tools</depend>
+  <depend>libgflags-dev</depend>
+  <depend>libglew-dev</depend>
+  <depend>libgoogle-glog-dev</depend>
+  <depend>libopencv-dev</depend>
+  <depend>libpcl-all</depend>
+  <depend>libpcl-all-dev</depend>
+  <depend>libqt5-core</depend>
+  <depend>libqt5-gui</depend>
+  <depend>libqt5-opengl</depend>
+  <depend>libqt5-opengl-dev</depend>
+  <depend>libqt5-widgets</depend>
+  <depend>libssh2</depend>
+  <depend>libx11-dev</depend>
+  <depend>libxi-dev</depend>
+  <depend>libxmu-dev</depend>
+  <depend>linux-kernel-headers</depend>
+  <depend>mercurial</depend>
+  <depend>message_filters</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+  <depend>nav_msgs</depend>
+  <depend>nmea_msgs</depend>
+  <depend>nodelet</depend>
+  <depend>opengl</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_msgs</depend>
+  <depend>pcl_ros</depend>
+  <depend>position_controllers</depend>
+  <depend>python-imaging</depend>
+  <depend>python3-nose</depend>
+  <depend>python_qt_binding</depend>
+  <depend>python3-requests</depend>
+  <depend>python3-rospkg</depend>
+  <depend>python3-serial</depend>
+  <depend>python3-yaml</depend>
+  <depend>qtbase5-dev</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>rosbag</depend>
+  <depend>rosbag_storage</depend>
+  <depend>rosbridge_server</depend>
+  <depend>rosconsole</depend>
+  <depend>roscpp</depend>
+  <depend>roscpp_serialization</depend>
+  <depend>rosgraph_msgs</depend>
+  <depend>roslaunch</depend>
+  <depend>roslib</depend>
+  <depend>roslint</depend>
+  <depend>rospy</depend>
+  <depend>rostest</depend>
+  <depend>rosunit</depend>
+  <depend>rqt_gui</depend>
+  <depend>rqt_gui_py</depend>
+  <depend>rqt_plot</depend>
+  <depend>rviz</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>stereo_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf_conversions</depend>
+  <depend>tf</depend>
+  <depend>joystick_drivers</depend>
+  <depend>tinyxml</depend>
+  <depend>topic_tools</depend>
+  <depend>visualization_msgs</depend>
+  <depend>xacro</depend>
+  <depend>xmlrpcpp</depend>
+  <depend>yaml-cpp</depend>
 </package>
