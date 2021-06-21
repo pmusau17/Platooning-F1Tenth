@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5.0)
 project(map_server2)
 
 find_package(catkin REQUIRED
@@ -61,11 +61,11 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(${PROJECT_NAME}_utest image_loader SDL SDL_image)
 
   add_executable(rtest test/rtest.cpp test/test_constants.cpp)
-  target_link_libraries( rtest
+  target_link_libraries(rtest
       gtest
       ${catkin_LIBRARIES}
   )
-  add_dependencies(rtest nav_msgs_gencpp)
+  add_dependencies(rtest ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
   # This has to be done after we've already built targets, or catkin variables get borked
   find_package(rostest)

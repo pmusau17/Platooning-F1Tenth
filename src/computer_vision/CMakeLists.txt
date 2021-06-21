@@ -46,14 +46,13 @@ nodes/synchronize_img_command.py
 evaluation/analyze_classification_model.py  
 evaluation/analyze_discrete.py  
 evaluation/analyze_e2e.py
-DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 # Install launch and other files 
 install(DIRECTORY
         launch
         logs
-        maps
         models
         model_test
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

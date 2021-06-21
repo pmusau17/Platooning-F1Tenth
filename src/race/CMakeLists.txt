@@ -87,7 +87,7 @@ include_directories(
 
 # add cpp executable
 add_executable(laser_converter_node src/laser_to_pointcloud.cpp)
-target_link_libraries(laser_converter_node ${PCL_LIBRARIES} ${EIGEN3_LIBRARIES} ${catkin_LIBRARIES}) #$ ${EIGEN3_INCLUDE_DIR})
+target_link_libraries(laser_converter_node ${PCL_LIBRARIES} ${EIGEN3_LIBRARIES} ${catkin_LIBRARIES}) 
 
 
 ### Install laser converter node 
@@ -96,7 +96,7 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# ### Install python nodes
+### Install python nodes
 install(PROGRAMS 
 scripts/ttc.py scripts/analyze_odom.py
 scripts/collect_lidar_classification_data.py
@@ -138,7 +138,7 @@ scripts/transform_obstacles.py
 scripts/ttc.py
 scripts/visualize_wall_markers.py
 scripts/wall_follower.py
-DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 # Install launch and other files 
