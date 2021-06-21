@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>racecar</name>
+  <version>0.0.1</version>
+  <description>RACECAR launch scripts</description>
+
+  <author>Michael Boulet</author>
+  <maintainer email="boulet@ll.mit.edu">Patrick Musau</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>razor_imu_9dof</depend>
+  <depend>tf</depend>
+  <depend>tf2_ros</depend>
+  <depend>urg_node</depend>
+  <depend>joy</depend>
+  <depend>rosbag</depend>
+  <depend>rostopic</depend>
+  <depend>rviz</depend>
+  <depend>gmapping</depend>
+  <depend>hector_mapping</depend>
+  <depend>robot_pose_ekf</depend>
+</package>
