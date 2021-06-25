@@ -19,6 +19,7 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <gazebo_ros gazebo_model_path="${prefix}/.." />
+    <gazebo_ros gazebo_model_path="${prefix}/worlds" />
+     <gazebo_ros gazebo_media_path="${prefix}/worlds"/>
   </export>
 </package>

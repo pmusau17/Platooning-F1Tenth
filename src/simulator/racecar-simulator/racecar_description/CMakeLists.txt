@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(racecar_description)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS gazebo_ros)
 
 catkin_package()
 
