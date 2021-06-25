@@ -1,6 +1,6 @@
 # F1Tenth: Platooning, Computer Vision, Reinforcement Learning, Path Planning
 
-**I'm working on porting this repo to ROS2 and Noetic. I'll update this readme when it's complete.**
+**I'm working on porting this repo to ROS2 and Noetic. I'll update this readme when it's complete. For now if you want to help with the port or experiment with it checkout the corresponding branch.**
 
 # Table of Contents
 
