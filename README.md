@@ -31,7 +31,7 @@ If you have any questions or run into any problems. Feel free to send me an [ema
 ### Install Necessary Environments
 <hr /> 
 
-Installation has been tested on Ubuntu 16.04 and 18.04 LTS. We highly recommend using the dockerized version of the simulator. The instructions can be found at the botton of this file. For a native installation see below.
+Installation has been tested on 20.04 LTS. We highly recommend using the dockerized version of the simulator. The instructions can be found at the botton of this file. For a native installation see below.
 
 The computer vision packages contained in this repository assume your system is GPU enabled. If your system is GPU enabled, you will need to install cuda and [cudnn](https://developer.nvidia.com/cudnn-download-survey). New versions of cuda are released periodically each year. Thus to keep this repo up to date, we refer you to nvidia's installation guide [here](https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604). Cudnn requires membership in the NVIDIA developer program and you can register for this program [here](https://developer.nvidia.com/cudnn-download-survey).
 
