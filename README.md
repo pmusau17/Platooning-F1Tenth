@@ -46,6 +46,16 @@ $ conda create --name ros27 python=2.7 && conda activate ros27
 
 **Note:** If your system is not gpu enabled, change the requirements in [setup.sh](setup.sh) to requirements-cpu.txt.
 
+### Installing OSQP and CVXPY 
+<hr /> 
+
+In your python2 environment
+
+```
+$ conda install -c conda-forge cvxpy
+$ conda install -c conda-forge osqp
+
+```
 
 ### Installing Pytorch
 <hr /> 
