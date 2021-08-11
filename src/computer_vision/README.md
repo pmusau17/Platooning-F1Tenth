@@ -23,7 +23,7 @@ In three seperate terminals run the following:
  
  Terminal 2: 
  ```bash  
- $ rosrun computer_vision disparity_extender_vanderbilt.py
+ $ rosrun race disparity_extender_vanderbilt.py
  ```
  
  Terminal 3: 
