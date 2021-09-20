@@ -30,6 +30,7 @@ include_directories(
 install(PROGRAMS 
 scripts/constants.py
 scripts/mpc_drive.py
+scripts/mpc_gen.py
 scripts/point.py
 scripts/solving.py
 scripts/template_model.py

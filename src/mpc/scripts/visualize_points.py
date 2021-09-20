@@ -21,6 +21,7 @@ while not rospy.is_shutdown():
     markerArray = MarkerArray()
 
     marker = Marker()
+    marker.id = 0
     marker.header.frame_id = "/map"
     marker.type = marker.LINE_STRIP
     marker.action = marker.ADD

@@ -35,9 +35,9 @@ class pure_pursuit:
         #self.pub = rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=1)
         self.pub = rospy.Publisher(publication_topic, angle_msg, queue_size=5)
         # Publisher for the goal point
-        self.goal_pub = rospy.Publisher(racecar_name+'/goal_point', MarkerArray, queue_size="1")
-        self.considered_pub= rospy.Publisher(racecar_name+'/considered_points', MarkerArray, queue_size="1")
-        self.point_in_car_frame= rospy.Publisher(racecar_name+'/goal_point_car_frame', MarkerArray, queue_size="1")
+        self.goal_pub = rospy.Publisher('/'+racecar_name+'/goal_point', MarkerArray, queue_size=5)
+        self.considered_pub= rospy.Publisher('/'+racecar_name+'/considered_points', MarkerArray, queue_size=5)
+        self.point_in_car_frame= rospy.Publisher('/'+racecar_name+'/goal_point_car_frame', MarkerArray, queue_size=5)
         # Subscriber to vehicle position 
         rospy.Subscriber(racecar_name+"/odom", Odometry, self.callback, queue_size=1)
 
@@ -60,7 +60,7 @@ class pure_pursuit:
         # list of xy pts 
         self.xy_points = np.hstack((self.path_points_x.reshape((-1,1)),self.path_points_y.reshape((-1,1)))).astype('double')
    
-    def visualize_point(self,pts,publisher,frame='/map',r=1.0,g=0.0,b=1.0):
+    def visualize_point(self,pts,publisher,frame='map',r=1.0,g=0.0,b=1.0):
         # create a marker array
         markerArray = MarkerArray()
 
@@ -72,6 +72,8 @@ class pure_pursuit:
 		
         marker = Marker()
         marker.header.frame_id = frame
+        marker.header.stamp = rospy.Time.now()
+        marker.id = 0
         marker.type = marker.SPHERE
         marker.action = marker.ADD
         marker.scale.x = 0.2
@@ -86,13 +88,12 @@ class pure_pursuit:
         marker.pose.position.y = y
         marker.pose.position.z = 0
         markerArray.markers.append(marker)
-        publisher.publish(markerArray)
+        self.goal_pub.publish(markerArray)
 
 
     # Input data is PoseStamped message from topic racecar_name/odom.
     # Runs pure pursuit and publishes velocity and steering angle.
     def callback(self,data):
-
         qx=data.pose.pose.orientation.x
         qy=data.pose.pose.orientation.y
         qz=data.pose.pose.orientation.z
@@ -136,6 +137,8 @@ class pure_pursuit:
 
         # goal point 
         goal_point = pts_infrontofcar[idx]
+
+        #rospy.logwarn("goal point: ({},{})".format(goal_point[0],goal_point[1]))
         self.visualize_point([goal_point],self.goal_pub)
 
         
@@ -146,7 +149,7 @@ class pure_pursuit:
         ygv = (-v1[0] * np.sin(yaw)) + (v1[1] * np.cos(yaw))
 
         vector = np.asarray([xgv,ygv])
-        self.visualize_point([vector],self.point_in_car_frame,frame='racecar/chassis',r=0.0,g=1.0,b=0.0)
+        #self.visualize_point([vector],self.point_in_car_frame,frame='racecar/chassis',r=0.0,g=1.0,b=0.0)
         
         # calculate the steering angle
         angle = math.atan2(ygv,xgv)

@@ -31,7 +31,7 @@ def vesc_odom_callback(data):
     twist=data.twist.twist
 
     odom_trans=TransformStamped()
-    odom_trans.header.stamp=rospy.Time.now()
+    odom_trans.header.stamp=currentTime
     odom_trans.header.frame_id=racecar_name+"/odom"
     odom_trans.child_frame_id=racecar_name+"/base_link"
 

@@ -58,7 +58,7 @@ class OdometryNode:
             return
 
         cmd = Odometry()
-        cmd.header.stamp = self.last_recieved_stamp
+        cmd.header.stamp = rospy.Time.now()
         cmd.header.frame_id = 'map'
         cmd.child_frame_id = self.racecar_name+'/base_link' # This used to be odom
         cmd.pose.pose = self.last_received_pose

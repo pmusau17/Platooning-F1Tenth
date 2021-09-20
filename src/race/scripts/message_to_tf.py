@@ -30,7 +30,7 @@ def vesc_odom_callback(data):
     rospy.loginfo("twist: "+str(twist))
 
     odom_trans=TransformStamped()
-    odom_trans.header.stamp=currentTime
+    odom_trans.header.stamp=rospy.Time.now()
     odom_trans.header.frame_id="odom"
     odom_trans.child_frame_id="base_link"
 
@@ -56,7 +56,7 @@ def vesc_odom_callback(data):
     tf1 = TransformStamped(
             header=Header(
                 frame_id="map",
-                stamp=currentTime
+                stamp=rospy.Time.now()
             ),
             child_frame_id="odom",
             transform=Transform(
