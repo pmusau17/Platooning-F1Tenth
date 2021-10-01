@@ -5,6 +5,7 @@
     <arg name="world_name" default="track_porto"/>
     <arg name="car_name" default="racecar"/>
     <arg name="gui" default="true" />
+    <arg name="mpc_model" default="0"/>
 
     <!--waypoint file used by pure pursuit algorithm-->
     <arg name="csv_filename" default="track_porto_26780.csv"/>
@@ -25,12 +26,11 @@
         <arg name="gui" value="$(arg gui)" />
     </include>
 
-    <!-- Launch RVIZ -->
+   
     
-    <!-- <node pkg="mpc" type="mpc_drive.py" name="mpc_node" output="screen" required="true"/> -->
-    <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" required="true"/>
-
-    <!-- <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" required="true"/> -->
+    <node pkg="mpc" type="mpc_drive.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/>
+    <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" if="$(eval arg('mpc_model')==1)" required="true"/>
+    <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==2)" required="true"/>
 
     <!--Launch Pure Pursuit Node -->
     <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="screen" required="true"/>
@@ -41,7 +41,7 @@
     <!-- launch rviz to visualize reachable set -->
     <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/mpc.rviz" output="log"/>
 
-
+    <!--visualization of chosen target point-->
     <node pkg="mpc" type="visualize_points.py" name="visualization_marker_array" output="screen"/>
 
 
