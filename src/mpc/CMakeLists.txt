@@ -38,6 +38,7 @@ scripts/template_mpc.py
 scripts/visualize_point_2.py
 scripts/visualize_point.py
 scripts/visualize_points.py
+scripts/mpc_bicycle.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

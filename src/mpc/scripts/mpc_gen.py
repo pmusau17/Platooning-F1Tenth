@@ -33,7 +33,7 @@ class MPC:
         self.goal_point = None
         # instatntiate subscribers
         rospy.Subscriber('racecar/odom', Odometry, self.pose_callback, queue_size=1)
-        rospy.Subscriber('racecar/goal_point', Odometry, self.pose_callback, queue_size=1)
+        rospy.Subscriber('racecar/goal_point', MarkerArray, self.goal_callback, queue_size=1)
 
 
     def goal_callback(self,goal_point):
@@ -62,7 +62,7 @@ class MPC:
         drive_msg.header.stamp = rospy.Time.now()
         if(self.goal_point):
             point = self.goal_point.markers[0]
-            tarx,tary = point.pose.position.x,point.pose.position.x
+            tarx,tary = point.pose.position.x,point.pose.position.y
         else: 
             tarx,tary = -1,-1
         if(tarx==-1 and tary==-1):
@@ -76,15 +76,16 @@ class MPC:
             mpc.set_initial_guess()
             
             u0 = mpc.make_step(x0)
-
+            print(u0)
             drive_msg.drive.steering_angle = float(u0[1])
-            drive_msg.drive.speed = 2*float(u0[0])
+            drive_msg.drive.speed = float(u0[0])
         self.drive_publish.publish(drive_msg)
 
 
 
 if __name__ == '__main__':
     rospy.init_node('mpc_node')
+    rospy.sleep(5)
     mpc = MPC()
     rospy.spin()
     

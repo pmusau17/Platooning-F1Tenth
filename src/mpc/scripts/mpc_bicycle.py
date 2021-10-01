@@ -30,20 +30,25 @@ import do_mpc
 class MPC: 
 
     # Constructor
-    def __init__(self):
-        self.lidar = None
-        self.drive_publish = rospy.Publisher('/vesc/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+    def __init__(self,n_steps=1,static_plot=False,plot=False,time_step=0.05):
         self.pose_msg = None
         self.goal_point = None
-        # instatntiate subscribers
-        rospy.Subscriber('racecar/odom', Odometry, self.pose_callback, queue_size=1)
-        rospy.Subscriber('racecar/goal_point', Odometry, self.pose_callback, queue_size=1)
 
-        # define the model, simulator, estimator, and mpc controller
+        # parameters for mpc, plotting fields used to disable plotting features during operation
+        self.static_plot = static_plot
+        self.plot = plot 
+        self.time_step = time_step
+        self.n_steps = n_steps
+
+        # instatntiate subscribers
+        self.drive_publish = rospy.Publisher('/vesc/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+        rospy.Subscriber('racecar/odom', Odometry, self.pose_callback, queue_size=1)
+        rospy.Subscriber('racecar/goal_point', MarkerArray, self.goal_callback, queue_size=1)
+        
+
+        # define the model which will be used by thesimulator, estimator, and mpc controller
         self.model = self.template_model()
-        self.mpc = self.template_mpc()
-        self.estimator = self.template_estimator()
-        self.simulator = self.template_simulator()
+        
 
     
     def template_model(self):
@@ -66,7 +71,6 @@ class MPC:
         u_steering = model.set_variable('_u',  'u_steering') # in radians
 
         # System Identification Parameters 
-
         ca = 1.9569     # acceleration constant
         cm = 0.0342     # motor constant
         ch = -37.1967   # alleged hysteresis constant 
@@ -79,7 +83,7 @@ class MPC:
         model.set_rhs('V_s', (-ca*V_s)+(ca*cm*(u_throttle-ch)))
         model.set_rhs('Theta_s', (V_s/(lf+lr))*tan(u_steering))
 
-         # Build the model
+        # Build the model
         model.setup()
         return model 
 
@@ -92,7 +96,7 @@ class MPC:
         mpc = do_mpc.controller.MPC(self.model)
 
         setup_mpc = {
-            'n_horizon': 20,
+            'n_horizon': 10,
             'n_robust': 0,                         # Robust horizon for robust scenario-tree MPC,
             'open_loop': 0,
             't_step': self.time_step,
@@ -162,73 +166,114 @@ class MPC:
 
     def run_closedloop(self):
 
+        self.mpc = self.template_mpc()
+
+        # if(self.plot):
+        #     self.estimator = self.template_estimator()
+        #     self.simulator = self.template_simulator()
+
         self.mpc.x0 = self.x0
-        self.simulator.x0 = self.x0
-        self.estimator.x0 = self.x0
+        print(self.x0)
+
+        # if(self.plot):
+        #     self.simulator.x0 = self.x0
+        #     self.estimator.x0 = self.x0
         self.mpc.set_initial_guess()
 
-        # visualization 
-        mpc_graphics = do_mpc.graphics.Graphics(self.mpc.data)
-        sim_graphics = do_mpc.graphics.Graphics(self.simulator.data)
+        # if(self.plot):
+        #     mpc_graphics = do_mpc.graphics.Graphics(self.mpc.data)
+        #     sim_graphics = do_mpc.graphics.Graphics(self.simulator.data)
 
-        inputs = []
-        states = []
-        for k in range(self.n_steps):
-            u0 = self.mpc.make_step(self.x0)
-            inputs.append(u0)
-            y_next = self.simulator.make_step(u0)
-            x0 = self.estimator.make_step(y_next)
+        #     inputs = []
+        #     states = []
+        #     for k in range(self.n_steps):
+        #         u0 = self.mpc.make_step(self.x0)
+        #         inputs.append(u0)
+        #         y_next = self.simulator.make_step(u0)
+        #         x0 = self.estimator.make_step(y_next)
 
 
-        fig, ax = plt.subplots(6, sharex=True, figsize=(16,9))
-        fig.align_ylabels()
+        #     fig, ax = plt.subplots(6, sharex=True, figsize=(16,9))
+        #     fig.align_ylabels()
 
-        for g in [sim_graphics,mpc_graphics]:
-            # Plot the state on axis 1 to 4:
-            g.add_line(var_type='_x', var_name='X_s', axis=ax[0], color='#1f77b4')
-            g.add_line(var_type='_x', var_name='Y_s', axis=ax[1], color='#1f77b4')
-            g.add_line(var_type='_x', var_name='V_s', axis=ax[2], color='#1f77b4')
-            g.add_line(var_type='_x', var_name='Theta_s', axis=ax[3], color='#1f77b4')
+        #     for g in [sim_graphics,mpc_graphics]:
+        #         # Plot the state on axis 1 to 4:
+        #         g.add_line(var_type='_x', var_name='X_s', axis=ax[0], color='#1f77b4')
+        #         g.add_line(var_type='_x', var_name='Y_s', axis=ax[1], color='#1f77b4')
+        #         g.add_line(var_type='_x', var_name='V_s', axis=ax[2], color='#1f77b4')
+        #         g.add_line(var_type='_x', var_name='Theta_s', axis=ax[3], color='#1f77b4')
 
-            # Plot the throttle control input on axis 5:
-            g.add_line(var_type='_u', var_name='u_throttle', axis=ax[4], color='#1f77b4')
-            # Plot the steering control input on axis 6:
-            g.add_line(var_type='_u', var_name='u_steering', axis=ax[5], color='#1f77b4')
+        #         # Plot the throttle control input on axis 5:
+        #         g.add_line(var_type='_u', var_name='u_throttle', axis=ax[4], color='#1f77b4')
+        #         # Plot the steering control input on axis 6:
+        #         g.add_line(var_type='_u', var_name='u_steering', axis=ax[5], color='#1f77b4')
 
-        ax[0].set_ylabel(r'$X_s$')
-        ax[1].set_ylabel(r'$Y_s$')
-        ax[2].set_ylabel(r'$V_s$')
-        ax[3].set_ylabel(r'$\theta_s$')
-        ax[4].set_ylabel(r'$u_{throttle}$')
-        ax[5].set_ylabel(r'$u_{steering}$')
-        ax[5].set_xlabel(r'$t (seconds)$')
+        #     ax[0].set_ylabel(r'$X_s$')
+        #     ax[1].set_ylabel(r'$Y_s$')
+        #     ax[2].set_ylabel(r'$V_s$')
+        #     ax[3].set_ylabel(r'$\theta_s$')
+        #     ax[4].set_ylabel(r'$u_{throttle}$')
+        #     ax[5].set_ylabel(r'$u_{steering}$')
+        #     ax[5].set_xlabel(r'$t (seconds)$')
 
-        if(self.static_plot):
-            sim_graphics.plot_results()
-            sim_graphics.reset_axes()
-            mpc_graphics.plot_results()
-            plt.show(block=True)
-        else:
-            # nested function for convenience:
-            def update(t_ind):
-                sim_graphics.plot_results(t_ind)
-                mpc_graphics.plot_predictions(t_ind)
-                mpc_graphics.reset_axes()
+        #     if(self.static_plot):
+        #         sim_graphics.plot_results()
+        #         sim_graphics.reset_axes()
+        #         mpc_graphics.plot_results()
+        #         plt.show(block=True)
+        #     else:
+        #         # nested function for convenience:
+        #         def update(t_ind):
+        #             sim_graphics.plot_results(t_ind)
+        #             mpc_graphics.plot_predictions(t_ind)
+        #             mpc_graphics.reset_axes()
 
-            anim = FuncAnimation(fig, update, frames=self.n_steps, repeat=False)
-            gif_writer = ImageMagickWriter(fps=10)
-            anim.save('anim_bicycle_model.gif', writer=gif_writer)
+        #         anim = FuncAnimation(fig, update, frames=self.n_steps, repeat=False)
+        #         gif_writer = ImageMagickWriter(fps=10)
+        #         anim.save('anim_bicycle_model.gif', writer=gif_writer)
+
+        # else:
+        rospy.logwarn("Here")
+        u0 = self.mpc.make_step(self.x0)
+        print(u0)
+
+        return u0
+
 
 
 
     def goal_callback(self,goal_point):
         self.goal_point = goal_point
+        drive_msg = AckermannDriveStamped()
+        drive_msg.header.stamp = rospy.Time.now()
+        # make sure things are instantiated properly
+        if(self.goal_point and self.pose_msg):
+            point = self.goal_point.markers[0]
+            self.x_t,self.y_t = point.pose.position.x,point.pose.position.y
+            u0 = self.run_closedloop()
+            print(u0)
+            drive_msg.drive.steering_angle = float(u0[1])
+            drive_msg.drive.speed = 2*float(u0[0])
+            self.drive_publish.publish(drive_msg)
+
     def pose_callback(self,pose_msg):
         self.pose_msg = pose_msg
-        quaternion = np.array([pose_msg.pose.pose.orientation.x,
-                            pose_msg.pose.pose.orientation.y,
-                            pose_msg.pose.pose.orientation.z,
-                            pose_msg.pose.pose.orientation.w])
 
-        position = [pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, pose_msg.pose.pose.position.z]
+        # compute necessary state information
+        quaternion = (pose_msg.pose.pose.orientation.x,pose_msg.pose.pose.orientation.y,
+                        pose_msg.pose.pose.orientation.z,pose_msg.pose.pose.orientation.w)
+        euler = euler_from_quaternion(quaternion)
+        yaw = np.double(euler[2])
 
+        
+        speed = la.norm(np.array([pose_msg.twist.twist.linear.x,pose_msg.twist.twist.linear.y,pose_msg.twist.twist.linear.z]))
+
+        x0 = np.asarray([pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, yaw,speed])
+        self.x0 = x0
+
+
+if __name__ == "__main__":
+    rospy.init_node('mpc_node_bicycle')
+    rospy.sleep(5)
+    mpc = MPC()
+    rospy.spin()

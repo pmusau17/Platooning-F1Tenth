@@ -28,8 +28,9 @@
     <!-- Launch RVIZ -->
     
     <!-- <node pkg="mpc" type="mpc_drive.py" name="mpc_node" output="screen" required="true"/> -->
+    <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" required="true"/>
 
-    <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" required="true"/>
+    <!-- <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" required="true"/> -->
 
     <!--Launch Pure Pursuit Node -->
     <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="screen" required="true"/>
