@@ -19,3 +19,36 @@ install [HSL](https://www.do-mpc.com/en/latest/installation.html). Find the inst
 ```
 $ roslaunch mpc mpc.launch mpc_model:=0
 ```
+
+### Installing the reachability library
+
+**Disclaimer and Warning**: Anaconda and ros noetic don't like each other too much so for the purposes of installation, kindly comment it out for the installation. You can reactivate it afterwards.
+
+
+Step 1: Clone rtreach:
+
+```
+$ git clone https://github.com/pmusau17/rtreach_f1tenth.git -b noetic-port
+```
+
+Step 2: Build and Source Platooning-F1Tenth 
+
+```
+$ cd Platooning-F1Tenth && colcon build --symlink-install && source install/setup.bash
+```
+
+Step 3: Build rtreach
+
+**In the same terminal**
+
+```
+$ cd /path/to/rtreach_f1tenth/
+$ ./build_rtreach.sh 
+$ cd ../rtreach_ros/
+$ source install/setup.bash && roslaunch mpc mpc.launch
+```
+
+
+
+
+
