@@ -8,7 +8,7 @@ import do_mpc
 
 def template_model():
 
-    model_type = 'discrete'  # either 'discrete' or 'continuous'
+    model_type = 'continuous'  # either 'discrete' or 'continuous'
     model = do_mpc.model.Model(model_type)
 
     car_x = model.set_variable(var_type='_x', var_name='car_x', shape=(1, 1))

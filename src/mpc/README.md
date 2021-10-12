@@ -6,6 +6,8 @@ Documentation loading...(I promise)
 
 ``
 $ source setup.sh
+
+install [HSL](https://www.do-mpc.com/en/latest/installation.html). Find the instructions in the aforementioned link, you will need to get a license to download the software.
 ``
 
 ### Running the mpc setup:

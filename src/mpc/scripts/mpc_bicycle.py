@@ -41,9 +41,9 @@ class MPC:
         self.n_steps = n_steps
 
         # instatntiate subscribers
-        self.drive_publish = rospy.Publisher('/vesc/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
-        rospy.Subscriber('racecar/odom', Odometry, self.pose_callback, queue_size=1)
-        rospy.Subscriber('racecar/goal_point', MarkerArray, self.goal_callback, queue_size=1)
+        self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+        rospy.Subscriber('racecar2/odom', Odometry, self.pose_callback, queue_size=1)
+        rospy.Subscriber('racecar2/goal_point', MarkerArray, self.goal_callback, queue_size=1)
         
 
         # define the model which will be used by thesimulator, estimator, and mpc controller
@@ -104,7 +104,7 @@ class MPC:
             'collocation_type': 'radau',           # no other option at the moment
             'collocation_deg': 2,
             'collocation_ni': 2,
-            'store_full_solution': True, # re
+            'store_full_solution': self.plot, # re
             #'nlpsol_opts': {'ipopt.linear_solver': 'MA27'} # highly recommended, Use MA27 linear solver in ipopt for faster calculations
         }
         

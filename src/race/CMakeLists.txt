@@ -56,6 +56,7 @@ add_message_files(
     stamped_ttc.msg
     interval.msg
     obstacle_list.msg 
+    reach_tube.msg
 )
 
 

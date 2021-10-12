@@ -3,7 +3,6 @@
 
 <!--initialize the arguments-->
     <arg name="world_name" default="track_porto"/>
-    <arg name="car_name" default="racecar"/>
     <arg name="gui" default="true" />
     <arg name="mpc_model" default="0"/>
 
@@ -17,17 +16,33 @@
     <!--docker requirements-->
     <arg name="use_sim_time" default = "true"/>
     <arg name="verbose" default ="false"/>
-    
-    <!--launch the simulator-->
-    <include file="$(find race)/launch/f1_tenth_rl.launch">
-        <arg name ="world_name" value="$(arg world_name)"/>
-        <arg name="verbose" value="$(arg verbose)"/>
-        <arg name="use_sim_time" default = "$(arg use_sim_time)"/>
-        <arg name="gui" value="$(arg gui)" />
-    </include>
 
-   
-    
+    <!--multi-agent parameters-->
+    <!--How many boxes to let rviz visualize-->
+    <arg name="box_display_limit" default="100"/>
+
+    <!-- reach-time is the time we are computing reachability for-->
+    <arg name="reach_time" default="1.0"/>
+
+    <!--wall-time is the time we allow the reachability algorithm to run for-->
+    <arg name="wall_time" default="1.0"/>
+
+    <!--number of vehicles to launch in the simulation environment-->
+    <arg name='number_of_cars' default='2'/>
+
+    <!--Select the car we are computing reachability for-->
+    <arg name='car_name' default='racecar2'/>
+
+    <arg name="rviz_disp" default="multiagent_reach.rviz"/>
+
+
+    <!--  This is the main launch file that launches the world, plugins, controllers, vehicles -->
+    <include file="$(find race)/launch/multi_parametrizeable.launch">
+      <arg name="number_of_cars" value="$(arg number_of_cars)"/>
+      <arg name="gui" value="$(arg gui)"/>
+      <arg name="rviz_disp" value="$(arg rviz_disp)"/>
+    </include>
+        
     <node pkg="mpc" type="mpc_drive.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/>
     <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" if="$(eval arg('mpc_model')==1)" required="true"/>
     <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==2)" required="true"/>
@@ -35,20 +50,8 @@
     <!--Launch Pure Pursuit Node -->
     <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="screen" required="true"/>
 
-    <!-- Run map server -->
-	  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
-
-    <!-- launch rviz to visualize reachable set -->
-    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/mpc.rviz" output="log"/>
-
+    <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
     <!--visualization of chosen target point-->
     <node pkg="mpc" type="visualize_points.py" name="visualization_marker_array" output="screen"/>
-
-
-
-
-
-
-
 
 </launch>

@@ -4,6 +4,7 @@ import rospy
 from sensor_msgs.msg import Image, LaserScan
 from ackermann_msgs.msg import AckermannDriveStamped
 from nav_msgs.msg import Odometry
+from race.msg import reach_tube
 import sys
 import os
 #import tf
@@ -36,12 +37,13 @@ class MPC:
     # Constructor
     def __init__(self):
         self.lidar = None
-        self.drive_publish = rospy.Publisher('/vesc/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+        self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
 
 
         # instatntiate subscribers
-        rospy.Subscriber('racecar/scan', LaserScan, self.odometry_update, queue_size=1)
-        rospy.Subscriber('racecar/odom', Odometry, self.pose_callback, queue_size=1)
+        rospy.Subscriber('racecar2/scan', LaserScan, self.odometry_update, queue_size=1)
+        rospy.Subscriber('racecar2/odom', Odometry, self.pose_callback, queue_size=1)
+        rospy.Subscriber('racecar/reach_tube', reach_tube, self.reach_callback, queue_size=1)
 
 
     def find_sequence(self, points, ignore_range):
@@ -82,6 +84,13 @@ class MPC:
                 final_right_index = current_right_index
 
         return points[final_left_index:final_right_index]
+
+
+    def reach_callback(self,msg):
+        reach_list = msg.obstacle_list
+        last_index = msg.count-1
+        last_rectangle = reach_list[last_index]
+        rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max))
 
     def get_target(self, points):
 

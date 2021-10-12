@@ -28,12 +28,12 @@ class MPC:
     # Constructor
     def __init__(self):
         self.lidar = None
-        self.drive_publish = rospy.Publisher('/vesc/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+        self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
         self.pose_msg = None
         self.goal_point = None
         # instatntiate subscribers
-        rospy.Subscriber('racecar/odom', Odometry, self.pose_callback, queue_size=1)
-        rospy.Subscriber('racecar/goal_point', MarkerArray, self.goal_callback, queue_size=1)
+        rospy.Subscriber('racecar2/odom', Odometry, self.pose_callback, queue_size=1)
+        rospy.Subscriber('racecar2/goal_point', MarkerArray, self.goal_callback, queue_size=1)
 
 
     def goal_callback(self,goal_point):
@@ -52,7 +52,10 @@ class MPC:
 
         head_angle = math.atan2(2 * (quaternion_z * quaternion_w), 1 - 2 * (quaternion_z * quaternion_z))
 
-        self.mpc_drive(position[0], position[1], head_angle)
+        euler = euler_from_quaternion(quaternion)
+        yaw = np.double(euler[2])
+
+        self.mpc_drive(position[0], position[1],yaw)
         
 
     # Pass relevant information to publisher
@@ -63,13 +66,8 @@ class MPC:
         if(self.goal_point):
             point = self.goal_point.markers[0]
             tarx,tary = point.pose.position.x,point.pose.position.y
-        else: 
-            tarx,tary = -1,-1
-        if(tarx==-1 and tary==-1):
-            drive_msg.drive.steering_angle = 0.0
-            drive_msg.drive.speed = 0.3
-        else:
             model = template_model()
+            print(posx,posy,tarx,tary)
             mpc = template_mpc(model, tarx, tary)
             x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
             mpc.x0 = x0
@@ -79,6 +77,15 @@ class MPC:
             print(u0)
             drive_msg.drive.steering_angle = float(u0[1])
             drive_msg.drive.speed = float(u0[0])
+        else: 
+            tarx,tary = -1,-1
+        if(tarx==-1 and tary==-1):
+            drive_msg.drive.steering_angle = 0.0
+            drive_msg.drive.speed = 0.3
+        else:
+            drive_msg.drive.steering_angle = float(u0[1])
+            drive_msg.drive.speed = float(u0[0])
+            
         self.drive_publish.publish(drive_msg)
 
 

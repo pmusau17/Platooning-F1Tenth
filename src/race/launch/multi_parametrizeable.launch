@@ -30,7 +30,7 @@
 
     <!--<node pkg="race" name="laser_converter" type="laser_converter.py" output="screen"/>-->
 
-    <node pkg="race" name="laser_converter" type="laser_converter_node" output="screen"/>
+  <node pkg="race" name="laser_converter" type="laser_converter_node" args="$(arg car_name)" output="screen"/>
     
   
   <include file="$(find racecar_gazebo)/launch/two_car.launch" if = "$(eval arg('number_of_cars') ==2)" >
