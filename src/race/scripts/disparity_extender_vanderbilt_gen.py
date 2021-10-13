@@ -331,11 +331,11 @@ if __name__ == '__main__':
     args = rospy.myargv()[1:]
     racecar_name=args[0]
     sleep_time = args[1:]
-    if(sleep_time):
-        rospy.sleep(float(sleep_time[0]))
+    
+    if(len(sleep_time)>0):
+        rospy.sleep(int(sleep_time[0]))
 
     rospy.init_node('disparity_extender', anonymous=True)
     extendObj=DisparityExtenderDriving(racecar_name)
-   
     rospy.Subscriber(racecar_name+'/scan', LaserScan, extendObj.lidar_callback)
     rospy.spin()

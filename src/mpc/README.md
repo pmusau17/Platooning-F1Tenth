@@ -47,8 +47,3 @@ $ ./build_rtreach.sh
 $ cd ../rtreach_ros/
 $ source install/setup.bash && roslaunch mpc mpc.launch
 ```
-
-
-
-
-

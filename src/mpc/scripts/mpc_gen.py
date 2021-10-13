@@ -7,6 +7,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
+from race.msg import reach_tube
 import math
 import numpy as np
 from numpy import linalg as la
@@ -34,7 +35,17 @@ class MPC:
         # instatntiate subscribers
         rospy.Subscriber('racecar2/odom', Odometry, self.pose_callback, queue_size=1)
         rospy.Subscriber('racecar2/goal_point', MarkerArray, self.goal_callback, queue_size=1)
+        rospy.Subscriber('racecar/reach_tube', reach_tube, self.reach_callback, queue_size=1)
 
+
+    def reach_callback(self,msg):
+        """
+            Callback for subscribing to reachable sets of opponent vehicle
+        """
+        reach_list = msg.obstacle_list
+        last_index = msg.count-1
+        last_rectangle = reach_list[last_index]
+        rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max))
 
     def goal_callback(self,goal_point):
         self.goal_point = goal_point
