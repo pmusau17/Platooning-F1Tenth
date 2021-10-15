@@ -25,7 +25,7 @@ $ roslaunch mpc mpc.launch mpc_model:=0
 **Disclaimer and Warning**: Anaconda and ros noetic don't like each other too much so for the purposes of installation, kindly comment it out for the installation. You can reactivate it afterwards.
 
 
-Step 1: Clone rtreach:
+Step 1: Clone rtreach (not in the Platooning-F1Tenth Folder):
 
 ```
 $ git clone https://github.com/pmusau17/rtreach_f1tenth.git -b noetic-port
@@ -46,4 +46,14 @@ $ cd /path/to/rtreach_f1tenth/
 $ ./build_rtreach.sh 
 $ cd ../rtreach_ros/
 $ source install/setup.bash && roslaunch mpc mpc.launch
+```
+**returning to previous sucessful installation**
+
+I'm working on refactoring the code so you don't have to do edit the ```LD_LIBRARY_PATH```. But for now:
+```
+$ cd /path/to/rtreach_f1tenth
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/src
+$ cd /path/to/rtreach_ros
+$ source install/setup.bash
+$ roslaunch mpc mpc.launch mpc_model....
 ```
