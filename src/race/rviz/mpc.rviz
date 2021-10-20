@@ -6,10 +6,21 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /LaserScan1
+        - /TF1
+        - /LaserScan2
+        - /MarkerArray1
+        - /MarkerArray2
+        - /MarkerArray3
+        - /MarkerArray4
+        - /MarkerArray5
+        - /MarkerArray6
         - /MarkerArray7
-        - /MarkerArray7/Status1
+        - /MarkerArray8
+        - /MarkerArray9
+        - /MarkerArray9/Status1
       Splitter Ratio: 0.5
-    Tree Height: 1119
+    Tree Height: 1520
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -28,7 +39,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Image
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -54,15 +65,33 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
       Enabled: true
-      Name: Map
-      Topic: /map
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /scan
       Unreliable: false
-      Use Timestamp: false
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: true
     - Class: rviz/TF
       Enabled: true
@@ -95,6 +124,10 @@ Visualization Manager:
           Value: true
         racecar/odom:
           Value: true
+        racecar2/base_link:
+          Value: true
+        racecar2/odom:
+          Value: true
         right_front_wheel:
           Value: true
         right_rear_wheel:
@@ -116,23 +149,52 @@ Visualization Manager:
           racecar/odom:
             racecar/base_link:
               {}
+          racecar2/odom:
+            racecar2/base_link:
+              {}
       Update Interval: 0
       Value: true
-    - Class: rviz/Image
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 0; 0; 255
+      Color Transformer: FlatColor
+      Decay Time: 0
       Enabled: true
-      Image Topic: /racecar/camera/zed/rgb/image_rect_color
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Flat Squares
+      Topic: /scan2
       Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Unreliable: false
+      Use Timestamp: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /obstacle_locations
+      Marker Topic: /racecar/processed_obstacles
       Name: MarkerArray
       Namespaces:
         {}
@@ -148,7 +210,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /track_centerline
+      Marker Topic: /racecar2/processed_obstacles
       Name: MarkerArray
       Namespaces:
         {}
@@ -156,23 +218,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /trajectories
-      Name: MarkerArray
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /Debugger
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /HMPC
+      Marker Topic: /racecar2/reach_hull_obs
       Name: MarkerArray
       Namespaces:
         {}
@@ -180,7 +226,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /obstacle_locations
+      Marker Topic: /racecar3/reach_hull_obs
       Name: MarkerArray
       Namespaces:
         {}
@@ -188,7 +234,31 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /racecar/goal_point
+      Marker Topic: /racecar/reach_hull_obs
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /racecar2/reach_hull
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /racecar2/reach_hull_param
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /sanity_pub
       Name: MarkerArray
       Namespaces:
         "": true
@@ -222,7 +292,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 12.541017532348633
+      Distance: 5.644583225250244
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -238,9 +308,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.785398006439209
+      Pitch: 1.4197964668273926
       Target Frame: <Fixed Frame>
-      Yaw: 0.785398006439209
+      Yaw: 2.9553985595703125
     Saved: ~
 Window Geometry:
   Displays:
@@ -248,9 +318,7 @@ Window Geometry:
   Height: 2032
   Hide Left Dock: false
   Hide Right Dock: false
-  Image:
-    collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001f7000006e8fc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b000000b000fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000b0fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000006e000005570000018200fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006501000005d1000001850000002600ffffff000000010000010f00000396fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000028000003960000013200fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000e7000000060fc0100000002fb0000000800540069006d0065010000000000000e700000057100fffffffb0000000800540069006d0065010000000000000450000000000000000000000c6d000006e800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000208000006e8fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b000000b000fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000b0fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000006e000006e80000018200fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000016c000006e8fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000006e000006e80000013200fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000e7000000060fc0100000002fb0000000800540069006d0065010000000000000e700000057100fffffffb0000000800540069006d0065010000000000000450000000000000000000000ae4000006e800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:

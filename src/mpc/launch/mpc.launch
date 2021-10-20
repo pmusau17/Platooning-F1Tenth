@@ -55,6 +55,6 @@
     <node pkg="mpc" type="visualize_points.py" name="visualization_marker_array" output="screen"/>
 
 
-    <!--controller for opponent vehicle-->
-    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/>
+    <!--controller for opponent vehicle
+    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/>-->
 </launch>
