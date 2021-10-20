@@ -37,6 +37,7 @@ class MPC:
     # Constructor
     def __init__(self):
         self.lidar = None
+        self.hypes = None
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
 
 
@@ -86,11 +87,6 @@ class MPC:
         return points[final_left_index:final_right_index]
 
 
-    def reach_callback(self,msg):
-        reach_list = msg.obstacle_list
-        last_index = msg.count-1
-        last_rectangle = reach_list[last_index]
-        rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max))
 
     def get_target(self, points):
 
@@ -147,8 +143,97 @@ class MPC:
         tarx, tary = self.get_target(self.find_sequence(points, FTG_IGNORE_RANGE))
 
         return tarx, tary
+        
+            # Pass relevant information to publisher
+            
+    def overlap(self, mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectanglexm, rectanglexmx, rectangleym, rectangleymaxx):  # return true if they overalap
+    
+        if (mpc_x_min  >= rectanglexmx) or (rectanglexm >= mpc_x_max):
+            return False
+            
+        if (mpc_y_max <= rectangleym) or (rectangleymaxx <= mpc_y_min):
+            return False
+            
+        return True  
+            
+    def mpc_drive(self, posx, posy, head_angle, tarx, tary):
 
+        drive_msg = AckermannDriveStamped()
+        drive_msg.header.stamp = rospy.Time.now()
+        
+        rectangle = self.hypes
+        
+        
+        
+        mpc_x_min = self.find_safes(posx, posy, head_angle)[0] #- rectangle.x_min
+        mpc_x_max = self.find_safes(posx, posy, head_angle)[2] #- rectangle.x_max
+        
+        mpc_x_min = min(mpc_x_min, mpc_x_max)
+        mpc_x_max = max(mpc_x_min, mpc_x_max)
+        
+        
+        mpc_y_min = self.find_safes(posx, posy, head_angle)[1] #-  rectangle.y_min
+        mpc_y_max = self.find_safes(posx, posy, head_angle)[3] #- rectangle.y_max
+        
+        mpc_y_min = min(mpc_y_min, mpc_y_max)
+        mpc_y_max = max(mpc_y_min, mpc_y_max)
+        
 
+        print(self.overlap(mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max))   
+        
+       
+        
+        
+        if(tarx==-1 and tary==-1):
+            drive_msg.drive.steering_angle = 0.0
+            drive_msg.drive.speed = 0.0
+        else:
+            #model = template_model()
+            #mpc = template_mpc(model, tarx, tary, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max)
+            #x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+            #mpc.x0 = x0
+            #mpc.set_initial_guess()
+            
+            #u0 = mpc.make_step(x0)
+
+            drive_msg.drive.steering_angle = 0.0 #float(u0[1])
+            drive_msg.drive.speed = 0.0 #float(u0[0])
+        self.drive_publish.publish(drive_msg)
+        
+    def find_safes(self, position_x, position_y, heading_angle):
+    
+
+        lidar_data = self.lidar
+
+        ranges = lidar_data.ranges[RIGHT_DIVERGENCE_INDEX:(LEFT_DIVERGENCE_INDEX+1)]
+
+        cartesian_points = self.lidar_to_cart(
+                ranges=ranges,
+                position_x=position_x,
+                position_y=position_y,
+                heading_angle=heading_angle,
+                starting_index=RIGHT_DIVERGENCE_INDEX
+            )
+
+            # Build a list of relevant Point instances
+        points = list()
+        for i in range(LEFT_DIVERGENCE_INDEX - RIGHT_DIVERGENCE_INDEX + 1):
+            cartesian_point = cartesian_points[i]
+            lidar_index = i + RIGHT_DIVERGENCE_INDEX
+            lidar_range = ranges[i]
+
+            if lidar_range <= SAFETY_RADIUS:
+                lidar_range = FTG_IGNORE_RANGE
+
+            points.append(LidarPoint(lidar_index, lidar_range, cartesian_point))
+
+        pts = self.find_sequence(points, FTG_IGNORE_RANGE)
+        
+        minx, miny = pts[0].cartesian
+        maxx, maxy = pts[len(pts)//2].cartesian
+          
+
+        return minx, miny, maxx, maxy
 
 
     def odometry_update(self,data):
@@ -176,30 +261,16 @@ class MPC:
 
         self.mpc_drive(position[0], position[1], head_angle, tarx, tary)
         
+    def reach_callback(self, msg):
+        reach_list = msg.obstacle_list
+        last_index = 0 #msg.count-1
+        last_rectangle = reach_list[last_index]
+        self.hypes = last_rectangle 
+        rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max))
+        
 
    
 
-    # Pass relevant information to publisher
-    def mpc_drive(self,posx, posy, head_angle, tarx, tary):
-
-        drive_msg = AckermannDriveStamped()
-        drive_msg.header.stamp = rospy.Time.now()
-
-        if(tarx==-1 and tary==-1):
-            drive_msg.drive.steering_angle = 0.0
-            drive_msg.drive.speed = 0.3
-        else:
-            model = template_model()
-            mpc = template_mpc(model, tarx, tary)
-            x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-            mpc.x0 = x0
-            mpc.set_initial_guess()
-            
-            u0 = mpc.make_step(x0)
-
-            drive_msg.drive.steering_angle = float(u0[1])
-            drive_msg.drive.speed = 2*float(u0[0])
-        self.drive_publish.publish(drive_msg)
 
 
 
