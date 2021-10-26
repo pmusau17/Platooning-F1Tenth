@@ -31,11 +31,13 @@ include_directories(
 install(PROGRAMS 
 scripts/constants.py
 scripts/mpc_drive.py
+scripts/mpc_drive_hyperplanes.py
 scripts/mpc_gen.py
 scripts/point.py
 scripts/solving.py
 scripts/template_model.py
 scripts/template_mpc.py
+scripts/template_mpc_hyperplanes.py
 scripts/visualize_point_2.py
 scripts/visualize_point.py
 scripts/visualize_points.py
