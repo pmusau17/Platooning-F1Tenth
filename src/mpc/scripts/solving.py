@@ -12,15 +12,19 @@ def objective(x): # Objective function tries to simply minimize constants a,b,c 
 
 
 def constraint_ego_car(x, a, b): #constraint that car coordinates (x_c, y_c) >= ax + by +c >= 0
-    return b - (x[0] * a + x[1])
 
-def constraint_opp_car(x, a, b): #constraint that car coordinates (x_c, y_c) >= ax + by +c >= 0
-    return (x[0] * a + x[1]) - b
+    return b - (x[0] * a + x[1])  # 1 is an offset 
+
+def constraint_opp_car(x, min_x, max_x, max_y): #constraint that car coordinates (x_c, y_c) >= ax + by +c >= 0
+
+    xlin = np.linspace(min_x, max_x)
+    
+    
+    return (x[0] * (xlin) + x[1]) - (max_y) 
 
 
 
-def find_constraint(ego_x, ego_y, opp_x, opp_y):
-
+def find_constraint(ego_x, ego_y, opp_min_x, opp_max_x, opp_max_y):
 
 
     x_car = ego_x
@@ -34,9 +38,8 @@ def find_constraint(ego_x, ego_y, opp_x, opp_y):
     x0[1] = 5.0
 
     arguments = (x_car, y_car)
-    arguments2 = (opp_x, opp_y)
-    #arguments2 = (opp_x1, opp_x2, opp_y1, opp_y2)
-
+    arguments2 = (opp_min_x, opp_max_x, opp_max_y)
+ 
 
 # optimize
     b = (-15, 15)
@@ -50,5 +53,6 @@ def find_constraint(ego_x, ego_y, opp_x, opp_y):
     x = solution.x
 
     return x 
+    
 
 

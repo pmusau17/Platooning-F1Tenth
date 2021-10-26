@@ -43,4 +43,4 @@ FTG_IGNORE_RANGE = 0
 POSITION_PREDICTION_TIME = 0.020
 
 # All points around the car within this radius are marked as unsafe
-SAFETY_RADIUS = 5
+SAFETY_RADIUS = 2

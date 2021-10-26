@@ -7,7 +7,7 @@ sys.path.append('../../')
 import do_mpc
 
 
-def template_mpc(model, tarx, tary, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max, a, b):
+def template_mpc(model, tarx, tary, a, b):
 
     mpc = do_mpc.controller.MPC(model)
 
@@ -41,19 +41,16 @@ def template_mpc(model, tarx, tary, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max, 
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.3
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['lower', '_x', 'car_x'] = mpc_x_min
-    mpc.bounds['lower', '_x', 'car_y'] = mpc_y_min
+
 
     mpc.bounds['upper', '_u', 'car_v'] = 0.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
-    mpc.bounds['upper', '_x', 'car_x'] = mpc_x_max
-    mpc.bounds['upper', '_x', 'car_y'] = mpc_y_max
-    
+
 
     #mpc.scaling['_u', 'car_v'] = 2
     #mpc.scaling['_u', 'car_delta'] = 1
     
-    mpc.set_nl_cons('constraint',  (a * _x['car_x'] + b), 0, penalty_term_cons=1000)
+    mpc.set_nl_cons('constraint',  (a * _x['car_x'] + b) - _x['car_y'], 0, penalty_term_cons=1000)
 
     mpc.setup()
 

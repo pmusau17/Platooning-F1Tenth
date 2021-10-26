@@ -23,7 +23,7 @@ from do_mpc.tools.timer import Timer
 
 
 from template_model import template_model
-from template_mpc import template_mpc
+from template_mpc_hyperplanes import template_mpc
 from solving import find_constraint
 
 from constants import LEFT_DIVERGENCE_INDEX, RIGHT_DIVERGENCE_INDEX
@@ -32,6 +32,7 @@ from constants import LIDAR_MINIMUM_ANGLE, LIDAR_ANGLE_INCREMENT, LIDAR_MAX_INDE
 from point import LidarPoint, CartesianPoint
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
+from geometry_msgs.msg import Point
 
 
 class MPC: 
@@ -160,8 +161,6 @@ class MPC:
         return True  
             
     def mpc_drive(self, posx, posy, head_angle, tarx, tary):
-    
-       
 
         # prevents nul message errors
         if(self.hypes):
@@ -170,75 +169,30 @@ class MPC:
             drive_msg.header.stamp = rospy.Time.now()
             
             rectangle = self.hypes
-            print(posx, posy, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max)
             
+            a, b = find_constraint(posx, posy, rectangle.x_min, rectangle.x_max, rectangle.y_max) 
+            print(a, b)         
             
+           # for visualization 
             
-            mpc_x_min = min(self.find_safes(posx, posy, head_angle)[0], posx) #- rectangle.x_min
-            mpc_x_max = max(self.find_safes(posx, posy, head_angle)[1], posx) #- rectangle.x_max
-            
-            #mpc_x_min = min(mpc_x_min, mpc_x_max)
-            #mpc_x_max = max(mpc_x_min, mpc_x_max)
-            
-            
-            mpc_y_min = min(self.find_safes(posx, posy, head_angle)[2], posy) #-  rectangle.y_min
-            mpc_y_max = max(self.find_safes(posx, posy, head_angle)[3], posy) #- rectangle.y_max
-            
-            #mpc_y_min = min(mpc_y_min, mpc_y_max)
-            #mpc_y_max = max(mpc_y_min, mpc_y_max)
-            
-            
-            
-
-            if (self.overlap(mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max)):
-            
-                #print("OVERLAP")
-            
-                if (mpc_x_min < rectangle.x_min):
-                    mpc_x_min = mpc_x_min
-                else:
-                    mpc_x_min = rectangle.x_max
-                    
-                    
-                if (mpc_x_max > rectangle.x_max):
-                    mpc_x_max = mpc_x_max
-                else:
-                    mpc_x_max = rectangle.x_min
-                    
-                if (mpc_y_min < rectangle.y_min):
-                    mpc_y_min = mpc_y_min
-                else:
-                    mpc_y_min = rectangle.y_max
-                    
-                if (mpc_y_max > rectangle.y_max):
-                    mpc_y_max = mpc_y_max
-                else:
-                    mpc_y_max = rectangle.y_min
-                     
-           
-                mpc_interval = [[mpc_x_min, mpc_x_max],[mpc_y_min, mpc_y_max]]
-            else:
-                mpc_interval = [[mpc_x_min,mpc_x_max],[mpc_y_min,mpc_y_max]]   
-
-            # for visualization 
-            
-            rtreach_interval = [[rectangle.x_min, rectangle.x_max], [rectangle.y_min, rectangle.y_max]]
-            self.visualize_rectangles(mpc_interval,rtreach_interval)
+            #rtreach_interval = [[rectangle.x_min, rectangle.x_max], [rectangle.y_min, rectangle.y_max]]
+            #self.visualize_rectangles(mpc_interval,rtreach_interval)
+            self.visualize_rectangles()
             
             if(tarx==-1 and tary==-1):
                 drive_msg.drive.steering_angle = 0.0
                 drive_msg.drive.speed = 0.0
             else:
-                #model = template_model()
-                #mpc = template_mpc(model, tarx, tary, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max)
-                #x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-                #mpc.x0 = x0
-                #mpc.set_initial_guess()
+                model = template_model()
+                mpc = template_mpc(model, tarx, tary, a, b)
+                x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+                mpc.x0 = x0
+                mpc.set_initial_guess()
                 
-                #u0 = mpc.make_step(x0)
+                u0 = mpc.make_step(x0)
 
-                drive_msg.drive.steering_angle = 0.0 #float(u0[1])
-                drive_msg.drive.speed = 0.0 #float(u0[0])
+                drive_msg.drive.steering_angle = float(u0[1])
+                drive_msg.drive.speed = float(u0[0])
             self.drive_publish.publish(drive_msg)
         
     def find_safes(self, position_x, position_y, heading_angle):
@@ -306,50 +260,51 @@ class MPC:
     def reach_callback(self, msg):
         if(msg.count>0):
             reach_list = msg.obstacle_list
-            last_index = msg.count-1
+            last_index = 0 #msg.count-1
             last_rectangle = reach_list[last_index]
             self.hypes = last_rectangle 
             rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max))
             
 
-    def visualize_rectangles(self,mpc_inteval,lidar_interval):
+    def visualize_rectangles(self):
         markerArray = MarkerArray()
 
-        intervals = [mpc_inteval,lidar_interval]
+        #intervals = [mpc_inteval,lidar_interval]
+        marker = Marker()
+        marker.id = 0
+        marker.header.frame_id = "/map"
+        marker.type = marker.LINE_STRIP
+        marker.action = marker.ADD
+        
+        marker.color.a = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 0.7
+        marker.color.b = 0.8
 
-        for i in range(2):
-            hull = intervals[i]
-            print(hull)
+        marker.pose.orientation.x = 0.0
+        marker.pose.orientation.y = 0.0
+        marker.pose.orientation.z = 0.0
+        marker.pose.orientation.w = 0.0
 
-            marker = Marker()
-            marker.id = i
-            marker.header.frame_id = "map"
-            marker.type = marker.CUBE
-            marker.action = marker.ADD
-            
-            marker.pose.position.x = (hull[0][1]+hull[0][0])/2.0
-            marker.pose.position.y = (hull[1][0]+hull[1][1])/2.0
-            marker.pose.position.z = 0.0
+        marker.pose.position.x = 0.0
+        marker.pose.position.y = 0.0
+        marker.pose.position.z = 0.0
 
+        marker.points = []
+        first_line_point = Point()
+        first_line_point.x = 5.5
+        first_line_point.y = 2.7
+        first_line_point.z = 0.0
+        marker.points.append(first_line_point)
 
-            marker.pose.orientation.x = 0.0
-            marker.pose.orientation.y = 0.0
-            marker.pose.orientation.z = 0.0
-            marker.pose.orientation.w = 1.0
-            marker.scale.x = (hull[0][1]-hull[0][0])
-            marker.scale.y = (hull[1][1]-hull[1][0])
-            marker.scale.z = 0.05
-            marker.color.a = 1.0
-            if(i==0):
-                marker.color.r = 0.0
-                marker.color.g = 239.0/255.0
-                marker.color.b = 0.0
-            else:
-                marker.color.r = 1.0
-                marker.color.g = 1.0
-                marker.color.b = 0.0
-
-            markerArray.markers.append(marker)
+        # second point
+        second_line_point = Point()
+        second_line_point.x = 0.0
+        second_line_point.y = -0.3
+        second_line_point.z = 0.0
+        marker.points.append(second_line_point)
+        
+        markerArray.markers.append(marker)
 
         self.vis_pub.publish(markerArray)
         
