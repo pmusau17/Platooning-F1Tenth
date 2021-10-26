@@ -116,6 +116,9 @@ class ParticleFiler():
         # these topics are for coordinate space things
         self.pub_tf = tf.TransformBroadcaster()
 
+        # this param specifies the laser frame
+        self.laser_frame = rospy.get_param("~laser_frame","laser")
+
         # these topics are to receive data from the racecar
         self.laser_sub = rospy.Subscriber(rospy.get_param("~scan_topic", "/scan"), LaserScan, self.lidarCB, queue_size=1)
         self.odom_sub  = rospy.Subscriber(rospy.get_param("~odometry_topic", "/odom"), Odometry, self.odomCB, queue_size=1)
@@ -171,7 +174,7 @@ class ParticleFiler():
 
         # this may cause issues with the TF tree. If so, see the below code.
         self.pub_tf.sendTransform((pose[0],pose[1],0),tf.transformations.quaternion_from_euler(0, 0, pose[2]), 
-               stamp , "/laser", "/map")
+               stamp , "/"+self.laser_frame, "/map")
 
         # also publish odometry to facilitate getting the localization pose
         if self.PUBLISH_ODOM:
