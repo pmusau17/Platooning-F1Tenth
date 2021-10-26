@@ -170,9 +170,9 @@ class MPC:
             
             rectangle = self.hypes
             
-            a, b = find_constraint(posx, posy, rectangle.x_min, rectangle.x_max, rectangle.y_max) 
-            print(a, b)         
-            
+            a, b = find_constraint(posx, posy, rectangle.x_min, rectangle.x_max, rectangle.y_max)   
+
+            rospy.logwarn("a:{} | b: {}".format(a,b))
            # for visualization 
             
             #rtreach_interval = [[rectangle.x_min, rectangle.x_max], [rectangle.y_min, rectangle.y_max]]
@@ -272,7 +272,7 @@ class MPC:
         #intervals = [mpc_inteval,lidar_interval]
         marker = Marker()
         marker.id = 0
-        marker.header.frame_id = "/map"
+        marker.header.frame_id = "map"
         marker.type = marker.LINE_STRIP
         marker.action = marker.ADD
         
@@ -281,10 +281,15 @@ class MPC:
         marker.color.g = 0.7
         marker.color.b = 0.8
 
+        marker.scale.x = 0.05
+        marker.scale.y = 0.05
+        marker.scale.z = 0.05
+
+
         marker.pose.orientation.x = 0.0
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
-        marker.pose.orientation.w = 0.0
+        marker.pose.orientation.w = 1.0
 
         marker.pose.position.x = 0.0
         marker.pose.position.y = 0.0
