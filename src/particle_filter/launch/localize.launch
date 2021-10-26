@@ -31,6 +31,7 @@
 
 	<arg name="scan_topic" default="/scan"/>
 	<arg name="odometry_topic" default="/vesc/odom"/>
+	<arg name="laser_frame" default="laser"/>
 	<!-- <arg name="odometry_topic" default="/odom"/> -->
 	<arg name="angle_step" default="18"/>
 	<arg name="max_particles" default="4000"/>
@@ -53,6 +54,7 @@
 		<param name="viz" value="$(arg viz)"/> 
 		<param name="fine_timing" value="0"/> 
 		<param name="publish_odom" value="1"/> 
+		<param name="laser_frame" value="$(arg laser_frame)"/> 
 
 		<!-- sensor model constants, see sensor model section in the Lab5 guide document -->
 		<param name="z_short" value="0.01"/> 

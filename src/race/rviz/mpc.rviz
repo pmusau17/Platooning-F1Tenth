@@ -9,16 +9,7 @@ Panels:
         - /LaserScan1
         - /TF1
         - /LaserScan2
-        - /MarkerArray1
-        - /MarkerArray2
-        - /MarkerArray3
-        - /MarkerArray4
-        - /MarkerArray5
-        - /MarkerArray6
         - /MarkerArray7
-        - /MarkerArray8
-        - /MarkerArray9
-        - /MarkerArray9/Status1
       Splitter Ratio: 0.5
     Tree Height: 1520
   - Class: rviz/Selection
@@ -98,45 +89,73 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        camera_link:
-          Value: true
-        chassis:
-          Value: true
-        chassis_inertia:
-          Value: true
-        contact_link:
-          Value: true
-        imu_link:
-          Value: true
         laser:
-          Value: true
-        left_front_wheel:
-          Value: true
-        left_rear_wheel:
-          Value: true
-        left_steering_hinge:
           Value: true
         map:
           Value: true
         racecar/base_link:
           Value: true
+        racecar/camera_link:
+          Value: true
+        racecar/chassis:
+          Value: true
+        racecar/chassis_inertia:
+          Value: true
+        racecar/contact_link:
+          Value: true
+        racecar/imu_link:
+          Value: true
+        racecar/laser:
+          Value: true
+        racecar/left_front_wheel:
+          Value: true
+        racecar/left_rear_wheel:
+          Value: true
+        racecar/left_steering_hinge:
+          Value: true
         racecar/odom:
+          Value: true
+        racecar/right_front_wheel:
+          Value: true
+        racecar/right_rear_wheel:
+          Value: true
+        racecar/right_steering_hinge:
+          Value: true
+        racecar/zed_camera_link:
+          Value: true
+        racecar/zed_camera_right_link:
           Value: true
         racecar2/base_link:
           Value: true
+        racecar2/camera_link:
+          Value: true
+        racecar2/chassis:
+          Value: true
+        racecar2/chassis_inertia:
+          Value: true
+        racecar2/contact_link:
+          Value: true
+        racecar2/imu_link:
+          Value: true
+        racecar2/laser:
+          Value: true
+        racecar2/left_front_wheel:
+          Value: true
+        racecar2/left_rear_wheel:
+          Value: true
+        racecar2/left_steering_hinge:
+          Value: true
         racecar2/odom:
           Value: true
-        right_front_wheel:
+        racecar2/right_front_wheel:
           Value: true
-        right_rear_wheel:
+        racecar2/right_rear_wheel:
           Value: true
-        right_steering_hinge:
+        racecar2/right_steering_hinge:
           Value: true
-        zed_camera_link:
+        racecar2/zed_camera_link:
           Value: true
-        zed_camera_right_link:
+        racecar2/zed_camera_right_link:
           Value: true
       Marker Alpha: 1
       Marker Scale: 1
@@ -146,12 +165,60 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
+          laser:
+            {}
           racecar/odom:
             racecar/base_link:
-              {}
+              racecar/chassis:
+                racecar/chassis_inertia:
+                  {}
+                racecar/contact_link:
+                  {}
+                racecar/imu_link:
+                  {}
+                racecar/laser:
+                  {}
+                racecar/left_rear_wheel:
+                  {}
+                racecar/left_steering_hinge:
+                  racecar/left_front_wheel:
+                    {}
+                racecar/right_rear_wheel:
+                  {}
+                racecar/right_steering_hinge:
+                  racecar/right_front_wheel:
+                    {}
+                racecar/zed_camera_link:
+                  racecar/camera_link:
+                    {}
+                  racecar/zed_camera_right_link:
+                    {}
           racecar2/odom:
             racecar2/base_link:
-              {}
+              racecar2/chassis:
+                racecar2/chassis_inertia:
+                  {}
+                racecar2/contact_link:
+                  {}
+                racecar2/imu_link:
+                  {}
+                racecar2/laser:
+                  {}
+                racecar2/left_rear_wheel:
+                  {}
+                racecar2/left_steering_hinge:
+                  racecar2/left_front_wheel:
+                    {}
+                racecar2/right_rear_wheel:
+                  {}
+                racecar2/right_steering_hinge:
+                  racecar2/right_front_wheel:
+                    {}
+                racecar2/zed_camera_link:
+                  racecar2/camera_link:
+                    {}
+                  racecar2/zed_camera_right_link:
+                    {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -261,8 +328,25 @@ Visualization Manager:
       Marker Topic: /sanity_pub
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
+      Name: PoseArray
+      Queue Size: 10
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
+      Shape: Arrow (Flat)
+      Topic: /pf/viz/particles
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -292,7 +376,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.644583225250244
+      Distance: 12.291020393371582
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
