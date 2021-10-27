@@ -49,7 +49,7 @@
       <arg name="laser_frame" default="racecar/laser"/>
     </include>
         
-    <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/>
+    <!-- <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/> -->
     <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="log" if="$(eval arg('mpc_model')==1)" required="true"/>
     <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="log" if="$(eval arg('mpc_model')==2)" required="true"/>
 
@@ -61,7 +61,6 @@
 
     <!--visualization of chosen target point-->
     <node pkg="mpc" type="visualize_points.py" name="visualization_marker_array" output="log"/>
-
 
     <!-- controller for opponent vehicle -->
     <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/>
