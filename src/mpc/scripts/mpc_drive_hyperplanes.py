@@ -24,7 +24,8 @@ from do_mpc.tools.timer import Timer
 
 from template_model import template_model
 from template_mpc_hyperplanes import template_mpc
-from solving import find_constraint
+#from solving_upper import find_upper_constraint
+from solving_bottom import find_bottom_constraint
 
 from constants import LEFT_DIVERGENCE_INDEX, RIGHT_DIVERGENCE_INDEX
 from constants import FTG_IGNORE_RANGE, SAFETY_RADIUS, POSITION_PREDICTION_TIME
@@ -170,21 +171,45 @@ class MPC:
             
             rectangle = self.hypes
             
-            a, b = find_constraint(posx, posy, rectangle.x_min, rectangle.x_max, rectangle.y_max)   
+            mpc_x_min = min(self.find_safes(posx, posy, head_angle)[0], posx) #- rectangle.x_min
+            mpc_x_max = max(self.find_safes(posx, posy, head_angle)[1], posx) #- rectangle.x_max
+            
+            
+            mpc_y_min = min(self.find_safes(posx, posy, head_angle)[2], posy) #-  rectangle.y_min
+            mpc_y_max = max(self.find_safes(posx, posy, head_angle)[3], posy) #- rectangle.y_max
+            
+            if (self.overlap(mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max)):
+                a, b = find_bottom_constraint(posx, posy, rectangle.x_min-0.8, rectangle.x_max-0.5, rectangle.y_max) 
+                x1 = posx + 1
+                y1 = a * (posx + 1) + b
+                x2 = posx - 1
+                y2 = a * (posx - 1) + b
+                self.visualize_rectangles(x1, y1, x2, y2) 
+                flag = 1
+            else:
+                a = 0
+                b = 0
+                flag = 0
+                
+            #a2, b2 = find_upper_constraint(posx, posy, rectangle.x_min-0.8, rectangle.x_max-0.5, rectangle.y_max))
 
-            rospy.logwarn("a:{} | b: {}".format(a,b))
            # for visualization 
             
             #rtreach_interval = [[rectangle.x_min, rectangle.x_max], [rectangle.y_min, rectangle.y_max]]
             #self.visualize_rectangles(mpc_interval,rtreach_interval)
-            self.visualize_rectangles()
+            
+            
+            #self.visualize_rectangles((posx + 1), (a * (posx + 1) + b), (posx - 1), (a * (posx - 1) + b))
+            
+            
+  
             
             if(tarx==-1 and tary==-1):
                 drive_msg.drive.steering_angle = 0.0
                 drive_msg.drive.speed = 0.0
             else:
                 model = template_model()
-                mpc = template_mpc(model, tarx, tary, a, b)
+                mpc = template_mpc(model, tarx, tary, a, b, flag)
                 x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
                 mpc.x0 = x0
                 mpc.set_initial_guess()
@@ -266,7 +291,7 @@ class MPC:
             rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max))
             
 
-    def visualize_rectangles(self):
+    def visualize_rectangles(self, x1, y1, x2, y2):
         markerArray = MarkerArray()
 
         #intervals = [mpc_inteval,lidar_interval]
@@ -280,7 +305,7 @@ class MPC:
         marker.color.r = 1.0
         marker.color.g = 0.7
         marker.color.b = 0.8
-
+        
         marker.scale.x = 0.05
         marker.scale.y = 0.05
         marker.scale.z = 0.05
@@ -291,22 +316,24 @@ class MPC:
         marker.pose.orientation.z = 0.0
         marker.pose.orientation.w = 1.0
 
+
+
         marker.pose.position.x = 0.0
         marker.pose.position.y = 0.0
         marker.pose.position.z = 0.0
 
         marker.points = []
         first_line_point = Point()
-        first_line_point.x = 5.5
-        first_line_point.y = 2.7
+        first_line_point.x = x1
+        first_line_point.y = y1
         first_line_point.z = 0.0
         marker.points.append(first_line_point)
 
         # second point
         second_line_point = Point()
         second_line_point.x = 0.0
-        second_line_point.y = -0.3
-        second_line_point.z = 0.0
+        second_line_point.y = x2
+        second_line_point.z = y2
         marker.points.append(second_line_point)
         
         markerArray.markers.append(marker)

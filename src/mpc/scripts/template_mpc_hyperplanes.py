@@ -7,7 +7,7 @@ sys.path.append('../../')
 import do_mpc
 
 
-def template_mpc(model, tarx, tary, a, b):
+def template_mpc(model, tarx, tary, a, b, flag):
 
     mpc = do_mpc.controller.MPC(model)
 
@@ -50,7 +50,8 @@ def template_mpc(model, tarx, tary, a, b):
     #mpc.scaling['_u', 'car_v'] = 2
     #mpc.scaling['_u', 'car_delta'] = 1
     
-    mpc.set_nl_cons('constraint',  (a * _x['car_x'] + b) - _x['car_y'], 0, penalty_term_cons=1000)
+    if (flag == 1):
+        mpc.set_nl_cons('constraint',  (a * _x['car_x'] + b) - _x['car_y'], 0, penalty_term_cons=1000)
 
     mpc.setup()
 

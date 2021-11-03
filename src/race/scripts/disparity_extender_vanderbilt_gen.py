@@ -221,7 +221,7 @@ class DisparityExtenderDriving(object):
     def publish_speed_and_angle(self,angle,speed):
         msg = drive_param()
         msg.angle = angle
-        msg.velocity = 0.5 #right now I want constant speed
+        msg.velocity = 0.0 #0.5 #right now I want constant speed
         self.pub_drive_param.publish(msg)
 
 

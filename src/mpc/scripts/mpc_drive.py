@@ -49,6 +49,7 @@ class MPC:
         rospy.Subscriber('racecar2/odom', Odometry, self.pose_callback, queue_size=1)
         rospy.Subscriber('racecar/reach_tube', reach_tube, self.reach_callback, queue_size=1)
 
+
     def find_sequence(self, points, ignore_range):
 
         current_left_index = 0

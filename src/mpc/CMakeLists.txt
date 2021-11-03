@@ -34,7 +34,8 @@ scripts/mpc_drive.py
 scripts/mpc_drive_hyperplanes.py
 scripts/mpc_gen.py
 scripts/point.py
-scripts/solving.py
+scripts/solving_bottom.py
+scripts/solving_upper.py
 scripts/template_model.py
 scripts/template_mpc.py
 scripts/template_mpc_hyperplanes.py
