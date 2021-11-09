@@ -12,6 +12,12 @@
 <arg name='car_name' value='racecar'/>
 <arg name='car_name2' value='racecar2'/>
 <arg name='car_name3' value='racecar3'/>
+
+
+<arg name="racecar_pose" default="-x 1.5 -y 0.05 -z 0.05"/>
+<arg name="racecar2_pose" default="-x 3.5 -y 1.05 -z 0.05"/>
+<arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
+
 <arg name='enable_keyboard' default='false'/>
 <arg name='world_name' default='track_porto'/> 
 <arg name='number_of_cars' default='2'/>
@@ -23,6 +29,9 @@
 
 <!--  This is the main launch file that launches the world, plugins, controllers -->
   <include file="$(find racecar_gazebo)/launch/many_car.launch" if = "$(eval arg('number_of_cars') ==3)">
+      <arg name="racecar_pose" value="$(arg racecar_pose)"/>
+      <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
+      <arg name="racecar3_pose" value="$(arg racecar3_pose)"/>
       <arg name="world_name" value="$(arg world_name)"/>
       <arg name="gui" value="$(arg gui)"/>
   </include>
@@ -36,6 +45,8 @@
   <include file="$(find racecar_gazebo)/launch/two_car.launch" if = "$(eval arg('number_of_cars') ==2)" >
     <arg name="world_name" value="$(arg world_name)"/>
     <arg name="gui" value="$(arg gui)"/>
+    <arg name="racecar_pose" value="$(arg racecar_pose)"/>
+    <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
   </include>
   
 

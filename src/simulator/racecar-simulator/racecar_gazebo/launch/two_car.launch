@@ -3,7 +3,8 @@
   <!--This world name that is spawned in gazebo-->
   <arg name="world_name" default="racecar" />
 
-
+  <arg name="racecar_pose" default="-x 1.5 -y 0.05 -z 0.05"/>
+  <arg name="racecar2_pose" default="-x 3.5 -y 1.05 -z 0.05"/>
   <arg name="gui" default="true" />
   <arg name="run_camera" default="false"/>
 
@@ -23,7 +24,7 @@
 <param name="tf_prefix" value="racecar" />
  <!--spawn the car using the single car launch file-->
  <include file="$(find racecar_gazebo)/launch/single_car.launch">
-      <arg name="init_pose" value="-x 0.5 -y 0.05 -z 0.05" />
+      <arg name="init_pose" value="$(arg racecar_pose)" />
       <arg name="car_name" value="racecar" />
  </include>
  </group>
@@ -69,7 +70,7 @@
 <param name="tf_prefix" value="racecar2" />
  <!--spawn the car using the single car launch file-->
  <include file="$(find racecar_gazebo)/launch/single_car.launch">
-      <arg name="init_pose" value="-x -0.5 -y 0.05 -z 0.05" />
+      <arg name="init_pose" value="$(arg racecar2_pose)" />
       <arg name="car_name" value="racecar2" />
  </include>
  </group>

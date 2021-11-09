@@ -6,6 +6,13 @@
     <arg name="gui" default="true" />
     <arg name="mpc_model" default="0"/>
 
+
+
+    <!--Initial States of Vehicles for this scenario, ego car is racecar2-->
+    <arg name="racecar_pose" default="-x 1.5 -y 0.05 -z 0.05"/>
+    <arg name="racecar2_pose" default="-x -3.5 -y 0.05 -z 0.05"/>
+    <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
+
     <!--waypoint file used by pure pursuit algorithm-->
     <arg name="csv_filename" default="track_porto_26780.csv"/>
 
@@ -38,6 +45,9 @@
 
     <!--  This is the main launch file that launches the world, plugins, controllers, vehicles -->
     <include file="$(find race)/launch/multi_parametrizeable.launch">
+      <arg name="racecar_pose" value="$(arg racecar_pose)"/>
+      <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
+      <arg name="racecar3_pose" value="$(arg racecar3_pose)"/>
       <arg name="number_of_cars" value="$(arg number_of_cars)"/>
       <arg name="gui" value="$(arg gui)"/>
       <arg name="rviz_disp" value="$(arg rviz_disp)"/>
