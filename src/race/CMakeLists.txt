@@ -139,6 +139,7 @@ scripts/transform_obstacles.py
 scripts/ttc.py
 scripts/visualize_wall_markers.py
 scripts/wall_follower.py
+scripts/lidar_to_cartesian.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

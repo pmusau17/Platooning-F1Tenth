@@ -7,12 +7,19 @@ from scipy.optimize import minimize
 
 
 def objective(x, xp): # Objective function tries to simply minimize constants a,b,c in ax+by+c >= 0
-
+    
     return  (x[1]) - (x[0]) 
 
 
-def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
 
+
+#  Hyperplane to left from the ego car,
+#  Ok, I get this now each of these functions returns a function, the function that is returned 
+# is g, and they will get evaluated at the point, provided by argument in the bottom loops
+def constraint_ego_car_hyperplane_0(i): 
+
+    # Still need to figure out what x is here
+    # This function only does a 2d point x[0],x[1]    
     def g(x, a, b):
     # select a, b of the formula
         if (x[0] > 0):        
@@ -43,6 +50,8 @@ def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
 
 def constraint_ego_car_hyperplane_1(i): #  hyperplane to left from the ego car
 
+
+    # in this function it leverages x[2], x[3] so I'm confused
     def g(x, a, b):
     # select a, b of the formula
         if (x[2] > 0):        
@@ -139,39 +148,55 @@ def find_constraints(ego_x, ego_y, array_left, array_right):
     # initial guesses
     n = 4
     x0 = np.zeros(n)
-    #b = (-100, 100)
-    #bnds = (b, b)
     xp = 3
     
 
 
     cons = []
-    ar_ego =  np.array([[ego_x, ego_y], [ego_x, ego_y + 0.4], [ego_x + .24, ego_y], [ego_x + .24, ego_x + 0.4]])
+
+    # consider a square of points, I guess this is randomly generated
+    ar_ego =  np.array([[ego_x, ego_y], [ego_x, ego_y + 0.4], [ego_x + .24, ego_y], [ego_x + .24, ego_y + 0.4]])
+
+    print("ego_vehicle box:",ar_ego.shape,"\n", ar_ego)
     ar_u = array_left
     ar_b = array_right
+
     
+    print("Left Array:",ar_u.shape,"\n",ar_u)
+    print("Right Array:",ar_b.shape,"\n",ar_b)
+    
+    # plt.figure()
+    # for pt in ar_ego:
+    #     print(pt)
+    #     plt.scatter(pt[0],pt[1])
+    # plt.show()
+
+
     for a in range(len(ar_ego)):
         arguments2 = (ar_ego[a][0], ar_ego[a][1])
+        #print(arguments2, constraint_ego_car_hyperplane_0(a))
+
+        # We return the same function with 
         cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_ego_car_hyperplane_0(a)})
 
-    for b in range(len(ar_ego)):
-        arguments2 = (ar_ego[b][0], ar_ego[b][1])
-        cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_ego_car_hyperplane_1(b)})        
+    # for b in range(len(ar_ego)):
+    #     arguments2 = (ar_ego[b][0], ar_ego[b][1])
+    #     cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_ego_car_hyperplane_1(b)})        
     
-    for i in range(len(ar_u)):
-        arguments2 = (ar_u[i][0], ar_u[i][1])
-        cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_opp_car_hyperplane_0(i)})
+    # for i in range(len(ar_u)):
+    #     arguments2 = (ar_u[i][0], ar_u[i][1])
+    #     cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_opp_car_hyperplane_0(i)})
     
     
-    for k in range(len(ar_b)):
-       arguments2 = (ar_b[k][0], ar_b[k][1])
-       cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_opp_car_hyperplane_1(k)})     
+    # for k in range(len(ar_b)):
+    #    arguments2 = (ar_b[k][0], ar_b[k][1])
+    #    cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_opp_car_hyperplane_1(k)})     
         
     
-    solution = minimize(objective, x0, args=(xp), method='SLSQP', bounds=None, constraints=cons)
-    x = solution.x
+    # solution = minimize(objective, x0, args=(xp), method='SLSQP', bounds=None, constraints=cons)
+    # x = solution.x
 
-    return x 
+    # return x 
     
     
 if __name__ == "__main__":
@@ -210,13 +235,16 @@ if __name__ == "__main__":
     rw_outter_observable_array = np.array(rw_outter_observable_list)
     x_outter = rw_outter_observable_array[:,0] # scatter plot
     y_outter = rw_outter_observable_array[:,1] # scatter plot
-    plt.scatter(x_outter, y_outter) # scatter plot
+
+
+    # plt.figure()
+    # plt.scatter(x_outter, y_outter) # scatter plot
+    # plt.show()
+
+
     
-    plt.show()
-
-    plt.scatter(rw_inner_observable_array, rw_outter_observable_array)
-
-    plt.show()
+    # plt.scatter(rw_inner_observable_array, rw_outter_observable_array)
+    # plt.show()
 
 
     a_u, b_u, a_b, b_b  = find_constraints(ex, ey, rw_inner_observable_array, rw_outter_observable_array)
