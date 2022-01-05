@@ -14,6 +14,7 @@ import laser_geometry.laser_geometry as lg
 from race.msg import angle_msg
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
+from std_msgs.msg import String
 
 
 from tf2_ros import *
@@ -28,9 +29,12 @@ class LidarToCartestian:
         # setting up the tf2 transforms 
         self.tfBuffer = Buffer()
         self.listener = TransformListener(self.tfBuffer)
-
         self.racecar_name = racecar_name
-        self.publisher = rospy.Publisher('lidar_to_cartesian', MarkerArray, queue_size="1")
+        self.vis_pub = rospy.Publisher('lidar_to_cartesian', MarkerArray,queue_size=100)
+
+        # this was a massive headache, need to let the publisher register with the master before we start using the 
+        # publisher in the subscirber callback
+        rospy.sleep(0.5)
         self.sub = rospy.Subscriber(racecar_name+'/scan', LaserScan, self.lidar_callback)
         
         
@@ -56,7 +60,7 @@ class LidarToCartestian:
             point_base.point.x = limited_ranges[i]*math.cos(rad)
             point_base.point.y = limited_ranges[i]*math.sin(rad)
             point_base.point.z = 0.0
-            point_base.header.stamp = rospy.get_rostime()
+            point_base.header.stamp =rospy.Time.now() - rospy.Duration(0.1)
 
             # Now transform the point into the /odom frame...
             try:
@@ -66,33 +70,43 @@ class LidarToCartestian:
                 # This call waits (up to 1.0 second) for the necessary
                 # transform to become available.
 
-                point_odom = self.tfBuffer.transform(point_base, self.racecar_name+'/odom',
-                                                        rospy.Duration(0.1))
+                point_odom = self.tfBuffer.transform(point_base, self.racecar_name+'/odom')
 
-                print(i,point_odom.point.x,point_odom.point.y)
+                #print(i,point_odom.point.x,point_odom.point.y)
                 marker = Marker()
-                marker.header.frame_id = "/map"
+                marker.header.frame_id = "map"
+                marker.header.stamp = rospy.Time.now() 
                 marker.id = i
                 marker.type = marker.SPHERE
                 marker.action = marker.ADD
                 marker.scale.x = 0.1
                 marker.scale.y = 0.1
                 marker.scale.z = 0.1
+
+                
                 marker.color.a = 1.0
-                marker.color.r = 0.0
-                marker.color.g = 0.0
-                marker.color.b = 1.0
+                if(i>540):
+                    marker.color.r = 1.0
+                    marker.color.g = 0.0
+                    marker.color.b = 0.0
+                else:
+                    marker.color.r = 0.0
+                    marker.color.g = 0.0
+                    marker.color.b = 1.0
+                    
                 marker.pose.orientation.w = 1.0
+                marker.lifetime = rospy.Duration(1.0)
                 
                 marker.pose.position.x = point_odom.point.x
                 marker.pose.position.y = point_odom.point.y
-                marker.pose.position.z = point_odom.point.z
+                marker.pose.position.z = 1.0
                 markerArray.markers.append(marker)
             except (LookupException, ConnectivityException, ExtrapolationException) as e:
                 print("Transform Failed",e)
-
-        #print(markerArray)
-        self.publisher.publish(markerArray)
+        try:
+            self.vis_pub.publish(markerArray)
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":
