@@ -37,19 +37,61 @@ class LidarToCartestian:
         rospy.sleep(0.5)
         self.sub = rospy.Subscriber(racecar_name+'/scan', LaserScan, self.lidar_callback)
         
-        
+    
+    # I won't use this now but this works too
+    def get_center_line(self,limited_ranges):
 
+        # point along center line lidar scan
+        point_base_center = tf2_geometry_msgs.PointStamped()
+        point_base_center.header.frame_id = self.racecar_name+'/laser'
+        point_base_center.point.x = limited_ranges[540]
+        point_base_center.point.y = 0
+        point_base_center.point.z = 0.0
+        point_base_center.header.stamp =rospy.Time.now() - rospy.Duration(0.1)
+
+        # point at vehicle center
+        point_base_vehicle = tf2_geometry_msgs.PointStamped()
+        point_base_vehicle.header.frame_id = self.racecar_name+'/laser'
+        point_base_vehicle.point.x = 0.0
+        point_base_vehicle.point.y = 0.0
+        point_base_vehicle.point.z = 0.0
+        point_base_vehicle.header.stamp =rospy.Time.now() - rospy.Duration(0.1)
+        try:
+                # The available transforms may be running behind the time
+                # stamp on the data.  tf will raise an extrapolation exception
+                # if we ask it to transform a point with a "future" time stamp.
+                # This call waits (up to 1.0 second) for the necessary
+                # transform to become available.
+                point_center_odom = self.tfBuffer.transform(point_base_center, self.racecar_name+'/odom')
+                point_base_odom = self.tfBuffer.transform(point_base_vehicle, self.racecar_name+'/odom')
+        except (LookupException, ConnectivityException, ExtrapolationException) as e:
+                print("Transform Failed",e)
+
+        return point_base_odom,point_center_odom
+
+
+
+    def is_left(self,p1,p2,p3):
+        return ((p2.point.x - p1.point.x)*(p3.point.y - p1.point.y) - (p2.point.y - p1.point.y)*(p3.point.x - p1.point.x)) > 0
     
     def lidar_callback(self,data):
 
         ranges=data.ranges
+
+        # get the two points needed to create a line to check which points are to the left and the right
+
+
         #convert the range to a numpy array so that we can process the data
         limited_ranges=np.asarray(ranges)
-        indices=np.where(limited_ranges>=10.0)[0]
-        limited_ranges[indices]=(data.range_max)-0.1
+        #indices=np.where(limited_ranges>=10.0)[0]
+        #limited_ranges[indices]=(data.range_max)-0.1
+
+        #p1,p2 = self.get_center_line(limited_ranges)
+
         markerArray = MarkerArray()
         # loop through the lidar points (smh I don't like this)
-        for i in range(len(limited_ranges)):
+        # len(limited_ranges)
+        for i in range(180,901):
 
             point_base = tf2_geometry_msgs.PointStamped()
             point_base.header.frame_id = self.racecar_name+'/laser'
@@ -60,7 +102,7 @@ class LidarToCartestian:
             point_base.point.x = limited_ranges[i]*math.cos(rad)
             point_base.point.y = limited_ranges[i]*math.sin(rad)
             point_base.point.z = 0.0
-            point_base.header.stamp =rospy.Time.now() - rospy.Duration(0.1)
+            point_base.header.stamp =rospy.Time.now() - rospy.Duration(0.05)
 
             # Now transform the point into the /odom frame...
             try:
@@ -70,7 +112,7 @@ class LidarToCartestian:
                 # This call waits (up to 1.0 second) for the necessary
                 # transform to become available.
 
-                point_odom = self.tfBuffer.transform(point_base, self.racecar_name+'/odom')
+                point_odom = self.tfBuffer.transform(point_base, "map") 
 
                 #print(i,point_odom.point.x,point_odom.point.y)
                 marker = Marker()
@@ -85,7 +127,7 @@ class LidarToCartestian:
 
                 
                 marker.color.a = 1.0
-                if(i>540):
+                if(i>540):#self.is_left(p1,p2,point_odom)
                     marker.color.r = 1.0
                     marker.color.g = 0.0
                     marker.color.b = 0.0
@@ -95,11 +137,11 @@ class LidarToCartestian:
                     marker.color.b = 1.0
                     
                 marker.pose.orientation.w = 1.0
-                marker.lifetime = rospy.Duration(1.0)
-                
+                marker.lifetime = rospy.Duration(0.0)
+          
                 marker.pose.position.x = point_odom.point.x
                 marker.pose.position.y = point_odom.point.y
-                marker.pose.position.z = 1.0
+                marker.pose.position.z = -0.075
                 markerArray.markers.append(marker)
             except (LookupException, ConnectivityException, ExtrapolationException) as e:
                 print("Transform Failed",e)
