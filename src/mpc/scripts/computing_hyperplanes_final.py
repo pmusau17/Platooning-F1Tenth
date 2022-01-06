@@ -11,7 +11,7 @@ from scipy.optimize import minimize
 
 def objective(x): # Objective function tries to simply minimize constants a,b,c in ax+by+c >= 0
 
-    return x[1]
+    return -x[1] - x[3]
 
 
 def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
@@ -43,6 +43,60 @@ def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
 
     return g
 
+def constraint_target_hyperplane_0(x, a, b): 
+
+
+    if (x[0] > 0):
+    
+        aX = 0
+        aY = x[1]
+
+	    
+        bX = aX - 1
+        bY = x[0] * bX + x[1] 
+		
+        cX = a
+        cY =  b     
+
+    else:
+        aX = 0
+        aY = x[1]
+	    
+        bX = aX + 1
+        bY = x[0] * bX + x[1]    
+
+        cX = a
+        cY =  b    
+
+    return ((bX - aX)*(cY - aY) - (bY - aY)*(cX - aX))
+     
+
+def constraint_target_hyperplane_1(x, a, b): 
+
+
+    if (x[2] > 0):
+    
+        aX = 0
+        aY = x[3]
+
+	    
+        bX = aX + 1
+        bY = x[2] * bX + x[3] 
+		
+        cX = a
+        cY =  b     
+
+    else:
+        aX = 0
+        aY = x[3]
+	    
+        bX = aX - 1
+        bY = x[2] * bX + x[3]    
+
+        cX = a
+        cY =  b    
+
+    return ((bX - aX)*(cY - aY) - (bY - aY)*(cX - aX)) 
 
 def constraint_ego_car_hyperplane_1(i): #  hyperplane to left from the ego car
 
@@ -198,7 +252,7 @@ def constraint_dynamic_obstacles_hyperplane_1(k):
 
 
 
-def find_constraints(ego_x, ego_y, array_left, array_right):
+def find_constraints(ego_x, ego_y, array_left, array_right, tarx, tary):
 
 
  # initial guesses
@@ -232,7 +286,12 @@ def find_constraints(ego_x, ego_y, array_left, array_right):
     for d in range(len(ar_b)): # create static obstacles constraints - obstacles from the left
        arguments2 = (ar_b[d][0], ar_b[d][1])
        cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_opp_car_hyperplane_1(d)})     
-       
+    
+   
+    cons.append({'type': 'ineq', 'args': (tarx, tary), 'fun': constraint_target_hyperplane_0})  
+    
+    cons.append({'type': 'ineq', 'args': (tarx, tary), 'fun': constraint_target_hyperplane_1})   
+     
     #for e in range(len(ar_d_l)): # create dynamic obstacles constraints - obstacles from the left
      #  arguments2 = (ar_d_l[e][0], ar_d_l[e][1])
       # cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_dynamic_obstacles_hyperplane_0(e)})     
@@ -247,7 +306,3 @@ def find_constraints(ego_x, ego_y, array_left, array_right):
 
     return x 
     
- 
-  
-
-
