@@ -172,7 +172,8 @@ class MPC:
             # it's in the xacro file
             x_coordinate = (lidar_range) * math.cos(rotated_angle) + position_x + 0.265*math.cos(heading_angle)
             y_coordinate = (lidar_range) * math.sin(rotated_angle) + position_y + 0.265*math.sin(heading_angle)
-            points.append(CartesianPoint(x_coordinate, y_coordinate))
+            #points.append(CartesianPoint(x_coordinate, y_coordinate))
+            points.append([x_coordinate,y_coordinate])
 
             marker = Marker()
             marker.header.frame_id = "map"
@@ -264,27 +265,34 @@ class MPC:
                 
             rectangle = self.hypes # Get hyper-rectangles of the opponent vehicle
                 
-            ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points
+            #ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points
+
+            ar_0 = self.lidar_to_cart(self.lidar.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
 
             # testing visualize line
             # pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
             #self.visualize_lines(posx,posy,pos_1x,pos1_y)  
-            hw_l = np.zeros(shape=(len(ar_0),2))    
-            for x in range(0, len(ar_0)): # build HW array here
-                hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
+            # hw_l = np.zeros(shape=(len(ar_0),2))    
+            # for x in range(0, len(ar_0)): # build HW array here
+            #     hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
+
+
+            hw_l = np.asarray(ar_0[680-240:840-240])
             
-            hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
-            hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
+            # hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
+            # hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
             
             hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
                 
             # print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
             # print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
             
-            ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
-            hw_r = np.zeros(shape=(len(ar_1),2))    
-            for x in range(0, len(ar_1)): # build HW array here
-                hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]   
+            #ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
+            # hw_r = np.zeros(shape=(len(ar_1),2))    
+            # for x in range(0, len(ar_1)): # build HW array here
+            #     hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]  
+
+            hw_r =  np.asarray(ar_0[240-240:480-240])
                         
             hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
             hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
@@ -293,7 +301,7 @@ class MPC:
             # print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
             # print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
                 
-            a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered ) # compute coupled-hyperplanes   
+            a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered,tarx,tary) # compute coupled-hyperplanes   
             # print(a0, b0, a1, b1)
             # print("EGO CAR TARGET POSITION", tarx, tary) 
             # print("EGO CAR POSITION", posx, posy)      
