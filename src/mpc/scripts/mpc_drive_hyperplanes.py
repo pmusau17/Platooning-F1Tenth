@@ -24,8 +24,8 @@ from do_mpc.tools.timer import Timer
 
 from template_model import template_model
 from template_mpc_hyperplanes import template_mpc
-#from solving_upper import find_upper_constraint
-from solving_bottom import find_bottom_constraint
+from computing_hyperplanes_final import find_constraints
+
 
 from constants import LEFT_DIVERGENCE_INDEX, RIGHT_DIVERGENCE_INDEX
 from constants import FTG_IGNORE_RANGE, SAFETY_RADIUS, POSITION_PREDICTION_TIME
@@ -118,8 +118,6 @@ class MPC:
         return points
 
     def adjust_target_position(self, position_x, position_y, heading_angle):
-    
-
 
         lidar_data = self.lidar
 
@@ -164,60 +162,78 @@ class MPC:
     def mpc_drive(self, posx, posy, head_angle, tarx, tary):
 
         # prevents nul message errors
-        if(self.hypes):
+        #if(self.hypes):
 
-            drive_msg = AckermannDriveStamped()
-            drive_msg.header.stamp = rospy.Time.now()
+        drive_msg = AckermannDriveStamped()
+        drive_msg.header.stamp = rospy.Time.now()
             
-            rectangle = self.hypes
+        rectangle = self.hypes # Get hyper-rectangles of the opponent vehicle
             
-            mpc_x_min = min(self.find_safes(posx, posy, head_angle)[0], posx) #- rectangle.x_min
-            mpc_x_max = max(self.find_safes(posx, posy, head_angle)[1], posx) #- rectangle.x_max
+        #mpc_x_min = min(self.find_safes(posx, posy, head_angle)[0], posx) # Compute a preliminary-safe rectangle around ego vehicle
+        #mpc_x_max = max(self.find_safes(posx, posy, head_angle)[1], posx) # ---- 
+        #mpc_y_min = min(self.find_safes(posx, posy, head_angle)[2], posy) # ---- 
+        #mpc_y_max = max(self.find_safes(posx, posy, head_angle)[3], posy) # End
             
+        ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points  
+        hw_l = np.zeros(shape=(len(ar_0),2))    
+        for x in range(0, len(ar_0)): # build HW array here
+            hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
+        
+        hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
+        hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
+        
+        hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
             
-            mpc_y_min = min(self.find_safes(posx, posy, head_angle)[2], posy) #-  rectangle.y_min
-            mpc_y_max = max(self.find_safes(posx, posy, head_angle)[3], posy) #- rectangle.y_max
+        print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
+        print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
+        
+        ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
+        hw_r = np.zeros(shape=(len(ar_1),2))    
+        for x in range(0, len(ar_1)): # build HW array here
+            hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]   
+                       
+        hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
+        hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
+        hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
+        
+        print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
+        print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
             
-            if (self.overlap(mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max)):
-                a, b = find_bottom_constraint(posx, posy, rectangle.x_min-0.8, rectangle.x_max-0.5, rectangle.y_max) 
-                x1 = posx + 1
-                y1 = a * (posx + 1) + b
-                x2 = posx - 1
-                y2 = a * (posx - 1) + b
-                self.visualize_rectangles(x1, y1, x2, y2) 
-                flag = 1
-            else:
-                a = 0
-                b = 0
-                flag = 0
+        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered ) # compute coupled-hyperplanes   
+        print(a0, b0, a1, b1)
+        print("EGO CAR TARGET POSITION", tarx, tary) 
+        print("EGO CAR POSITION", posx, posy)      
+        
+        #if (self.overlap(mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max)): # check if a Opp. hyper-rectangle overlap w. Ego safe-rectangle
                 
-            #a2, b2 = find_upper_constraint(posx, posy, rectangle.x_min-0.8, rectangle.x_max-0.5, rectangle.y_max))
+         
+                
+            
 
-           # for visualization 
-            
-            #rtreach_interval = [[rectangle.x_min, rectangle.x_max], [rectangle.y_min, rectangle.y_max]]
-            #self.visualize_rectangles(mpc_interval,rtreach_interval)
-            
-            
-            #self.visualize_rectangles((posx + 1), (a * (posx + 1) + b), (posx - 1), (a * (posx - 1) + b))
-            
+        # for visualization 
+        #rtreach_interval = [[rectangle.x_min, rectangle.x_max], [rectangle.y_min, rectangle.y_max]]
+        #self.visualize_rectangles(mpc_interval,rtreach_interval)
+        #self.visualize_rectangles((posx + 1), (a0 * (posx + 1) + b0), (posx - 1), (a0 * (posx - 1) + b0))
+        #self.visualize_rectangles((posx + 1), (a1 * (posx + 1) + b1), (posx - 1), (a1 * (posx - 1) + b1))    
             
   
-            
-            if(tarx==-1 and tary==-1):
-                drive_msg.drive.steering_angle = 0.0
-                drive_msg.drive.speed = 0.0
-            else:
-                model = template_model()
-                mpc = template_mpc(model, tarx, tary, a, b, flag)
-                x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-                mpc.x0 = x0
-                mpc.set_initial_guess()
-                
-                u0 = mpc.make_step(x0)
 
-                drive_msg.drive.steering_angle = float(u0[1])
-                drive_msg.drive.speed = float(u0[0])
+                
+                 
+        if(tarx==-1 and tary==-1):
+            drive_msg.drive.steering_angle = 0.0
+            drive_msg.drive.speed = 0.0
+        else:
+            model = template_model()
+            mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, 0, 0)
+            x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+            mpc.x0 = x0
+            mpc.set_initial_guess()
+               
+            u0 = mpc.make_step(x0)
+
+            drive_msg.drive.steering_angle = float(u0[1])
+            drive_msg.drive.speed = float(u0[0])
             self.drive_publish.publish(drive_msg)
         
     def find_safes(self, position_x, position_y, heading_angle):
