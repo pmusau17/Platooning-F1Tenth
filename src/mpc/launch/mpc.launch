@@ -9,8 +9,8 @@
 
 
     <!--Initial States of Vehicles for this scenario, ego car is racecar2-->
-    <arg name="racecar_pose" default="-x 1.5 -y 0.05 -z 0.05"/>
-    <arg name="racecar2_pose" default="-x -3.5 -y 0.05 -z 0.05"/>
+    <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"/>
+    <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"/>
     <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
 
     <!--waypoint file used by pure pursuit algorithm-->

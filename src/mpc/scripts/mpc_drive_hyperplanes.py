@@ -23,8 +23,8 @@ from do_mpc.tools.timer import Timer
 
 from template_model import template_model
 from template_mpc_hyperplanes import template_mpc
-#from solving_upper import find_upper_constraint
-from solving_bottom import find_bottom_constraint
+from computing_hyperplanes_final import find_constraints
+
 
 from constants import LEFT_DIVERGENCE_INDEX, RIGHT_DIVERGENCE_INDEX
 from constants import FTG_IGNORE_RANGE, SAFETY_RADIUS, POSITION_PREDICTION_TIME
@@ -166,8 +166,6 @@ class MPC:
         return points
 
     def adjust_target_position(self, position_x, position_y, heading_angle):
-    
-
 
         lidar_data = self.lidar
 
@@ -226,52 +224,45 @@ class MPC:
 
             drive_msg = AckermannDriveStamped()
             drive_msg.header.stamp = rospy.Time.now()
-            
-            # get the hyper_rectangles
-            rectangle = self.hypes
-            
-
-            # There's probably a better way to name this. Refactored this so it only gets called
-            # once.
-            _,_,p1,p2,p3,p4 = self.adjust_target_position(posx, posy, head_angle)
-
-            mpc_x_min = min(p1, posx) #- rectangle.x_min
-            mpc_x_max = max(p2, posx) #- rectangle.x_max
-            
-            
-            mpc_y_min = min(p3, posy) #-  rectangle.y_min
-            mpc_y_max = max(p4, posy) #- rectangle.y_max
-            
-            if (self.overlap(mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max)):
-                a, b = find_bottom_constraint(posx, posy, rectangle.x_min-0.8, rectangle.x_max-0.5, rectangle.y_max) 
-                x1 = posx + 1
-                y1 = a * (posx + 1) + b
-                x2 = posx - 1
-                y2 = a * (posx - 1) + b
-                self.visualize_rectangles(x1, y1, x2, y2) 
-                flag = 1
-            else:
-                a = 0
-                b = 0
-                flag = 0
                 
-            #a2, b2 = find_upper_constraint(posx, posy, rectangle.x_min-0.8, rectangle.x_max-0.5, rectangle.y_max))
-
-           # for visualization 
+            rectangle = self.hypes # Get hyper-rectangles of the opponent vehicle
+                
+            ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points  
+            hw_l = np.zeros(shape=(len(ar_0),2))    
+            for x in range(0, len(ar_0)): # build HW array here
+                hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
             
-            #rtreach_interval = [[rectangle.x_min, rectangle.x_max], [rectangle.y_min, rectangle.y_max]]
-            #self.visualize_rectangles(mpc_interval,rtreach_interval)
+            hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
+            hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
             
+            hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
+                
+            print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
+            print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
             
-            #self.visualize_rectangles((posx + 1), (a * (posx + 1) + b), (posx - 1), (a * (posx - 1) + b))
+            ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
+            hw_r = np.zeros(shape=(len(ar_1),2))    
+            for x in range(0, len(ar_1)): # build HW array here
+                hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]   
+                        
+            hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
+            hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
+            hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
             
+            print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
+            print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
+                
+            a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered ) # compute coupled-hyperplanes   
+            print(a0, b0, a1, b1)
+            print("EGO CAR TARGET POSITION", tarx, tary) 
+            print("EGO CAR POSITION", posx, posy)      
             
             if(tarx==-1 and tary==-1):
                 drive_msg.drive.steering_angle = 0.0
                 drive_msg.drive.speed = 0.0
             else:
                 model = template_model()
-                mpc = template_mpc(model, tarx, tary, a, b, flag)
+                mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, 0, 0)
                 x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
                 mpc.x0 = x0
                 mpc.set_initial_guess()
@@ -280,8 +271,8 @@ class MPC:
 
                 drive_msg.drive.steering_angle = float(u0[1])
                 drive_msg.drive.speed = float(u0[0])
-            self.drive_publish.publish(drive_msg)
-        
+                self.drive_publish.publish(drive_msg)
+            
 
     def visualize_rectangles(self, x1, y1, x2, y2):
         markerArray = MarkerArray()
