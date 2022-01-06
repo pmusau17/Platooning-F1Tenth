@@ -7,7 +7,6 @@ from nav_msgs.msg import Odometry
 from race.msg import reach_tube
 import sys
 import os
-#import tf
 
 
 import math
@@ -42,16 +41,62 @@ class MPC:
     def __init__(self):
         self.lidar = None
         self.hypes = None
+        self.log_hypers = False
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
         self.vis_pub = rospy.Publisher("sanity_pub", MarkerArray, queue_size=10)
 
 
-        # instatntiate subscribers
-        rospy.Subscriber('racecar2/scan', LaserScan, self.odometry_update, queue_size=1)
+        # instantiate the subscribers
+        rospy.Subscriber('racecar2/scan', LaserScan, self.lidar_scan_update, queue_size=1)
         rospy.Subscriber('racecar2/odom', Odometry, self.pose_callback, queue_size=1)
         rospy.Subscriber('racecar/reach_tube', reach_tube, self.reach_callback, queue_size=1)
 
+    """
+    Callback Functions
+    """
+    # Lidar Callback 
+    def lidar_scan_update(self,data):
+        self.lidar = data
 
+
+    ### Reachset Callback 
+    def reach_callback(self, msg):
+        if(msg.count>0):
+            reach_list = msg.obstacle_list
+            last_index = 0 #msg.count-1
+            last_rectangle = reach_list[last_index]
+            self.hypes = last_rectangle 
+            if(self.log_hypers):
+                rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,
+                            last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max)) 
+
+
+    # Odometry Callback 
+    # The main functions of mpc are called within this callback
+    def pose_callback(self,pose_msg):
+
+        quaternion = np.array([pose_msg.pose.pose.orientation.x,
+                            pose_msg.pose.pose.orientation.y,
+                            pose_msg.pose.pose.orientation.z,
+                            pose_msg.pose.pose.orientation.w])
+
+        position = [pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, pose_msg.pose.pose.position.z]
+
+        #euler = tf.transformations.euler_from_quaternion(quaternion)
+
+        quaternion_z = pose_msg.pose.pose.orientation.z
+        quaternion_w = pose_msg.pose.pose.orientation.w
+
+        head_angle = math.atan2(2 * (quaternion_z * quaternion_w), 1 - 2 * (quaternion_z * quaternion_z))
+
+        tarx,tary,_,_,_,_ = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle)
+        
+        self.mpc_drive(position[0], position[1], head_angle, tarx, tary)
+
+
+    """
+        Helper Functions for most MPC code
+    """
     def find_sequence(self, points, ignore_range):
 
         current_left_index = 0
@@ -95,6 +140,9 @@ class MPC:
 
     def get_target(self, points):
 
+        # choose the middle point of the points, otherwise return that 
+        # a target point was not found. Point here is a sequence of lidar ranges
+        # that we can use to follow the gap
         if not points:
             return -1,-1
 
@@ -123,8 +171,12 @@ class MPC:
 
         lidar_data = self.lidar
 
+        # RDI = 350
+        # LDI = 730
+        # so the ranges we are looking are +- 47.5 degrees, for points we could possibly select
         ranges = lidar_data.ranges[RIGHT_DIVERGENCE_INDEX:(LEFT_DIVERGENCE_INDEX+1)]
 
+        # convert the lidar scans in this range to cartesian coordinates
         cartesian_points = self.lidar_to_cart(
                 ranges=ranges,
                 position_x=position_x,
@@ -133,7 +185,9 @@ class MPC:
                 starting_index=RIGHT_DIVERGENCE_INDEX
             )
 
-            # Build a list of relevant Point instances
+        # Build a list of relevant Point instances that are farther than the safety radius 
+        # which is defined to be in this case 2 meters. Can probably do this while we convert them to cartesian
+        # Also might not be necessary to choose the target angle
         points = list()
         for i in range(LEFT_DIVERGENCE_INDEX - RIGHT_DIVERGENCE_INDEX + 1):
             cartesian_point = cartesian_points[i]
@@ -145,11 +199,15 @@ class MPC:
 
             points.append(LidarPoint(lidar_index, lidar_range, cartesian_point))
 
-        tarx, tary = self.get_target(self.find_sequence(points, FTG_IGNORE_RANGE))
+        pts = self.find_sequence(points, FTG_IGNORE_RANGE)
+        tarx, tary = self.get_target(pts)
 
-        return tarx, tary
+        minx, miny = pts[0].cartesian
+        maxx, maxy = pts[len(pts)-1].cartesian
+    
+        return tarx, tary, min(minx, maxx), max(minx, maxx), min(miny, maxy), max(miny, maxy)
         
-            # Pass relevant information to publisher
+    
             
     def overlap(self, mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectanglexm, rectanglexmx, rectangleym, rectangleymaxx):  # return true if they overalap
     
@@ -164,19 +222,25 @@ class MPC:
     def mpc_drive(self, posx, posy, head_angle, tarx, tary):
 
         # prevents nul message errors
-        if(self.hypes):
+        if(self.hypes and self.lidar):
 
             drive_msg = AckermannDriveStamped()
             drive_msg.header.stamp = rospy.Time.now()
             
+            # get the hyper_rectangles
             rectangle = self.hypes
             
-            mpc_x_min = min(self.find_safes(posx, posy, head_angle)[0], posx) #- rectangle.x_min
-            mpc_x_max = max(self.find_safes(posx, posy, head_angle)[1], posx) #- rectangle.x_max
+
+            # There's probably a better way to name this. Refactored this so it only gets called
+            # once.
+            _,_,p1,p2,p3,p4 = self.adjust_target_position(posx, posy, head_angle)
+
+            mpc_x_min = min(p1, posx) #- rectangle.x_min
+            mpc_x_max = max(p2, posx) #- rectangle.x_max
             
             
-            mpc_y_min = min(self.find_safes(posx, posy, head_angle)[2], posy) #-  rectangle.y_min
-            mpc_y_max = max(self.find_safes(posx, posy, head_angle)[3], posy) #- rectangle.y_max
+            mpc_y_min = min(p3, posy) #-  rectangle.y_min
+            mpc_y_max = max(p4, posy) #- rectangle.y_max
             
             if (self.overlap(mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectangle.x_min, rectangle.x_max, rectangle.y_min, rectangle.y_max)):
                 a, b = find_bottom_constraint(posx, posy, rectangle.x_min-0.8, rectangle.x_max-0.5, rectangle.y_max) 
@@ -202,8 +266,6 @@ class MPC:
             #self.visualize_rectangles((posx + 1), (a * (posx + 1) + b), (posx - 1), (a * (posx - 1) + b))
             
             
-  
-            
             if(tarx==-1 and tary==-1):
                 drive_msg.drive.steering_angle = 0.0
                 drive_msg.drive.speed = 0.0
@@ -220,76 +282,6 @@ class MPC:
                 drive_msg.drive.speed = float(u0[0])
             self.drive_publish.publish(drive_msg)
         
-    def find_safes(self, position_x, position_y, heading_angle):
-    
-
-        lidar_data = self.lidar
-
-        ranges = lidar_data.ranges[RIGHT_DIVERGENCE_INDEX:(LEFT_DIVERGENCE_INDEX+1)]
-
-        cartesian_points = self.lidar_to_cart(
-                ranges=ranges,
-                position_x=position_x,
-                position_y=position_y,
-                heading_angle=heading_angle,
-                starting_index=RIGHT_DIVERGENCE_INDEX
-            )
-
-            # Build a list of relevant Point instances
-        points = list()
-        for i in range(LEFT_DIVERGENCE_INDEX - RIGHT_DIVERGENCE_INDEX + 1):
-            cartesian_point = cartesian_points[i]
-            lidar_index = i + RIGHT_DIVERGENCE_INDEX
-            lidar_range = ranges[i]
-
-            if lidar_range <= SAFETY_RADIUS:
-                lidar_range = FTG_IGNORE_RANGE
-
-            points.append(LidarPoint(lidar_index, lidar_range, cartesian_point))
-
-        pts = self.find_sequence(points, FTG_IGNORE_RANGE)
-        
-    
-        minx, miny = pts[0].cartesian
-        maxx, maxy = pts[len(pts)-1].cartesian
-          
-
-        return min(minx, maxx), max(minx, maxx), min(miny, maxy), max(miny, maxy) # minimum x, maximum x, minimum y, maximum y
-
-
-    def odometry_update(self,data):
-        self.lidar = data
-
-    def pose_callback(self,pose_msg):
-
-        quaternion = np.array([pose_msg.pose.pose.orientation.x,
-                            pose_msg.pose.pose.orientation.y,
-                            pose_msg.pose.pose.orientation.z,
-                            pose_msg.pose.pose.orientation.w])
-
-        position = [pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, pose_msg.pose.pose.position.z]
-
-        #euler = tf.transformations.euler_from_quaternion(quaternion)
-
-        quaternion_z = pose_msg.pose.pose.orientation.z
-        quaternion_w = pose_msg.pose.pose.orientation.w
-
-        head_angle = math.atan2(2 * (quaternion_z * quaternion_w), 1 - 2 * (quaternion_z * quaternion_z))
-
-        tarx = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle)[0]
-        tary = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle)[1]
-    
-
-        self.mpc_drive(position[0], position[1], head_angle, tarx, tary)
-        
-    def reach_callback(self, msg):
-        if(msg.count>0):
-            reach_list = msg.obstacle_list
-            last_index = 0 #msg.count-1
-            last_rectangle = reach_list[last_index]
-            self.hypes = last_rectangle 
-            rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max))
-            
 
     def visualize_rectangles(self, x1, y1, x2, y2):
         markerArray = MarkerArray()

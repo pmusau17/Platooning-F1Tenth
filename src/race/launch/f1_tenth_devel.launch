@@ -77,8 +77,7 @@
       car_name
   -->
   <node pkg="race" name="keyboard_node_$(arg car_name1)" if="$(arg enable_keyboard)" type="keyboard_gen.py" output="screen" args="$(arg car_name1)"/>
-  <node pkg="race" name="lidar_to_cartesian" type="lidar_to_cartesian.py" args="racecar" output="screen"/>
-
+  
   <!-- Launch node that will publish collisions-->
 
   <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" if = "$(arg reset_on_crash)" type ="collision_tracker.py" args="$(arg car_name1) 1"/>
