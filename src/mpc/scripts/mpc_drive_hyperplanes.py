@@ -167,6 +167,9 @@ class MPC:
 
 
             rotated_angle = laser_beam_angle + heading_angle
+
+            # the 0.265 is the lidar's offset along the x-axis of the car
+            # it's in the xacro file
             x_coordinate = (lidar_range) * math.cos(rotated_angle) + position_x + 0.265*math.cos(heading_angle)
             y_coordinate = (lidar_range) * math.sin(rotated_angle) + position_y + 0.265*math.sin(heading_angle)
             points.append(CartesianPoint(x_coordinate, y_coordinate))
@@ -261,99 +264,122 @@ class MPC:
                 
             rectangle = self.hypes # Get hyper-rectangles of the opponent vehicle
                 
-            ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points  
-            # hw_l = np.zeros(shape=(len(ar_0),2))    
-            # for x in range(0, len(ar_0)): # build HW array here
-            #     hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
+            ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points
+
+            # testing visualize line
+            # pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
+            #self.visualize_lines(posx,posy,pos_1x,pos1_y)  
+            hw_l = np.zeros(shape=(len(ar_0),2))    
+            for x in range(0, len(ar_0)): # build HW array here
+                hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
             
-            # hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
-            # hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
+            hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
+            hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
             
-            # hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
+            hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
                 
             # print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
             # print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
             
-            # ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
-            # hw_r = np.zeros(shape=(len(ar_1),2))    
-            # for x in range(0, len(ar_1)): # build HW array here
-            #     hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]   
+            ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
+            hw_r = np.zeros(shape=(len(ar_1),2))    
+            for x in range(0, len(ar_1)): # build HW array here
+                hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]   
                         
-            # hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
-            # hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
-            # hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
+            hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
+            hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
+            hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
             
             # print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
             # print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
                 
-            # a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered ) # compute coupled-hyperplanes   
+            a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered ) # compute coupled-hyperplanes   
             # print(a0, b0, a1, b1)
             # print("EGO CAR TARGET POSITION", tarx, tary) 
             # print("EGO CAR POSITION", posx, posy)      
             
-            # if(tarx==-1 and tary==-1):
-            #     drive_msg.drive.steering_angle = 0.0
-            #     drive_msg.drive.speed = 0.0
-            # else:
-            #     model = template_model()
-            #     mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, 0, 0)
-            #     x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-            #     mpc.x0 = x0
-            #     mpc.set_initial_guess()
-                
-            #     u0 = mpc.make_step(x0)
 
-            #     drive_msg.drive.steering_angle = float(u0[1])
-            #     drive_msg.drive.speed = float(u0[0])
-            #     self.drive_publish.publish(drive_msg)
+            pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
+
+            x1 = posx * math.cos(head_angle) * -1.0
+            y1 = a0 * x1 + b0
+            
+            x2 = pos_1x
+            y2 = a0 * x2 + b0 
+
+            y3 = a0 * x1 + b0
+            y4 = a1 * x2 + b1 
+
+
             
 
-    def visualize_rectangles(self, x1, y1, x2, y2):
+            lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
+
+
+            
+            self.visualize_lines(lines)
+            if(tarx==-1 and tary==-1):
+                drive_msg.drive.steering_angle = 0.0
+                drive_msg.drive.speed = 0.0
+            else:
+                model = template_model()
+                mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, 0, 0)
+                x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+                mpc.x0 = x0
+                mpc.set_initial_guess()
+                
+                u0 = mpc.make_step(x0)
+
+                drive_msg.drive.steering_angle = float(u0[1])
+                drive_msg.drive.speed = float(u0[0])
+                self.drive_publish.publish(drive_msg)
+            
+
+    def visualize_lines(self, lines):
+        
+        
+        
         markerArray = MarkerArray()
-
-        #intervals = [mpc_inteval,lidar_interval]
-        marker = Marker()
-        marker.id = 0
-        marker.header.frame_id = "map"
-        marker.type = marker.LINE_STRIP
-        marker.action = marker.ADD
-        
-        marker.color.a = 1.0
-        marker.color.r = 1.0
-        marker.color.g = 0.7
-        marker.color.b = 0.8
-        
-        marker.scale.x = 0.05
-        marker.scale.y = 0.05
-        marker.scale.z = 0.05
-
-
-        marker.pose.orientation.x = 0.0
-        marker.pose.orientation.y = 0.0
-        marker.pose.orientation.z = 0.0
-        marker.pose.orientation.w = 1.0
+        for i in range(2):
+            line = lines[i]
+            x1,y1,x2,y2 = line
+            #intervals = [mpc_inteval,lidar_interval]
+            marker = Marker()
+            marker.id = 2000 + i
+            marker.header.frame_id = "map"
+            marker.type = marker.LINE_STRIP
+            marker.action = marker.ADD
+            
+            marker.color.a = 1.0
+            marker.color.r = 1.0
+            marker.color.g = 0.7
+            marker.color.b = 0.8
+            
+            marker.scale.x = 0.05
+            marker.scale.y = 0.05
+            marker.scale.z = 0.05
 
 
+            marker.pose.orientation.x = 0.0
+            marker.pose.orientation.y = 0.0
+            marker.pose.orientation.z = 0.0
+            marker.pose.orientation.w = 1.0
 
-        marker.pose.position.x = 0.0
-        marker.pose.position.y = 0.0
-        marker.pose.position.z = 0.0
+            marker.points = []
+            first_line_point = Point()
+            first_line_point.x = x1
+            first_line_point.y = y1
+            first_line_point.z = 0.0
+            marker.points.append(first_line_point)
 
-        marker.points = []
-        first_line_point = Point()
-        first_line_point.x = x1
-        first_line_point.y = y1
-        first_line_point.z = 0.0
-        marker.points.append(first_line_point)
-
-        # second point
-        second_line_point = Point()
-        second_line_point.x = 0.0
-        second_line_point.y = x2
-        second_line_point.z = y2
-        marker.points.append(second_line_point)
-        
-        markerArray.markers.append(marker)
+            # second point
+            second_line_point = Point()
+            second_line_point.x = x2
+            second_line_point.y = y2
+            second_line_point.z = 0.0
+            marker.points.append(second_line_point)
+            
+            markerArray.markers.append(marker)
 
         self.vis_pub.publish(markerArray)
         
