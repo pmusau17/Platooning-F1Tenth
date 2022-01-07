@@ -33,6 +33,8 @@ from point import LidarPoint, CartesianPoint
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from geometry_msgs.msg import Point
+#need to subscribe to the steering message and angle message
+from message_filters import ApproximateTimeSynchronizer, Subscriber
 import tf
 
 
@@ -49,33 +51,24 @@ class MPC:
         self.vis_pub = rospy.Publisher("sanity_pub", MarkerArray, queue_size=10)
 
         # instantiate the subscribers
-        rospy.Subscriber('racecar2/scan', LaserScan, self.lidar_scan_update, queue_size=1)
-        rospy.Subscriber('racecar2/odom', Odometry, self.pose_callback, queue_size=1)
-        rospy.Subscriber('racecar/reach_tube', reach_tube, self.reach_callback, queue_size=1)
+
+
+        
+        self.lidar_sub = Subscriber('racecar2/scan', LaserScan)
+        self.odom_sub  = Subscriber('racecar2/odom', Odometry)
+        self.reach_sub = Subscriber('racecar/reach_tube', reach_tube)
+
+        #create the time synchronizer
+        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub], queue_size = 20, slop = 0.019)
+        
+        #register the callback to the synchronizer
+        self.main_sub.registerCallback(self.main_callback)
 
     """
-    Callback Functions
+    Main Callback 
     """
-    # Lidar Callback 
-    def lidar_scan_update(self,data):
-        self.lidar = data
-
-
-    ### Reachset Callback 
-    def reach_callback(self, msg):
-        if(msg.count>0):
-            reach_list = msg.obstacle_list
-            last_index = 0 #msg.count-1
-            last_rectangle = reach_list[last_index]
-            self.hypes = last_rectangle 
-            if(self.log_hypers):
-                rospy.logwarn("x: [{},{}], y: [{},{}]".format(last_rectangle.x_min,
-                            last_rectangle.x_max,last_rectangle.y_min,last_rectangle.y_max)) 
-
-
-    # Odometry Callback 
-    # The main functions of mpc are called within this callback
-    def pose_callback(self,pose_msg):
+    # The main callback functions of mpc are called within this callback
+    def main_callback(self,lidar_data,pose_msg,hypes):
 
         quaternion = np.array([pose_msg.pose.pose.orientation.x,
                             pose_msg.pose.pose.orientation.y,
@@ -92,9 +85,9 @@ class MPC:
         #head_angle = math.atan2(2 * (quaternion_z * quaternion_w), 1 - 2 * (quaternion_z * quaternion_z))
         head_angle = euler[2]
 
-        tarx,tary,_,_,_,_ = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle)
+        tarx,tary,_,_,_,_ = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle,lidar_data)
         
-        self.mpc_drive(position[0], position[1], head_angle, tarx, tary)
+        self.mpc_drive(position[0], position[1], head_angle, tarx, tary,lidar_data,hypes)
 
 
     """
@@ -203,9 +196,9 @@ class MPC:
 
         return points
 
-    def adjust_target_position(self, position_x, position_y, heading_angle):
+    def adjust_target_position(self, position_x, position_y, heading_angle,lidar_data):
 
-        lidar_data = self.lidar
+        #lidar_data = self.lidar
 
         # RDI = 350
         # LDI = 730
@@ -244,103 +237,92 @@ class MPC:
         return tarx, tary, min(minx, maxx), max(minx, maxx), min(miny, maxy), max(miny, maxy)
         
     
-            
-    def overlap(self, mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectanglexm, rectanglexmx, rectangleym, rectangleymaxx):  # return true if they overalap
-    
-        if (mpc_x_min  >= rectanglexmx) or (rectanglexm >= mpc_x_max):
-            return False
-            
-        if (mpc_y_max <= rectangleym) or (rectangleymaxx <= mpc_y_min):
-            return False
-            
-        return True  
-            
-    def mpc_drive(self, posx, posy, head_angle, tarx, tary):
+    def mpc_drive(self, posx, posy, head_angle, tarx, tary,lidar_data,hypes):
 
-        # prevents nul message errors
-        if(self.hypes and self.lidar):
+        # # prevents nul message errors
+        # if(self.hypes and self.lidar):
 
-            drive_msg = AckermannDriveStamped()
-            drive_msg.header.stamp = rospy.Time.now()
+        drive_msg = AckermannDriveStamped()
+        drive_msg.header.stamp = rospy.Time.now()
                 
-            rectangle = self.hypes # Get hyper-rectangles of the opponent vehicle
+        rectangle = self.hypes # Get hyper-rectangles of the opponent vehicle
                 
-            #ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points
+        #ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points
 
-            ar_0 = self.lidar_to_cart(self.lidar.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
+        ar_0 = self.lidar_to_cart(self.lidar.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
 
-            # testing visualize line
-            # pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
-            #self.visualize_lines(posx,posy,pos_1x,pos1_y)  
-            # hw_l = np.zeros(shape=(len(ar_0),2))    
-            # for x in range(0, len(ar_0)): # build HW array here
-            #     hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
+        # testing visualize line
+        # pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
+        #self.visualize_lines(posx,posy,pos_1x,pos1_y)  
+        # hw_l = np.zeros(shape=(len(ar_0),2))    
+        # for x in range(0, len(ar_0)): # build HW array here
+        #     hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
 
 
-            hw_l = np.asarray(ar_0[680-240:840-240])
+        hw_l = np.asarray(ar_0[680-240:840-240])
             
-            # hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
-            # hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
+        # hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
+        # hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
             
-            hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
+        hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
                 
-            # print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
-            # print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
+        # print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
+        # print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
             
-            #ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
-            # hw_r = np.zeros(shape=(len(ar_1),2))    
-            # for x in range(0, len(ar_1)): # build HW array here
-            #     hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]  
+        #ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
+        # hw_r = np.zeros(shape=(len(ar_1),2))    
+        # for x in range(0, len(ar_1)): # build HW array here
+        #     hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]  
 
-            hw_r =  np.asarray(ar_0[240-240:480-240])
+        hw_r =  np.asarray(ar_0[240-240:480-240])
                         
-            hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
-            hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
-            hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
+        hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
+        hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
+        hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
             
-            # print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
-            # print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
+        # print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
+        # print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
                 
-            a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered,tarx,tary) # compute coupled-hyperplanes   
-            # print(a0, b0, a1, b1)
-            # print("EGO CAR TARGET POSITION", tarx, tary) 
-            # print("EGO CAR POSITION", posx, posy)      
+        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered,tarx,tary) # compute coupled-hyperplanes   
+        # print(a0, b0, a1, b1)
+        # print("EGO CAR TARGET POSITION", tarx, tary) 
+        # print("EGO CAR POSITION", posx, posy)      
             
 
-            pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
+        pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
 
-            x1 = posx * math.cos(head_angle) * -1.0
-            y1 = a0 * x1 + b0
+        x1 = posx * math.cos(head_angle) * -1.0
+        y1 = a0 * x1 + b0
             
-            x2 = pos_1x
-            y2 = a0 * x2 + b0 
+        x2 = pos_1x
+        y2 = a0 * x2 + b0 
 
-            y3 = a0 * x1 + b0
-            y4 = a1 * x2 + b1 
-
-
-            
-
-            lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
+        y3 = a0 * x1 + b0
+        y4 = a1 * x2 + b1 
 
 
             
-            self.visualize_lines(lines)
-            if(tarx==-1 and tary==-1):
-                drive_msg.drive.steering_angle = 0.0
-                drive_msg.drive.speed = 0.0
-            else:
-                model = template_model()
-                mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, 0, 0)
-                x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-                mpc.x0 = x0
-                mpc.set_initial_guess()
+
+        lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
+
+
+            
+        self.visualize_lines(lines)
+        if(tarx==-1 and tary==-1):
+            drive_msg.drive.steering_angle = 0.0
+            drive_msg.drive.speed = 0.0
+        else:
+            model = template_model()
+            mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, 0, 0)
+            x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+            mpc.x0 = x0
+            mpc.set_initial_guess()
                 
-                u0 = mpc.make_step(x0)
+            u0 = mpc.make_step(x0)
 
-                drive_msg.drive.steering_angle = float(u0[1])
-                drive_msg.drive.speed = float(u0[0])
-                self.drive_publish.publish(drive_msg)
+            drive_msg.drive.steering_angle = float(u0[1])
+            drive_msg.drive.speed = float(u0[0])
+            self.drive_publish.publish(drive_msg)
             
 
     def visualize_lines(self, lines):
