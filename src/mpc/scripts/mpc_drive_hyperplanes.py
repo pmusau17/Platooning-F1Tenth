@@ -8,6 +8,8 @@ from race.msg import reach_tube
 import sys
 import os
 
+import time
+
 
 import math
 import numpy as np
@@ -239,14 +241,9 @@ class MPC:
         drive_msg.header.stamp = rospy.Time.now()
                 
         rectangle = hypes # Get hyper-rectangles of the opponent vehicle
-                
-        #ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points
-
+                 
         ar_0 = self.lidar_to_cart(lidar_data.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
-
-        # testing visualize line
-        # pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
-        #self.visualize_lines(posx,posy,pos_1x,pos1_y)  
+        
         # hw_l = np.zeros(shape=(len(ar_0),2))    
         # for x in range(0, len(ar_0)): # build HW array here
         #     hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
@@ -275,13 +272,12 @@ class MPC:
             
         # print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
         # print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
-                
-        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered,tarx,tary) # compute coupled-hyperplanes   
-        # print(a0, b0, a1, b1)
-        # print("EGO CAR TARGET POSITION", tarx, tary) 
-        # print("EGO CAR POSITION", posx, posy)      
-            
-
+        
+        t_start = time.time()
+        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered,tarx,tary) # compute coupled-hyperplanes  
+        t_end = time.time()
+        print(t_end-t_start)  
+        
         pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
 
         x1 = posx * math.cos(head_angle) * -1.0
@@ -324,7 +320,7 @@ class MPC:
         for i in range(2):
             line = lines[i]
             x1,y1,x2,y2 = line
-            #intervals = [mpc_inteval,lidar_interval]
+
             marker = Marker()
             marker.id = 2000 + i
             marker.header.frame_id = "map"
