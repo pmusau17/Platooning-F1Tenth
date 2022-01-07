@@ -42,8 +42,6 @@ class MPC:
 
     # Constructor
     def __init__(self):
-        self.lidar = None
-        self.hypes = None
         self.log_hypers = False
 
         self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=100)
@@ -52,8 +50,6 @@ class MPC:
 
         # instantiate the subscribers
 
-
-        
         self.lidar_sub = Subscriber('racecar2/scan', LaserScan)
         self.odom_sub  = Subscriber('racecar2/odom', Odometry)
         self.reach_sub = Subscriber('racecar/reach_tube', reach_tube)
@@ -239,17 +235,14 @@ class MPC:
     
     def mpc_drive(self, posx, posy, head_angle, tarx, tary,lidar_data,hypes):
 
-        # # prevents nul message errors
-        # if(self.hypes and self.lidar):
-
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = rospy.Time.now()
                 
-        rectangle = self.hypes # Get hyper-rectangles of the opponent vehicle
+        rectangle = hypes # Get hyper-rectangles of the opponent vehicle
                 
         #ar_0 = self.lidar_to_cart(self.lidar.ranges[680:840], posx, posy, head_angle, 680)   # Convert LiDaR points to Cartesian Points
 
-        ar_0 = self.lidar_to_cart(self.lidar.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
+        ar_0 = self.lidar_to_cart(lidar_data.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
 
         # testing visualize line
         # pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
@@ -326,8 +319,6 @@ class MPC:
             
 
     def visualize_lines(self, lines):
-        
-        
         
         markerArray = MarkerArray()
         for i in range(2):
