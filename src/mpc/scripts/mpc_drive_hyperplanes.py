@@ -256,8 +256,8 @@ class MPC:
             
         hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
                 
-        # print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
-        # print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
+        print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
+        print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
             
         #ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
         # hw_r = np.zeros(shape=(len(ar_1),2))    
@@ -270,13 +270,16 @@ class MPC:
         hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
         hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
             
-        # print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
-        # print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
+        print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
+        print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
         
-        t_start = time.time()
+        #t_start = time.time()
         a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered,tarx,tary) # compute coupled-hyperplanes  
-        t_end = time.time()
-        print(t_end-t_start)  
+        print(a0, b0, a1, b1)
+        print(posx, posy)
+        print(tarx, tary)
+        #t_end = time.time()
+        #print(t_end-t_start)  
         
         pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
 
@@ -295,6 +298,17 @@ class MPC:
         lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
 
 
+
+        if (a0 * posx + b0 - posy > 0): # flag0, flag1 are values passed to template mpc to determine sign of mpc.set_nl_cons functions 
+            flag0 = 1
+        else: 
+            flag0 = -1
+                
+        if (a1 * posx + b1 - posy > 0):
+            flag1 = 1
+        else: 
+            flag1 = -1    
+
             
         self.visualize_lines(lines)
         if(tarx==-1 and tary==-1):
@@ -302,7 +316,7 @@ class MPC:
             drive_msg.drive.speed = 0.0
         else:
             model = template_model()
-            mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, 0, 0)
+            mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, flag0, flag1)  
             x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
             mpc.x0 = x0
             mpc.set_initial_guess()
