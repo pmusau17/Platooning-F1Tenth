@@ -144,7 +144,7 @@ class MPC:
         marker = Marker()
         marker.header.frame_id = "map"
         marker.header.stamp = rospy.Time.now() 
-        marker.id = 9999 # ju
+        marker.id = 9999 
         marker.type = marker.SPHERE
         marker.action = marker.ADD
         marker.scale.x = 0.3
@@ -291,7 +291,7 @@ class MPC:
         x2 = pos_1x
         y2 = a0 * x2 + b0 
 
-        y3 = a0 * x1 + b0
+        y3 = a1 * x1 + b1
         y4 = a1 * x2 + b1 
    
 
