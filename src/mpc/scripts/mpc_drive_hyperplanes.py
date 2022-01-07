@@ -140,6 +140,32 @@ class MPC:
         if not points:
             return -1,-1
 
+        markerArray = MarkerArray()
+        marker = Marker()
+        marker.header.frame_id = "map"
+        marker.header.stamp = rospy.Time.now() 
+        marker.id = 9999 # ju
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale.x = 0.3
+        marker.scale.y = 0.3
+        marker.scale.z = 0.3
+        
+        marker.color.a = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        
+        marker.pose.orientation.w = 1.0
+        marker.lifetime = rospy.Duration(0.0)
+          
+        marker.pose.position.x = points[len(points)//2].cartesian[0]
+        marker.pose.position.y = points[len(points)//2].cartesian[1]
+        marker.pose.position.z = -0.075
+        markerArray.markers.append(marker)
+        
+        self.vis_pub.publish(markerArray)
+        
         return points[len(points)//2].cartesian
 
 
@@ -244,42 +270,18 @@ class MPC:
                  
         ar_0 = self.lidar_to_cart(lidar_data.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
         
-        # hw_l = np.zeros(shape=(len(ar_0),2))    
-        # for x in range(0, len(ar_0)): # build HW array here
-        #     hw_l[x] = [ar_0[x].position_x, ar_0[x].position_y]
+        hw_l = np.asarray(ar_0[680-240:840-240])           
+        hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T   
 
-
-        hw_l = np.asarray(ar_0[680-240:840-240])
-            
-        # hw_l_filtered_size = len(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())     # 
-        # hw_l_filtered = np.zeros(shape=(hw_l_filtered_size, 2))  
-            
-        hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T     
-                
-        print(hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))].tolist())
-        print(hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))].tolist()) 
-            
-        #ar_1 = self.lidar_to_cart(self.lidar.ranges[240:480], posx, posy, head_angle, 240)     
-        # hw_r = np.zeros(shape=(len(ar_1),2))    
-        # for x in range(0, len(ar_1)): # build HW array here
-        #     hw_r[x] = [ar_1[x].position_x, ar_1[x].position_y]  
-
-        hw_r =  np.asarray(ar_0[240-240:480-240])
-                        
-        hw_r_filtered_size = len(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())     # 
-        hw_r_filtered = np.zeros(shape=(hw_r_filtered_size, 2))         
+        hw_r =  np.asarray(ar_0[240-240:480-240])               
         hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
             
-        print(hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))].tolist())
-        print(hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))].tolist()) 
+
         
-        #t_start = time.time()
-        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered,tarx,tary) # compute coupled-hyperplanes  
-        print(a0, b0, a1, b1)
-        print(posx, posy)
-        print(tarx, tary)
-        #t_end = time.time()
-        #print(t_end-t_start)  
+        t_start = time.time()
+        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
+        t_end = time.time()
+        print(t_end-t_start)  
         
         pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
 
@@ -291,15 +293,13 @@ class MPC:
 
         y3 = a0 * x1 + b0
         y4 = a1 * x2 + b1 
-
-
-            
+   
 
         lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
 
 
 
-        if (a0 * posx + b0 - posy > 0): # flag0, flag1 are values passed to template mpc to determine sign of mpc.set_nl_cons functions 
+        if (a0 * posx + b0 - posy > 0): # New Lines -- 
             flag0 = 1
         else: 
             flag0 = -1
