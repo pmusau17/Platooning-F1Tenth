@@ -11,7 +11,7 @@ from scipy.optimize import minimize
 
 def objective(x): # Objective function tries to simply minimize constants a,b,c in ax+by+c >= 0
 
-    return -x[1] - x[3]
+    return 1
 
 
 def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
@@ -286,8 +286,7 @@ def find_constraints(ego_x, ego_y, array_left, array_right, tarx, tary):
     for d in range(len(ar_b)): # create static obstacles constraints - obstacles from the left
        arguments2 = (ar_b[d][0], ar_b[d][1])
        cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_opp_car_hyperplane_1(d)})     
-    
-   
+     
     cons.append({'type': 'ineq', 'args': (tarx, tary), 'fun': constraint_target_hyperplane_0})  
     
     cons.append({'type': 'ineq', 'args': (tarx, tary), 'fun': constraint_target_hyperplane_1})   
@@ -301,7 +300,7 @@ def find_constraints(ego_x, ego_y, array_left, array_right, tarx, tary):
       #cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_dynamic_obstacles_hyperplane_1(f)})                  
         
     
-    solution = minimize(objective, x0, method='SLSQP', bounds=bnds, constraints=cons)
+    solution = minimize(objective, x0, method='SLSQP', bounds=None, constraints=cons)
     x = solution.x
 
     return x 
