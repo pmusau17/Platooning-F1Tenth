@@ -260,6 +260,15 @@ class MPC:
     
         return tarx, tary, min(minx, maxx), max(minx, maxx), min(miny, maxy), max(miny, maxy)
         
+    def overlap(self, mpc_x_min, mpc_x_max, mpc_y_min, mpc_y_max, rectanglexm, rectanglexmx, rectangleym, rectangleymaxx):  # return true if they overalap
+    
+        if (mpc_x_min  >= rectanglexmx) or (rectanglexm >= mpc_x_max):
+            return False
+            
+        if (mpc_y_max <= rectangleym) or (rectangleymaxx <= mpc_y_min):
+            return False
+            
+        return True 
     
     def mpc_drive(self, posx, posy, head_angle, tarx, tary,lidar_data,hypes):
 
@@ -276,18 +285,36 @@ class MPC:
         hw_r =  np.asarray(ar_0[240-240:480-240])               
         hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
             
+        x_min = min(hw_l_filtered[0][0], hw_l_filtered[len(hw_l_filtered)-1][0], hw_r_filtered[0][0], hw_r_filtered[len(hw_r_filtered)-1][0], posx)
+        x_max = max(hw_l_filtered[0][0], hw_l_filtered[len(hw_l_filtered)-1][0], hw_r_filtered[0][0], hw_r_filtered[len(hw_r_filtered)-1][0], posx)
+        y_min = min(hw_l_filtered[0][1], hw_l_filtered[len(hw_l_filtered)-1][1], hw_r_filtered[0][1], hw_r_filtered[len(hw_r_filtered)-1][1], posy)
+        y_max = max(hw_l_filtered[0][1], hw_l_filtered[len(hw_l_filtered)-1][1], hw_r_filtered[0][1], hw_r_filtered[len(hw_r_filtered)-1][1], posy)
+        
+        #mpc_interval = [[x_min, x_max],[y_min, y_max]]     
+        #self.visualize_rectangles(mpc_interval)
+        
+  #      if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[0].x_min, rectangle.obstacle_list[0].x_max, rectangle.obstacle_list[0].y_min, rectangle.obstacle_list[0].y_max)):
+            # update hw_r_filtered or hw_l_filtered
+         #   rectangle_to_array = np.asarray([[rectangle.obstacle_list[0].x_min, rectangle.obstacle_list[0].y_min], [rectangle.obstacle_list[0].x_min, rectangle.obstacle_list[0].y_max], [rectangle.obstacle_list[0].x_max, rectangle.obstacle_list[0].y_min], [rectangle.obstacle_list[0].x_max, rectangle.obstacle_list[0].y_max]])
+            
+        #    hw_r_filtered_updated = np.vstack((rectangle_to_array, hw_r_filtered)) # create a new array with reachset included
+       #     t_start = time.time()
+      #      a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes  
+     #       t_end = time.time()           
+            
+    #    else: 
+   #         t_start = time.time()
+  #          a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
+ #           t_end = time.time()
+        
 
         
-        t_start = time.time()
-        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
-        t_end = time.time()
-        print(t_end-t_start)  
-        
+        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary)
         pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
 
         x1 = posx * math.cos(head_angle) * -1.0
         y1 = a0 * x1 + b0
-            
+           
         x2 = pos_1x
         y2 = a0 * x2 + b0 
 
@@ -296,7 +323,6 @@ class MPC:
    
 
         lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
-
 
 
         if (a0 * posx + b0 - posy > 0): # New Lines -- 
@@ -309,7 +335,7 @@ class MPC:
         else: 
             flag1 = -1    
 
-            
+        print(flag0, flag1)  
         self.visualize_lines(lines)
         if(tarx==-1 and tary==-1):
             drive_msg.drive.steering_angle = 0.0
@@ -374,6 +400,46 @@ class MPC:
 
         self.vis_pub.publish(markerArray)
         
+    def visualize_rectangles(self,mpc_inteval):
+        markerArray = MarkerArray()
+
+        intervals = [mpc_inteval]
+
+        for i in range(1):
+            hull = intervals[i]
+            print(hull)
+
+            marker = Marker()
+            marker.id = i
+            marker.header.frame_id = "map"
+            marker.type = marker.CUBE
+            marker.action = marker.ADD
+            
+            marker.pose.position.x = (hull[0][1]+hull[0][0])/2.0
+            marker.pose.position.y = (hull[1][0]+hull[1][1])/2.0
+            marker.pose.position.z = 0.0
+
+
+            marker.pose.orientation.x = 0.0
+            marker.pose.orientation.y = 0.0
+            marker.pose.orientation.z = 0.0
+            marker.pose.orientation.w = 1.0
+            marker.scale.x = (hull[0][1]-hull[0][0])
+            marker.scale.y = (hull[1][1]-hull[1][0])
+            marker.scale.z = 0.05
+            marker.color.a = 1.0
+            if(i==0):
+                marker.color.r = 0.0
+                marker.color.g = 239.0/255.0
+                marker.color.b = 0.0
+            else:
+                marker.color.r = 1.0
+                marker.color.g = 1.0
+                marker.color.b = 0.0
+
+            markerArray.markers.append(marker)
+
+        self.vis_pub.publish(markerArray)        
 
 if __name__ == '__main__':
     rospy.init_node('mpc_node')

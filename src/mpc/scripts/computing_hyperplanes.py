@@ -7,13 +7,11 @@ from scipy.optimize import minimize
 
 
 ar_b = np.array([[2, 2], [3, 2], [2.2, 2.5], [3.2, 2.5], [2.4, 3], [3.4, 3]])
-
-
 ar_u = np.array([[-1, 2], [-0.9, 2], [-.8, 2.5], [-.7, 2.5], [-.6, 3], [-.5, 3], [-.4, 3], [-.3, 3], [-.2, 3], [-.1, 3]])
 
 def objective(x, xp): # Objective function tries to simply minimize constants a,b,c in ax+by+c >= 0
 
-    return  abs(x[0] + x[1] + x[2] + x[3])
+    return  1 - (max(abs(x[0] * 2 + x[1]), abs(x[2] * 2 + x[3])) - min(abs(x[0] * 2 + x[1]), abs(x[2] * 2 + x[3])))
 
 
 def constraint_ego_car_bottom(x, a, b): #constraint that car coordinates (x_c, y_c) >= ax + by +c >= 0
@@ -56,6 +54,9 @@ def constraint_opp_car_upper(x):
     return upper_value
 
 def find_constraints(ego_x, ego_y):
+
+    
+    
     x_car = ego_x
     y_car = ego_y
 
@@ -95,33 +96,32 @@ def find_constraints(ego_x, ego_y):
     
 if __name__ == "__main__":
 
-    # This is the starting x, and y position of the ego vehicle 
     ex = 0
     ey = 1
    
       
 
-    # a_b, b_b, a_u, b_u = find_constraints(ex, ey)
-    # check = abs(1 - abs(a_b * 2 + b_b + a_u * 2 + b_u))
-    # print(a_b, b_b, a_u, b_u, check)
+    a_b, b_b, a_u, b_u = find_constraints(ex, ey)
+    check = abs(1 - abs(a_b * 2 + b_b + a_u * 2 + b_u))
+    print(a_b, b_b, a_u, b_u, check)
   
-    # x = np.linspace(-3, 3)
-    # y_b = a_b * x + b_b
-    # y_u =  a_u * x + b_u
+    x = np.linspace(-3, 3)
+    y_b = a_b * x + b_b
+    y_u =  a_u * x + b_u
     
-    # plot the points characterizing the points in this example, these are stored in ar_u
     x1 = ar_u[:,0] # scatter plot
     y2 = ar_u[:,1] # scatter plot
     plt.scatter(x1, y2) # scatter plot
     
   
-    # plt.plot(x, y_b)
-    # plt.plot(x, y_u)
+    plt.plot(x, y_b)
+    plt.plot(x, y_u)
 
     plt.plot(ex, ey, 'ro') 
-    # plt.plot([2, 3], [2, 2])
-    # plt.plot([2.2, 3.2], [2.5, 2.5])
-    # plt.plot([2.4, 3.4,], [3, 3])
+    plt.plot([2, 3], [2, 2])
+    plt.plot([2.2, 3.2], [2.5, 2.5])
+    plt.plot([2.4, 3.4,], [3, 3])
     plt.show()
   
+
 

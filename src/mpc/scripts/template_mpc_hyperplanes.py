@@ -7,16 +7,16 @@ sys.path.append('../../')
 import do_mpc
 
 
-def template_mpc(model, tarx, tary, a_b, b_b, a_u, b_u, flag_b, flag_u):
+def template_mpc(model, tarx, tary, a0, b0, a1, b1, flag0, flag1): 
 
     mpc = do_mpc.controller.MPC(model)
 
     setup_mpc = {
         'n_horizon': 5,
         'n_robust': 0,
-        't_step': 0.1,
-        'state_discretization': 'collocation',
-        'store_full_solution': False,
+        't_step': 0.1
+#        'state_discretization': 'collocation',
+ #       'store_full_solution': False,
     }
 
     mpc.set_param(**setup_mpc)
@@ -50,8 +50,8 @@ def template_mpc(model, tarx, tary, a_b, b_b, a_u, b_u, flag_b, flag_u):
     #mpc.scaling['_u', 'car_v'] = 2
     #mpc.scaling['_u', 'car_delta'] = 1
     
-    mpc.set_nl_cons('constraint_bottom',  -(a_b * _x['car_x'] + b_b - _x['car_y']), 0, penalty_term_cons=1000)
-    mpc.set_nl_cons('constraint_upper',   (a_u * _x['car_x'] + b_u - _x['car_y']) , 0, penalty_term_cons=1000)
+    mpc.set_nl_cons('constraint_bottom',  1 * (a0 * _x['car_x'] + b0 - _x['car_y']), 0, penalty_term_cons=1000)
+    mpc.set_nl_cons('constraint_upper',   -1 * (a1 * _x['car_x'] + b1 - _x['car_y']) , 0, penalty_term_cons=1000)
 
     mpc.setup()
 
