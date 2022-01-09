@@ -46,6 +46,9 @@ class MPC:
     def __init__(self):
         self.log_hypers = False
 
+        self.display_in_rviz = False
+        self.increment = 40
+
         self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=100)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
         self.vis_pub = rospy.Publisher("sanity_pub", MarkerArray, queue_size=10)
@@ -140,31 +143,32 @@ class MPC:
         if not points:
             return -1,-1
 
-        markerArray = MarkerArray()
-        marker = Marker()
-        marker.header.frame_id = "map"
-        marker.header.stamp = rospy.Time.now() 
-        marker.id = 9999 
-        marker.type = marker.SPHERE
-        marker.action = marker.ADD
-        marker.scale.x = 0.3
-        marker.scale.y = 0.3
-        marker.scale.z = 0.3
-        
-        marker.color.a = 1.0
-        marker.color.r = 1.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
-        
-        marker.pose.orientation.w = 1.0
-        marker.lifetime = rospy.Duration(0.0)
-          
-        marker.pose.position.x = points[len(points)//2].cartesian[0]
-        marker.pose.position.y = points[len(points)//2].cartesian[1]
-        marker.pose.position.z = -0.075
-        markerArray.markers.append(marker)
-        
-        self.vis_pub.publish(markerArray)
+        if(self.display_in_rviz):
+            markerArray = MarkerArray()
+            marker = Marker()
+            marker.header.frame_id = "map"
+            marker.header.stamp = rospy.Time.now() 
+            marker.id = 9999 
+            marker.type = marker.SPHERE
+            marker.action = marker.ADD
+            marker.scale.x = 0.3
+            marker.scale.y = 0.3
+            marker.scale.z = 0.3
+            
+            marker.color.a = 1.0
+            marker.color.r = 1.0
+            marker.color.g = 0.0
+            marker.color.b = 0.0
+            
+            marker.pose.orientation.w = 1.0
+            marker.lifetime = rospy.Duration(0.0)
+            
+            marker.pose.position.x = points[len(points)//2].cartesian[0]
+            marker.pose.position.y = points[len(points)//2].cartesian[1]
+            marker.pose.position.z = -0.075
+            markerArray.markers.append(marker)
+            
+            self.vis_pub.publish(markerArray)
         
         return points[len(points)//2].cartesian
 
@@ -192,30 +196,33 @@ class MPC:
             #points.append(CartesianPoint(x_coordinate, y_coordinate))
             points.append([x_coordinate,y_coordinate])
 
-            marker = Marker()
-            marker.header.frame_id = "map"
-            marker.header.stamp = rospy.Time.now() 
-            marker.id = index
-            marker.type = marker.SPHERE
-            marker.action = marker.ADD
-            marker.scale.x = 0.1
-            marker.scale.y = 0.1
-            marker.scale.z = 0.1
+            if(self.display_in_rviz):
+                marker = Marker()
+                marker.header.frame_id = "map"
+                marker.header.stamp = rospy.Time.now() 
+                marker.id = index
+                marker.type = marker.SPHERE
+                marker.action = marker.ADD
+                marker.scale.x = 0.1
+                marker.scale.y = 0.1
+                marker.scale.z = 0.1
 
-            marker.color.a = 1.0
-            marker.color.r = 1.0
-            marker.color.g = 1.0
-            marker.color.b = 0.0
+                marker.color.a = 1.0
+                marker.color.r = 1.0
+                marker.color.g = 1.0
+                marker.color.b = 0.0
+                
+                        
+                marker.pose.orientation.w = 1.0
+                marker.lifetime = rospy.Duration(0.0)
             
-                    
-            marker.pose.orientation.w = 1.0
-            marker.lifetime = rospy.Duration(0.0)
-          
-            marker.pose.position.x = x_coordinate
-            marker.pose.position.y = y_coordinate
-            marker.pose.position.z = -0.075
-            markerArray.markers.append(marker)
-        self.vis_pub.publish(markerArray)
+                marker.pose.position.x = x_coordinate
+                marker.pose.position.y = y_coordinate
+                marker.pose.position.z = -0.075
+                markerArray.markers.append(marker)
+
+        if(self.display_in_rviz):
+            self.vis_pub.publish(markerArray)
 
 
         return points
@@ -270,18 +277,18 @@ class MPC:
                  
         ar_0 = self.lidar_to_cart(lidar_data.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
         
-        hw_l = np.asarray(ar_0[680-240:840-240])           
+        hw_l = np.asarray(ar_0[680-240:840-240:self.increment])           
         hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T   
 
-        hw_r =  np.asarray(ar_0[240-240:480-240])               
+        hw_r =  np.asarray(ar_0[240-240:480-240:self.increment])               
         hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
             
 
         
-        t_start = time.time()
+        #t_start = time.time()
         a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
-        t_end = time.time()
-        print(t_end-t_start)  
+        #t_end = time.time()
+        #print(t_end-t_start)  
         
         pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
 
@@ -310,7 +317,7 @@ class MPC:
             flag1 = -1    
 
             
-        self.visualize_lines(lines)
+        
         if(tarx==-1 and tary==-1):
             drive_msg.drive.steering_angle = 0.0
             drive_msg.drive.speed = 0.0
@@ -326,6 +333,9 @@ class MPC:
             drive_msg.drive.steering_angle = float(u0[1])
             drive_msg.drive.speed = float(u0[0])
             self.drive_publish.publish(drive_msg)
+
+        if(self.display_in_rviz):
+            self.visualize_lines(lines)
             
 
     def visualize_lines(self, lines):
@@ -379,9 +389,3 @@ if __name__ == '__main__':
     rospy.init_node('mpc_node')
     mpc = MPC()
     rospy.spin()
-    
-    
-    
-    
-    
-    
