@@ -32,6 +32,7 @@ install(PROGRAMS
 scripts/constants.py
 scripts/mpc_drive.py
 scripts/mpc_drive_hyperplanes.py
+scripts/mpcc_hyperplanes.py
 scripts/mpc_gen.py
 scripts/point.py
 scripts/solving_bottom.py
