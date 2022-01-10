@@ -48,7 +48,7 @@ class MPC:
 
         self.display_in_rviz = False
         self.use_pure_pursuit = True
-        self.increment = 4
+        self.increment = 1
 
         self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=100)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
