@@ -305,32 +305,34 @@ class MPC:
         #mpc_interval = [[x_min, x_max],[y_min, y_max]]     
         #self.visualize_rectangles(mpc_interval)
         
-  #      if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[0].x_min, rectangle.obstacle_list[0].x_max, rectangle.obstacle_list[0].y_min, rectangle.obstacle_list[0].y_max)):
+        if(rectangle.count > 0):
+            if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min, rectangle.obstacle_list[rectangle.count-1].y_max)):
             # update hw_r_filtered or hw_l_filtered
-         #   rectangle_to_array = np.asarray([[rectangle.obstacle_list[0].x_min, rectangle.obstacle_list[0].y_min], [rectangle.obstacle_list[0].x_min, rectangle.obstacle_list[0].y_max], [rectangle.obstacle_list[0].x_max, rectangle.obstacle_list[0].y_min], [rectangle.obstacle_list[0].x_max, rectangle.obstacle_list[0].y_max]])
+                rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
             
-        #    hw_r_filtered_updated = np.vstack((rectangle_to_array, hw_r_filtered)) # create a new array with reachset included
-       #     t_start = time.time()
-      #      a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes  
-     #       t_end = time.time()           
+                hw_l_filtered_updated = np.vstack((rectangle_to_array, hw_l_filtered)) # create a new array with reachset included
+                a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
+    
+                #print(hw_r_filtered_updated[:,0].tolist())   
+                #print(hw_r_filtered_updated[:,1].tolist())  
+                #print(posx, posy, tarx, tary, a1, b1)
+            else:             
+                a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
+  
+        else:
+            a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary)
             
-    #    else: 
-   #         t_start = time.time()
-  #          a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
- #           t_end = time.time()
         
-        
-        a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary)
         pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
-
-        x1 = posx * math.cos(head_angle) * -1.0
+        x1 = posx * math.cos(head_angle) * -1.0 + 5
         y1 = a0 * x1 + b0
            
-        x2 = pos_1x
+        x2 = pos_1x - 5
         y2 = a0 * x2 + b0 
 
         y3 = a1 * x1 + b1
         y4 = a1 * x2 + b1 
+                      
    
 
         lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
