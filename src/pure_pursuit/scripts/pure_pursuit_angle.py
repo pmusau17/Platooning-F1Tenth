@@ -73,7 +73,7 @@ class pure_pursuit:
         marker = Marker()
         marker.header.frame_id = frame
         marker.header.stamp = rospy.Time.now()
-        marker.id = 0
+        marker.id = 15000
         marker.type = marker.SPHERE
         marker.action = marker.ADD
         marker.scale.x = 0.2

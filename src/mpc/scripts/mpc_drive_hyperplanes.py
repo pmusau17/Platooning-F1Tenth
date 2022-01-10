@@ -46,7 +46,8 @@ class MPC:
     def __init__(self):
         self.log_hypers = False
 
-        self.display_in_rviz = True
+        self.display_in_rviz = False
+        self.use_pure_pursuit = True
         self.increment = 1
 
         self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=100)
@@ -58,9 +59,10 @@ class MPC:
         self.lidar_sub = Subscriber('racecar2/scan', LaserScan)
         self.odom_sub  = Subscriber('racecar2/odom', Odometry)
         self.reach_sub = Subscriber('racecar/reach_tube', reach_tube)
+        self.pp_sub = Subscriber('racecar2/goal_point', MarkerArray)
 
         #create the time synchronizer
-        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub], queue_size = 20, slop = 0.019)
+        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 20, slop = 0.019,allow_headerless=True)
         
         #register the callback to the synchronizer
         self.main_sub.registerCallback(self.main_callback)
@@ -69,7 +71,7 @@ class MPC:
     Main Callback 
     """
     # The main callback functions of mpc are called within this callback
-    def main_callback(self,lidar_data,pose_msg,hypes):
+    def main_callback(self,lidar_data,pose_msg,hypes,pp_point):
 
         quaternion = np.array([pose_msg.pose.pose.orientation.x,
                             pose_msg.pose.pose.orientation.y,
@@ -85,8 +87,11 @@ class MPC:
 
         #head_angle = math.atan2(2 * (quaternion_z * quaternion_w), 1 - 2 * (quaternion_z * quaternion_z))
         head_angle = euler[2]
-
-        tarx,tary,_,_,_,_ = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle,lidar_data)
+        if(self.use_pure_pursuit):
+            point = pp_point.markers[0]
+            tarx,tary = point.pose.position.x,point.pose.position.y
+        else:
+            tarx,tary,_,_,_,_ = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle,lidar_data)
         
         self.mpc_drive(position[0], position[1], head_angle, tarx, tary,lidar_data,hypes)
 
