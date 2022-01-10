@@ -30,6 +30,7 @@ class pure_pursuit:
 
         self.VELOCITY = 3.2 # m/s
         self.read_waypoints()
+        self.prev_point = None
        
         # Publisher for 'drive_parameters' (speed and steering angle)
         #self.pub = rospy.Publisher(racecar_name+'/drive_parameters', drive_param, queue_size=1)
@@ -128,34 +129,43 @@ class pure_pursuit:
             if angle < np.pi/2:
                 pts_infrontofcar.append(pts[idx])
 
-        pts_infrontofcar =np.asarray(pts_infrontofcar)
-        # compute new distances
-        dist_arr = np.linalg.norm(pts_infrontofcar-curr_pos,axis=-1)- self.LOOKAHEAD_DISTANCE
+        try:
+            pts_infrontofcar =np.asarray(pts_infrontofcar)
+            # compute new distances
+            dist_arr = np.linalg.norm(pts_infrontofcar-curr_pos,axis=-1)- self.LOOKAHEAD_DISTANCE
         
-        # get the point closest to the lookahead distance
-        idx = np.argmin(dist_arr)
+            # get the point closest to the lookahead distance
+            idx = np.argmin(dist_arr)
 
-        # goal point 
-        goal_point = pts_infrontofcar[idx]
+            # goal point 
+            goal_point = pts_infrontofcar[idx]
 
-        #rospy.logwarn("goal point: ({},{})".format(goal_point[0],goal_point[1]))
-        self.visualize_point([goal_point],self.goal_pub)
+            #rospy.logwarn("goal point: ({},{})".format(goal_point[0],goal_point[1]))
+            self.visualize_point([goal_point],self.goal_pub)
 
+            self.prev_point = goal_point
+
+            
         
-      
-        # transform it into the vehicle coordinates
-        v1 = (goal_point - curr_pos)[0].astype('double')
-        xgv = (v1[0] * np.cos(yaw)) + (v1[1] * np.sin(yaw))
-        ygv = (-v1[0] * np.sin(yaw)) + (v1[1] * np.cos(yaw))
+            # transform it into the vehicle coordinates
+            v1 = (goal_point - curr_pos)[0].astype('double')
+            xgv = (v1[0] * np.cos(yaw)) + (v1[1] * np.sin(yaw))
+            ygv = (-v1[0] * np.sin(yaw)) + (v1[1] * np.cos(yaw))
 
-        vector = np.asarray([xgv,ygv])
-        #self.visualize_point([vector],self.point_in_car_frame,frame='racecar/chassis',r=0.0,g=1.0,b=0.0)
-        
-        # calculate the steering angle
-        angle = math.atan2(ygv,xgv)
-        self.const_speed(angle)
-        #self.set_speed(angle)
-   
+            vector = np.asarray([xgv,ygv])
+            #self.visualize_point([vector],self.point_in_car_frame,frame='racecar/chassis',r=0.0,g=1.0,b=0.0)
+            
+            # calculate the steering angle
+            angle = math.atan2(ygv,xgv)
+            self.const_speed(angle)
+            #self.set_speed(angle)
+        except:
+            try:
+                self.visualize_point([self.prev_point],self.goal_pub)
+            except:
+                print("No valid goal point")
+
+    
     # USE THIS FUNCTION IF CHANGEABLE SPEED IS NEEDED
     def set_speed(self,angle):
 
