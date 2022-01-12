@@ -24,8 +24,8 @@ from do_mpc.tools.timer import Timer
 
 
 from template_model import template_model
-from template_mpc_hyperplanes import template_mpc
-from computing_hyperplanes_final import find_constraints
+from template_mpc import template_mpc
+#from computing_hyperplanes_final import find_constraints
 
 
 from constants import LEFT_DIVERGENCE_INDEX, RIGHT_DIVERGENCE_INDEX
@@ -47,14 +47,20 @@ class MPCC:
     # Constructor
     def __init__(self,waypoint_file,obstacle_file):
         self.log_hypers = False
-
+        self.use_map  = False
         self.display_in_rviz = False
         self.use_pure_pursuit = True
         self.increment = 1
 
+        self.model =  template_model()
+
+        
 
         self.left_points = []
         self.right_points = []
+
+        pt = [1.9937239510681324, 1.2498857949496691]
+        self.left_points.append(pt)
 
         self.read_waypoints(waypoint_file,obstacle_file)
 
@@ -68,6 +74,14 @@ class MPCC:
         self.odom_sub  = Subscriber('racecar2/odom', Odometry)
         self.reach_sub = Subscriber('racecar/reach_tube', reach_tube)
         self.pp_sub = Subscriber('racecar2/goal_point', MarkerArray)
+
+        self.count = 0
+        self.u0 = [0,0]
+         
+        self.mpc = template_mpc(self.model, 1.9937239510681324, 1.2498857949496691, -1000, 
+                                                1000, 
+                                                -1000, 
+                                                1000)  
 
         #create the time synchronizer
         self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 20, slop = 0.019,allow_headerless=True)
@@ -127,6 +141,7 @@ class MPCC:
     # The main callback functions of mpc are called within this callback
     def main_callback(self,lidar_data,pose_msg,hypes,pp_point):
 
+        lidar_data = np.asarray(lidar_data.ranges)
         quaternion = np.array([pose_msg.pose.pose.orientation.x,
                             pose_msg.pose.pose.orientation.y,
                             pose_msg.pose.pose.orientation.z,
@@ -152,46 +167,121 @@ class MPCC:
         ##finding those points which are less than 3m away 
         relevant_points = np.where((dist_arr < 6.0))[0]
         
-        
-        # finding the goal point which is within the goal points 
-        pts = self.wall_points[relevant_points]
-            
-        if(len(pts)>0):
-            p1 = (pos_x,pos_y)
-            p2 = (pos_1x,pos1_y)
-            for pt in pts:
-                p3 = (pt[0],pt[1])
+        if(self.use_map):
+            # finding the goal point which is within the goal points 
+            pts = self.wall_points[relevant_points]
+                
+            if(len(pts)>0):
+                p1 = (pos_x,pos_y)
+                p2 = (pos_1x,pos1_y)
+                for pt in pts:
+                    p3 = (pt[0],pt[1])
 
-                if(self.is_left(p1,p2,p3)):
-                    self.left_points.append(p3)
-                else:
-                    self.right_points.append(p3)
-            #self.visualize_points()
+                    if(self.is_left(p1,p2,p3)):
+                        self.left_points.append(p3)
+                    else:
+                        self.right_points.append(p3)
+                #self.visualize_points()
 
-        if(len(self.left_points)>0 and len(self.right_points)>0):
-            self.left_points  = np.asarray(self.left_points).reshape((-1,2))
-            self.right_points  = np.asarray(self.right_points).reshape((-1,2))
+            if(len(self.left_points)>0 and len(self.right_points)>0):
+                self.left_points  = np.asarray(self.left_points).reshape((-1,2))
+                self.right_points  = np.asarray(self.right_points).reshape((-1,2))
 
-            
+                
 
-            curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
-            dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
-            dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
+                curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
+                dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
+                dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
 
 
 
-            left_point = self.left_points[np.argmin(dist_arr)]
+                left_point = self.left_points[np.argmin(dist_arr)]
+                lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
+                line1 = [left_point[0],left_point[1],lx,ly]
+
+                right_point = self.right_points[np.argmin(dist_arr2)]
+                rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
+                line2 = [right_point[0],right_point[1],rx, ry]
+                    
+                self.visualize_lines([line1,line2])
+        else:
+            angle=(0-540)/4.0
+            rad=(angle*math.pi)/180
+            laser_beam_angle = rad
+            rotated_angle = laser_beam_angle + head_angle
+            x_coordinate = (lidar_data[0]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+            y_coordinate = (lidar_data[0]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+            left_point = [x_coordinate,y_coordinate]
             lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
             line1 = [left_point[0],left_point[1],lx,ly]
 
-            right_point = self.right_points[np.argmin(dist_arr2)]
+            angle=(1080-540)/4.0
+            rad=(angle*math.pi)/180
+            laser_beam_angle = rad
+            rotated_angle = laser_beam_angle + head_angle
+            x_coordinate = (lidar_data[1080]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+            y_coordinate = (lidar_data[1080]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+            right_point = [x_coordinate,y_coordinate]
             rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
+            
+
+            line1 = [left_point[0],left_point[1],lx,ly]
             line2 = [right_point[0],right_point[1],rx, ry]
-                
+
+            self.left_points = []
+            self.right_points = []
             self.visualize_lines([line1,line2])
 
-        self.left_points = []
-        self.right_points = []
+            point = pp_point.markers[0]
+            tarx,tary = pos_x,pos_y
+
+           
+            # mpc = template_mpc(model, tarx, tary, min(left_point[0],right_point[0]), 
+            #                                     min(left_point[1],right_point[1]), 
+            #                                     max(left_point[0],right_point[0]), 
+            #                                     max(left_point[1],right_point[1]))  
+
+            
+            
+            x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
+
+            # linear velocity 
+            velx = pose_msg.twist.twist.linear.x
+            vely = pose_msg.twist.twist.linear.y
+            velz = pose_msg.twist.twist.linear.z
+
+
+
+            # magnitude of velocity 
+            speed = np.asarray([velx,vely])
+            speed = np.linalg.norm(speed)
+
+
+
+            # x0 = np.array([pos_x, pos_y,speed,head_angle]).reshape(-1, 1)
+            u0 = self.u0
+            # if(self.count%1==0):
+            
+            if(self.count==0):
+                self.mpc.x0 = x0
+                self.mpc.set_initial_guess()
+
+                
+            #for i in range(10):
+            u0 = self.mpc.make_step(x0)
+            self.u0 = u0
+            print(pos_x-1.9937239510681324, pos_y- 1.2498857949496691)
+
+           
+            self.visualize_points()
+            
+            drive_msg = AckermannDriveStamped()
+            drive_msg.header.stamp = rospy.Time.now()
+            drive_msg.drive.steering_angle = float(u0[1])
+            drive_msg.drive.speed = float(u0[0])
+            self.drive_publish.publish(drive_msg)
+            self.count+=1
+
 
     def visualize_points(self,frame='map'):
         # create a marker array
