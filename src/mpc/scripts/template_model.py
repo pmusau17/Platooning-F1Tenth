@@ -28,17 +28,17 @@ def template_model():
     model.set_rhs("car_y", car_v * casadi.sin(car_theta + slip_factor))
     model.set_rhs("car_theta", car_v * casadi.tan(car_delta)* casadi.cos(slip_factor) / WHEELBASE_LENGTH)
 
-    # # Create time-varying-parameters, these will be populated with (potentially) different data at each call
-    # model.set_variable(
-    #         var_type="_tvp",
-    #         var_name="target_x",
-    #         shape=(1, 1)
-    # )
-    # model.set_variable(
-    #         var_type="_tvp",
-    #         var_name="target_y",
-    #         shape=(1, 1)
-    # )
+    # Create time-varying-parameters, these will be populated with (potentially) different data at each call
+    model.set_variable(
+            var_type="_tvp",
+            var_name="target_x",
+            shape=(1, 1)
+    )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="target_y",
+            shape=(1, 1)
+    )
 
     # Build the model
     model.setup()

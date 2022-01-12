@@ -7,14 +7,14 @@ sys.path.append('../../')
 import do_mpc
 
 
-def template_mpc(model, tarx, tary, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
+def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
 
     mpc = do_mpc.controller.MPC(model)
     setup_mpc = {
-        'n_horizon': 20,
+        'n_horizon': horizon,
         'n_robust': 0,                         # Robust horizon for robust scenario-tree MPC,
         'open_loop': 0,
-        't_step': 0.1,
+        't_step': 0.01,
         'state_discretization': 'collocation', # no other option at the moment
         'collocation_type': 'radau',           # no other option at the moment
         'collocation_deg': 2,
@@ -26,46 +26,30 @@ def template_mpc(model, tarx, tary, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     mpc.set_param(**setup_mpc)
 
     _x = model.x
+    _tvp = model.tvp
 
-
-    # #mterm = np.sqrt(((tarx- _x['car_x']) ** 2) + ((tary - _x['car_y']) ** 2))
-    # # lterm = np.sqrt(((tarx - _x['car_x']) ** 2) + ((tary - _x['car_y']) ** 2))
-
-    mterm = ((tarx- _x['car_x']) ** 2) + ((tary - _x['car_y']) ** 2)
+    # change the objective function to a time varying parameter
+    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
     lterm = casadi.DM.zeros()
 
 
-    # # the mayer term  which gives the cost of the terminal state 
-    # # the lagrange term which is the cost of each stage 𝑘.
-    # #mterm = (fabs(tarx- _x['car_x'])) + (fabs(tary - _x['car_y']))
-    # #lterm = (fabs(tarx - _x['car_x'])) + (fabs(tary - _x['car_y']))
-
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    mpc.set_rterm(car_v=1.0 , car_delta=0.3)
-
-    # These parameters are very sensitive 
-    #mpc.set_rterm(car_v=0.9 , car_delta=0.8)
+    mpc.set_rterm(car_v=0.0 , car_delta=0.0)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
    
 
-    mpc.bounds['upper', '_u', 'car_v'] = 0.7
+    mpc.bounds['upper', '_u', 'car_v'] = 1.0
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
 
-    mpc.bounds['lower', '_x', 'car_x'] = -20
-    mpc.bounds['lower', '_x', 'car_y'] = -20
-    mpc.bounds['upper', '_x', 'car_x'] = 20
-    mpc.bounds['upper', '_x', 'car_y'] = 20
+    mpc.bounds['lower', '_x', 'car_x'] = mpc_x_min
+    mpc.bounds['lower', '_x', 'car_y'] = mpc_y_min
+    mpc.bounds['upper', '_x', 'car_x'] = mpc_x_max
+    mpc.bounds['upper', '_x', 'car_y'] = mpc_y_max
 
-
-    #mpc.scaling['_u', 'car_v'] = 2
-    #mpc.scaling['_u', 'car_delta'] = 1
-    
-    #mpc.set_nl_cons('constraint',  (a * _x['car_x'] + b), 0, penalty_term_cons=1000)
-
-    mpc.setup()
+    #mpc.setup()
 
     # mpc = do_mpc.controller.MPC(model)
 

@@ -52,15 +52,28 @@ class MPCC:
         self.use_pure_pursuit = True
         self.increment = 1
 
+        self.tar_x = 0 
+        self.tar_y = 0
+
+        # mpc horizon
+        self.horizon = 20 
+
+        # set up the model used for the mpc controller
         self.model =  template_model()
 
-        
+        # set up the mpc controller
+        self.mpc = template_mpc(self.model, self.horizon, -20, -20, 20, 20)  
 
+        # set up the time varying function for mpc
+        self.mpc.set_tvp_fun(self.change_target_position_template)
+        self.mpc.setup()
+
+        
         self.left_points = []
         self.right_points = []
 
-        pt = [1.9937239510681324, 1.2498857949496691]
-        self.left_points.append(pt)
+        # pt = [1.9937239510681324, 1.2498857949496691]
+        # self.left_points.append(pt)
 
         self.read_waypoints(waypoint_file,obstacle_file)
 
@@ -77,11 +90,9 @@ class MPCC:
 
         self.count = 0
         self.u0 = [0,0]
+
          
-        self.mpc = template_mpc(self.model, 1.9937239510681324, 1.2498857949496691, -1000, 
-                                                1000, 
-                                                -1000, 
-                                                1000)  
+   
 
         #create the time synchronizer
         self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 20, slop = 0.019,allow_headerless=True)
@@ -89,6 +100,21 @@ class MPCC:
         #register the callback to the synchronizer
         self.main_sub.registerCallback(self.main_callback)
 
+
+    # this function is for changing the target position without having to 
+    # reframe the mpc problem
+    def change_target_position_template(self, _):
+        """
+        Following the docs of do_mpc, an approach to populate the target position variables with values, at any given \
+        point.
+        """
+        template = self.mpc.get_tvp_template()
+        print("Change_Target:",self.tar_x,self.tar_y)
+        for k in range(self.horizon + 1):
+            template["_tvp", k, "target_x"] = self.tar_x
+            template["_tvp", k, "target_y"] = self.tar_y
+
+        return template
 
 
     # Import waypoints.csv into a list (path_points)
@@ -204,6 +230,8 @@ class MPCC:
                 line2 = [right_point[0],right_point[1],rx, ry]
                     
                 self.visualize_lines([line1,line2])
+                self.left_points = []
+                self.right_points = []
         else:
             angle=(0-540)/4.0
             rad=(angle*math.pi)/180
@@ -228,21 +256,21 @@ class MPCC:
             line1 = [left_point[0],left_point[1],lx,ly]
             line2 = [right_point[0],right_point[1],rx, ry]
 
-            self.left_points = []
-            self.right_points = []
+           
             self.visualize_lines([line1,line2])
 
             point = pp_point.markers[0]
-            tarx,tary = pos_x,pos_y
-
-           
-            # mpc = template_mpc(model, tarx, tary, min(left_point[0],right_point[0]), 
-            #                                     min(left_point[1],right_point[1]), 
-            #                                     max(left_point[0],right_point[0]), 
-            #                                     max(left_point[1],right_point[1]))  
-
+            tarx,tary = point.pose.position.x, point.pose.position.y
             
-            
+
+            distance = (self.tar_x - pos_x) ** 2 + (self.tar_y - pos_y) ** 2
+            #print("Distance:",distance,"tar_x:",self.tar_x,"tar_y:",self.tar_y,tarx,tary)
+
+            #if(self.count==0 or distance<0.1):
+                
+            self.tar_x =  tarx
+            self.tar_y = tary
+                
             x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
 
             # linear velocity 
@@ -256,12 +284,7 @@ class MPCC:
             speed = np.asarray([velx,vely])
             speed = np.linalg.norm(speed)
 
-
-
-            # x0 = np.array([pos_x, pos_y,speed,head_angle]).reshape(-1, 1)
-            u0 = self.u0
-            # if(self.count%1==0):
-            
+    
             if(self.count==0):
                 self.mpc.x0 = x0
                 self.mpc.set_initial_guess()
@@ -270,19 +293,21 @@ class MPCC:
             #for i in range(10):
             u0 = self.mpc.make_step(x0)
             self.u0 = u0
-            print(pos_x-1.9937239510681324, pos_y- 1.2498857949496691)
-
-           
-            self.visualize_points()
             
+
             drive_msg = AckermannDriveStamped()
             drive_msg.header.stamp = rospy.Time.now()
             drive_msg.drive.steering_angle = float(u0[1])
             drive_msg.drive.speed = float(u0[0])
             self.drive_publish.publish(drive_msg)
             self.count+=1
+            self.visualize_points()
+            if(self.count>0):
+                self.count = 1
 
-
+            self.left_points = [[self.tar_x,self.tar_y]]
+            self.visualize_points()
+    
     def visualize_points(self,frame='map'):
         # create a marker array
         markerArray = MarkerArray()
@@ -301,9 +326,9 @@ class MPCC:
             marker.scale.y = 0.2
             marker.scale.z = 0.2
             marker.color.a = 1.0
-            marker.color.r = 1.0
-            marker.color.g = 0.1
-            marker.color.b = 0.8
+            marker.color.r = 0.0
+            marker.color.g = 0.0
+            marker.color.b = 1.0
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = x
             marker.pose.position.y = y
