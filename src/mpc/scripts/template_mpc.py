@@ -29,18 +29,19 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     _tvp = model.tvp
 
     # change the objective function to a time varying parameter
-    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
-    lterm = casadi.DM.zeros()
-
+    #mterm = ((_tvp['target_x']- _x['car_x'])) + ((_tvp['target_y'] - _x['car_y']))
+    #lterm = casadi.DM.zeros()
+    lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
+    mterm = ((_tvp['target_x']- _x['car_x']) ** 4) + ((_tvp['target_y'] - _x['car_y']) ** 4)
 
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    mpc.set_rterm(car_v=0.0 , car_delta=0.0)
+    mpc.set_rterm(car_v=0.3 , car_delta=0.6)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
    
 
-    mpc.bounds['upper', '_u', 'car_v'] = 1.0
+    mpc.bounds['upper', '_u', 'car_v'] = 1.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
 
