@@ -40,39 +40,33 @@ def template_model():
             shape=(1, 1)
     )
 
+    # My Attempt at using time varying parameters to change constraints online
+    # Create time-varying-parameters, these will be populated with (potentially) different data at each call
+    # These will be leveraged in the non_linear constraints. They will actually be linear but this allows 
+    # you to change the bounds online with time varying parameters.
+    model.set_variable(
+            var_type="_tvp",
+            var_name="x_min",
+            shape=(1, 1)
+    )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="x_max",
+            shape=(1, 1)
+    )
+    # Create time-varying-parameters, these will be populated with (potentially) different data at each call
+    model.set_variable(
+            var_type="_tvp",
+            var_name="y_min",
+            shape=(1, 1)
+    )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="y_max",
+            shape=(1, 1)
+    )
+
     # Build the model
     model.setup()
-
-    # Obtain an instance of the do-mpc model class
-    # and select time discretization:
-
-    # model_type = 'continuous' # either 'discrete' or 'continuous'
-    # model = do_mpc.model.Model(model_type)
-
-    # # States struct (optimization variables):
-    # X_s = model.set_variable('_x',  'X_s') # Vehicle X position 
-    # Y_s = model.set_variable('_x',  'Y_s') # Vehicle Y position
-    # V_s = model.set_variable('_x',  'V_s') # Vehicle velocity
-    # Theta_s = model.set_variable('_x',  'Theta_s') # Vehicle yaw angle map frame
-
-    # # The control inputs are steering angle and throttle
-    # u_throttle = model.set_variable('_u',  'u_throttle')
-    # u_steering = model.set_variable('_u',  'u_steering') # in radians
-
-    # # System Identification Parameters 
-    # ca = 1.9569     # acceleration constant
-    # cm = 0.0342     # motor constant
-    # ch = -37.1967   # alleged hysteresis constant 
-    # lf = 0.225      # distance from car center of mass to front
-    # lr = 0.225      # distance from car center of mass to rear
-
-    # # Directly from the Differential equations. See paper
-    # model.set_rhs('X_s', V_s * cos(Theta_s))
-    # model.set_rhs('Y_s', V_s* sin(Theta_s))
-    # model.set_rhs('V_s', (-ca*V_s)+(ca*cm*(u_throttle-ch)))
-    # model.set_rhs('Theta_s', (V_s/(lf+lr))*tan(u_steering))
-
-    # # Build the model
-    # model.setup()
 
     return model

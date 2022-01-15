@@ -54,7 +54,7 @@ class MPCC:
 
         self.tar_x = 0 
         self.tar_y = 0
-
+        self.count = 0
         # mpc horizon
         self.horizon = 10 
         # set up the model used for the mpc controller
@@ -69,7 +69,6 @@ class MPCC:
         self.mpc.set_tvp_fun(self.change_target_position_template)
         self.mpc.setup()
 
-        
         self.left_points = []
         self.right_points = []
 
@@ -89,7 +88,7 @@ class MPCC:
         self.reach_sub = Subscriber('racecar/reach_tube', reach_tube)
         self.pp_sub = Subscriber('racecar2/goal_point', MarkerArray)
 
-        self.count = 0
+      
         self.u0 = [0,0]
 
          
@@ -114,6 +113,10 @@ class MPCC:
         for k in range(self.horizon + 1):
             template["_tvp", k, "target_x"] = self.tar_x
             template["_tvp", k, "target_y"] = self.tar_y
+            template["_tvp", k, "x_min"] = -50.0 + self.count
+            template["_tvp", k, "x_max"] = 50.0 - self.count 
+            template["_tvp", k, "y_min"] = -50.0 + self.count
+            template["_tvp", k, "y_max"] = 50.0 - self.count
 
         return template
 
@@ -303,26 +306,14 @@ class MPCC:
             drive_msg.drive.steering_angle = float(u0[1])
             drive_msg.drive.speed = float(u0[0])
             self.drive_publish.publish(drive_msg)
-            if(self.count==0):
-                self.count+=1
+            # if(self.count<=19):
+            self.count+=1
             self.visualize_points()
-            # if(self.count>100):
-            #     self.mpc.bounds['lower', '_x', 'car_x'] = 0
-            #     self.mpc.bounds['lower', '_x', 'car_y'] = 0
-            #     self.mpc.bounds['upper', '_x', 'car_x'] = 0
-            #     self.mpc.bounds['upper', '_x', 'car_y'] = 0
-            # else:
-            #     # just want to test how slow this is
-            #     # self.mpc.setup()
-
+    
             rospy.logwarn("count: {}".format(self.count))
 
             self.left_points = [[self.tar_x,self.tar_y]]
             self.visualize_points()
-            self.mpc.bounds['lower', '_x', 'car_x'] = 0
-            self.mpc.bounds['lower', '_x', 'car_y'] = 0
-            self.mpc.bounds['upper', '_x', 'car_x'] = 0
-            self.mpc.bounds['upper', '_x', 'car_y'] = 0
     
     def visualize_points(self,frame='map'):
         # create a marker array
