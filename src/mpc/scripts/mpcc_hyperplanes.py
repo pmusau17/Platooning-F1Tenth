@@ -47,7 +47,7 @@ class MPCC:
     # Constructor
     def __init__(self,waypoint_file,obstacle_file):
         self.log_hypers = False
-        self.use_map  = False
+        self.use_map  = True
         self.display_in_rviz = False
         self.use_pure_pursuit = True
         self.increment = 1
@@ -195,12 +195,22 @@ class MPCC:
         dist_arr = np.linalg.norm(self.wall_points-curr_pos,axis=-1)
 
         ##finding those points which are less than 3m away 
-        relevant_points = np.where((dist_arr < 6.0))[0]
+        relevant_points = np.where((dist_arr < 2.0))[0]
         
         if(self.use_map):
             # finding the goal point which is within the goal points 
             pts = self.wall_points[relevant_points]
-                
+            
+            l_xmin = np.inf
+            l_xmax = -np.inf
+            l_ymin = np.inf
+            l_ymax = -np.inf
+
+            r_xmin = np.inf
+            r_xmax = -np.inf
+            r_ymin = np.inf
+            r_ymax  = - np.inf
+
             if(len(pts)>0):
                 p1 = (pos_x,pos_y)
                 p2 = (pos_1x,pos1_y)
@@ -209,33 +219,40 @@ class MPCC:
 
                     if(self.is_left(p1,p2,p3)):
                         self.left_points.append(p3)
+                        l_xmin = min(l_xmin,p3[0])
+                        l_xmax = max(l_xmax,p3[0])
+                        l_ymin = min(l_ymin,p3[1])
+                        l_ymax  = max(l_ymax,p3[1])
                     else:
                         self.right_points.append(p3)
+                        r_xmin = min(r_xmin,p3[0])
+                        r_xmax = max(r_xmax,p3[0])
+                        r_ymin = min(r_ymin,p3[1])
+                        r_ymax  = max(r_ymax,p3[1])
                 #self.visualize_points()
 
             if(len(self.left_points)>0 and len(self.right_points)>0):
+
                 self.left_points  = np.asarray(self.left_points).reshape((-1,2))
                 self.right_points  = np.asarray(self.right_points).reshape((-1,2))
 
                 
 
-                curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
-                dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
-                dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
+                # curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
+                # dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
+                # dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
 
 
 
-                left_point = self.left_points[np.argmin(dist_arr)]
-                lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
-                line1 = [left_point[0],left_point[1],lx,ly]
+                # left_point = self.left_points[np.argmin(dist_arr)]
+                # lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
+                # line1 = [left_point[0],left_point[1],lx,ly]
 
-                right_point = self.right_points[np.argmin(dist_arr2)]
-                rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
-                line2 = [right_point[0],right_point[1],rx, ry]
+                # right_point = self.right_points[np.argmin(dist_arr2)]
+                # rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
+                # line2 = [right_point[0],right_point[1],rx, ry]
                     
-                self.visualize_lines([line1,line2])
-                self.left_points = []
-                self.right_points = []
+                # self.visualize_lines([line1,line2])
         else:
             angle=(0-540)/4.0
             rad=(angle*math.pi)/180
@@ -263,57 +280,68 @@ class MPCC:
            
             self.visualize_lines([line1,line2])
 
-            point = pp_point.markers[0]
-            tarx,tary = point.pose.position.x, point.pose.position.y
+        point = pp_point.markers[0]
             
-
-            distance = (self.tar_x - pos_x) ** 2 + (self.tar_y - pos_y) ** 2
+        tarx,tary = point.pose.position.x, point.pose.position.y
+        distance = (self.tar_x - pos_x) ** 2 + (self.tar_y - pos_y) ** 2
             #print("Distance:",distance,"tar_x:",self.tar_x,"tar_y:",self.tar_y,tarx,tary)
 
             #if(self.count==0 or distance<0.1):
             
-            if(True or self.count==0 or distance<0.3 or (rospy.Time.now()-self.iter_time)>rospy.Duration(1.0)):
-                self.tar_x =  tarx
-                self.tar_y =  tary
-                self.iter_time = rospy.Time.now()
+        if(True or self.count==0 or distance<0.3 or (rospy.Time.now()-self.iter_time)>rospy.Duration(1.0)):
+            self.tar_x =  tarx
+            self.tar_y =  tary
+            self.iter_time = rospy.Time.now()
                 
-            x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
+        x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
 
-            # linear velocity 
-            velx = pose_msg.twist.twist.linear.x
-            vely = pose_msg.twist.twist.linear.y
-            velz = pose_msg.twist.twist.linear.z
+        # linear velocity 
+        velx = pose_msg.twist.twist.linear.x
+        vely = pose_msg.twist.twist.linear.y
+        velz = pose_msg.twist.twist.linear.z
+
+
+        p1 = [l_xmax,l_ymax]
+        p2 = [l_xmin,l_ymin]
+        p3 = [r_xmin,r_ymin]
+        p4 = [r_xmax,r_ymax]
+        self.left_points = [p1,p2,p3,p4]
+        self.right_points = []
+        self.visualize_points()
 
 
 
-            # magnitude of velocity 
-            speed = np.asarray([velx,vely])
-            speed = np.linalg.norm(speed)
+        # magnitude of velocity 
+        speed = np.asarray([velx,vely])
+        speed = np.linalg.norm(speed)
 
     
-            if(self.count==0):
-                self.mpc.x0 = x0
-                self.mpc.set_initial_guess()
+        # if(self.count==0):
+        #     self.mpc.x0 = x0
+        #     self.mpc.set_initial_guess()
 
                 
-            #for i in range(10):
-            u0 = self.mpc.make_step(x0)
-            self.u0 = u0
+        # #for i in range(10):
+        # u0 = self.mpc.make_step(x0)
+        # self.u0 = u0
             
 
-            drive_msg = AckermannDriveStamped()
-            drive_msg.header.stamp = rospy.Time.now()
-            drive_msg.drive.steering_angle = float(u0[1])
-            drive_msg.drive.speed = float(u0[0])
-            self.drive_publish.publish(drive_msg)
-            # if(self.count<=19):
-            self.count+=1
-            self.visualize_points()
+        # drive_msg = AckermannDriveStamped()
+        # drive_msg.header.stamp = rospy.Time.now()
+        # drive_msg.drive.steering_angle = float(u0[1])
+        # drive_msg.drive.speed = float(u0[0])
+        # self.drive_publish.publish(drive_msg)
+        #     # if(self.count<=19):
+        # self.count+=1
     
-            rospy.logwarn("count: {}".format(self.count))
+        # rospy.logwarn("count: {}".format(self.count))
 
-            self.left_points = [[self.tar_x,self.tar_y]]
-            self.visualize_points()
+        # self.left_points = [[self.tar_x,self.tar_y]]
+        self.visualize_points()
+
+        # reset left and right points
+        self.left_points = []
+        self.right_points = []
     
     def visualize_points(self,frame='map'):
         # create a marker array
