@@ -23,7 +23,7 @@ import do_mpc
 from do_mpc.tools.timer import Timer
 
 
-from template_model import template_model
+from template_model_hype import template_model
 from template_mpc_hyperplanes import template_mpc
 from computing_hyperplanes_final import find_constraints
 
@@ -46,9 +46,32 @@ class MPC:
     def __init__(self):
         self.log_hypers = False
 
-        self.display_in_rviz = False
+        self.display_in_rviz = True
         self.use_pure_pursuit = True
         self.increment = 1
+
+        # parameters for tvp callback function 
+        self.tar_x = 0 
+        self.tar_y = 0
+        self.a0 = 0 
+        self.b0 = 0
+        self.a1 = 0 
+        self.b1 = 0
+        self.count = 0
+
+        # mpc horizon
+        self.horizon = 10 
+        # set up the model used for the mpc controller
+        self.model =  template_model()
+
+        # set up the mpc controller
+        self.mpc = template_mpc(self.model, self.horizon)  
+
+        self.iter_time = rospy.Time.now()
+
+        # set up the time varying function for mpc
+        self.mpc.set_tvp_fun(self.change_target_position_template)
+        self.mpc.setup()
 
         self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=100)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
@@ -99,6 +122,28 @@ class MPC:
     """
         Helper Functions for most MPC code
     """
+
+    # this function is for changing the target position without having to 
+    # reframe the mpc problem
+    def change_target_position_template(self, _):
+        """
+        Following the docs of do_mpc, an approach to populate the target position variables with values, at any given \
+        point.
+        """
+
+        template = self.mpc.get_tvp_template()
+        #print("Change_Target:",self.tar_x,self.tar_y)
+        for k in range(self.horizon + 1):
+            template["_tvp", k, "target_x"] = self.tar_x
+            template["_tvp", k, "target_y"] = self.tar_y
+            template["_tvp", k, "a0"] = self.a0
+            template["_tvp", k, "b0"] = self.b0
+            template["_tvp", k, "a1"] = self.a1
+            template["_tvp", k, "b1"] = self.b1
+
+        return template
+
+
     def find_sequence(self, points, ignore_range):
 
         current_left_index = 0
@@ -337,37 +382,39 @@ class MPC:
 
         lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
 
+        if(self.display_in_rviz):
+            self.visualize_lines(lines)
 
-        if (a0 * posx + b0 - posy > 0): # New Lines -- 
-            flag0 = 1
-        else: 
-            flag0 = -1
+
+        # if (a0 * posx + b0 - posy > 0): # New Lines -- 
+        #     flag0 = 1
+        # else: 
+        #     flag0 = -1
                 
-        if (a1 * posx + b1 - posy > 0):
-            flag1 = 1
-        else: 
-            flag1 = -1    
+        # if (a1 * posx + b1 - posy > 0):
+        #     flag1 = 1
+        # else: 
+        #     flag1 = -1    
 
             
         
-        if(tarx==-1 and tary==-1):
-            drive_msg.drive.steering_angle = 0.0
-            drive_msg.drive.speed = 0.0
-        else:
-            model = template_model()
-            mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, flag0, flag1)  
-            x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-            mpc.x0 = x0
-            mpc.set_initial_guess()
+        # if(tarx==-1 and tary==-1):
+        #     drive_msg.drive.steering_angle = 0.0
+        #     drive_msg.drive.speed = 0.0
+        # else:
+        #     model = template_model()
+        #     mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, flag0, flag1)  
+        #     x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+        #     mpc.x0 = x0
+        #     mpc.set_initial_guess()
                 
-            u0 = mpc.make_step(x0)
+        #     u0 = mpc.make_step(x0)
 
-            drive_msg.drive.steering_angle = float(u0[1])
-            drive_msg.drive.speed = float(u0[0])
-            self.drive_publish.publish(drive_msg)
+        #     drive_msg.drive.steering_angle = float(u0[1])
+        #     drive_msg.drive.speed = float(u0[0])
+        #     self.drive_publish.publish(drive_msg)
 
-        if(self.display_in_rviz):
-            self.visualize_lines(lines)
+        
             
 
     def visualize_lines(self, lines):

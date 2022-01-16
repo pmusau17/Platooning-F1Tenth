@@ -47,13 +47,18 @@ class MPCC:
     # Constructor
     def __init__(self,waypoint_file,obstacle_file):
         self.log_hypers = False
-        self.use_map  = False
+        self.use_map  = True
         self.display_in_rviz = False
         self.use_pure_pursuit = True
         self.increment = 1
 
         self.tar_x = 0 
         self.tar_y = 0
+        self.x_min = -100
+        self.x_max = 100
+        self.y_min = -100
+        self.y_max = 100
+
         self.count = 0
         # mpc horizon
         self.horizon = 10 
@@ -113,10 +118,10 @@ class MPCC:
         for k in range(self.horizon + 1):
             template["_tvp", k, "target_x"] = self.tar_x
             template["_tvp", k, "target_y"] = self.tar_y
-            template["_tvp", k, "x_min"] = -50.0 + self.count
-            template["_tvp", k, "x_max"] = 50.0 - self.count 
-            template["_tvp", k, "y_min"] = -50.0 + self.count
-            template["_tvp", k, "y_max"] = 50.0 - self.count
+            template["_tvp", k, "x_min"] = self.x_min
+            template["_tvp", k, "x_max"] = self.x_max
+            template["_tvp", k, "y_min"] = self.y_min
+            template["_tvp", k, "y_max"] = self.y_max
 
         return template
 
@@ -125,15 +130,15 @@ class MPCC:
     def lidar_to_cart(self,ranges, position_x, position_y, heading_angle, starting_index):
 
         # this is correct sort of but I need the individual points and I'll find those
-        l_xmin = np.inf
-        l_xmax = -np.inf
-        l_ymin = np.inf
-        l_ymax = -np.inf
+        l_xmin = (np.inf,np.inf)
+        l_xmax = (-np.inf,-np.inf)
+        l_ymin = (np.inf,np.inf)
+        l_ymax = (-np.inf,-np.inf)
 
-        r_xmin = np.inf
-        r_xmax = -np.inf
-        r_ymin = np.inf
-        r_ymax  = - np.inf
+        r_xmin = (np.inf,np.inf)
+        r_xmax = (-np.inf,-np.inf)
+        r_ymin = (np.inf,np.inf)
+        r_ymax  = (-np.inf,-np.inf)
 
         points = []
         markerArray = MarkerArray()
@@ -154,25 +159,34 @@ class MPCC:
             p3 = [x_coordinate,y_coordinate]
                         
             if(index<540):
-                l_xmin = min(l_xmin,p3[0])
-                l_xmax = max(l_xmax,p3[0])
-                l_ymin = min(l_ymin,p3[1])
-                l_ymax  = max(l_ymax,p3[1])
-                self.left_points.append(p3)
+                if(p3[0]<l_xmin[0]):
+                    l_xmin = p3
+                if(p3[0]>l_xmax[0]):
+                    l_xmax = p3
+                if(p3[1]<l_ymin[1]):
+                    l_ymin = p3
+                if(p3[1]>l_ymax[0]):
+                    l_ymax = p3
+                #self.left_points.append(p3)
             else:
-                r_xmin = min(r_xmin,p3[0])
-                r_xmax = max(r_xmax,p3[0])
-                r_ymin = min(r_ymin,p3[1])
-                r_ymax  = max(r_ymax,p3[1])
-                self.right_points.append(p3)
-        
-        p1 = [l_xmax,l_ymax]
-        p2 = [l_xmin,l_ymin]
-        p3 = [r_xmin,r_ymin]
-        p4 = [r_xmax,r_ymax]
+                if(p3[0]<r_xmin[0]):
+                    r_xmin = p3
+                if(p3[0]>r_xmax[0]):
+                    r_xmax = p3
+                if(p3[1]<r_ymin[1]):
+                    r_ymin = p3
+                if(p3[1]>r_ymax[0]):
+                    r_ymax = p3
+                #self.right_points.append(p3)
+        self.left_points =  [l_xmax,l_ymax,l_xmin,l_ymin]
+        self.right_points = [r_xmin,r_ymin,r_xmax,r_ymax]
+        # p1 = [l_xmax,l_ymax]
+        # p2 = [l_xmin,l_ymin]
+        # p3 = [r_xmin,r_ymin]
+        # p4 = [r_xmax,r_ymax]
             
         
-        return p1,p2,p3,p4
+        #return p1,p2,p3,p4
 
         
 
@@ -253,21 +267,11 @@ class MPCC:
         dist_arr = np.linalg.norm(self.wall_points-curr_pos,axis=-1)
 
         ##finding those points which are less than 3m away 
-        relevant_points = np.where((dist_arr < 2.0))[0]
+        relevant_points = np.where((dist_arr < 10.0))[0]
         
         if(self.use_map):
             # finding the goal point which is within the goal points 
             pts = self.wall_points[relevant_points]
-            
-            l_xmin = np.inf
-            l_xmax = -np.inf
-            l_ymin = np.inf
-            l_ymax = -np.inf
-
-            r_xmin = np.inf
-            r_xmax = -np.inf
-            r_ymin = np.inf
-            r_ymax  = - np.inf
 
             if(len(pts)>0):
                 p1 = (pos_x,pos_y)
@@ -277,17 +281,8 @@ class MPCC:
 
                     if(self.is_left(p1,p2,p3)):
                         self.left_points.append(p3)
-                        l_xmin = min(l_xmin,p3[0])
-                        l_xmax = max(l_xmax,p3[0])
-                        l_ymin = min(l_ymin,p3[1])
-                        l_ymax  = max(l_ymax,p3[1])
                     else:
                         self.right_points.append(p3)
-                        r_xmin = min(r_xmin,p3[0])
-                        r_xmax = max(r_xmax,p3[0])
-                        r_ymin = min(r_ymin,p3[1])
-                        r_ymax  = max(r_ymax,p3[1])
-                #self.visualize_points()
 
             if(len(self.left_points)>0 and len(self.right_points)>0):
 
@@ -296,50 +291,60 @@ class MPCC:
 
                 
 
-                # curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
-                # dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
-                # dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
+                curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
+                dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
+                dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
 
+                dist = 3.0 
 
+                left_point = self.left_points[np.argmin(dist_arr)]
+                lx, ly = left_point[0] + math.cos(head_angle) * dist, left_point[1] + math.sin(head_angle)*dist
+                lx1, ly1 = left_point[0] + math.cos(head_angle) * (-dist), left_point[1] + math.sin(head_angle)*(-dist)
+                line1 = [lx1,ly1,lx,ly]
 
-                # left_point = self.left_points[np.argmin(dist_arr)]
-                # lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
-                # line1 = [left_point[0],left_point[1],lx,ly]
-
-                # right_point = self.right_points[np.argmin(dist_arr2)]
-                # rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
-                # line2 = [right_point[0],right_point[1],rx, ry]
-                    
-                # self.visualize_lines([line1,line2])
+                right_point = self.right_points[np.argmin(dist_arr2)]
+                rx1, ry1 = right_point[0] + math.cos(head_angle) * (-dist), right_point[1] + math.sin(head_angle) * (-dist)
+                rx, ry = right_point[0] + math.cos(head_angle) * dist, right_point[1] + math.sin(head_angle)*dist
+                line2 = [rx1,ry1,rx,ry]
+                self.left_points = []
+                self.right_points = []
+                
+                self.x_min = min(lx1,lx,rx,rx1)
+                self.x_max = max(lx1,lx,rx,rx1)
+                self.y_min = min(ly1,ly,ry,ry1)
+                self.y_max = max(ly1,ly,ry,ry1)
+                self.visualize_lines([line1,line2])
         else:
-            pass
-            # # angle=(0-540)/4.0
-            # # rad=(angle*math.pi)/180
-            # # laser_beam_angle = rad
-            # # rotated_angle = laser_beam_angle + head_angle
-            # # x_coordinate = (lidar_data[0]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
-            # # y_coordinate = (lidar_data[0]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
-            # # left_point = [x_coordinate,y_coordinate]
-            # # lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
-            # # line1 = [left_point[0],left_point[1],lx,ly]
+            index = 180
+            angle=(index-540)/4.0
+            rad=(angle*math.pi)/180
+            laser_beam_angle = rad
+            rotated_angle = laser_beam_angle + head_angle
+            x_coordinate = (lidar_data[index]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+            y_coordinate = (lidar_data[index]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+            left_point = [x_coordinate,y_coordinate]
+            lx1, ly1 = left_point[0] + math.cos(head_angle) * (-1.0), left_point[1] + math.sin(head_angle)*(-1.0)
+            lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
 
-            # # angle=(1080-540)/4.0
-            # # rad=(angle*math.pi)/180
-            # # laser_beam_angle = rad
-            # # rotated_angle = laser_beam_angle + head_angle
-            # # x_coordinate = (lidar_data[1080]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
-            # # y_coordinate = (lidar_data[1080]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
-            # # right_point = [x_coordinate,y_coordinate]
-            # # rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
+            index = 900
+            angle=(index-540)/4.0
+            rad=(angle*math.pi)/180
+            laser_beam_angle = rad
+            rotated_angle = laser_beam_angle + head_angle
+            x_coordinate = (lidar_data[index]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+            y_coordinate = (lidar_data[index]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+            right_point = [x_coordinate,y_coordinate]
+            rx1, ry1 = right_point[0] + math.cos(head_angle) * (-1.0), right_point[1] + math.sin(head_angle) * (-1.0)
+            rx, ry = right_point[0] + math.cos(head_angle) * (1.0), right_point[1] + math.sin(head_angle) * (1.0)
             
 
-            # line1 = [left_point[0],left_point[1],lx,ly]
-            # line2 = [right_point[0],right_point[1],rx, ry]
+            line1 = [lx1,ly1,lx,ly]
+            line2 = [rx1,ry1,rx,ry]
 
            
-            # self.visualize_lines([line1,line2])
+            self.visualize_lines([line1,line2])
 
-        p1,p2,p3, p4  = self.lidar_to_cart(lidar_data[240:840], pos_x, pos_y, head_angle, 240)
+        #self.lidar_to_cart(lidar_data[240:840], pos_x, pos_y, head_angle, 240)
 
         point = pp_point.markers[0]
             
@@ -366,8 +371,8 @@ class MPCC:
         # p2 = [l_xmin,l_ymin]
         # p3 = [r_xmin,r_ymin]
         # p4 = [r_xmax,r_ymax]
-        self.left_points = [p1,p2,p3,p4]
-        self.right_points = []
+        #self.left_points = [p1,p2,p3,p4]
+        #self.right_points = []
         self.visualize_points()
 
 
@@ -378,27 +383,27 @@ class MPCC:
         speed = np.linalg.norm(speed)
 
     
-        # if(self.count==0):
-        #     self.mpc.x0 = x0
-        #     self.mpc.set_initial_guess()
+        if(self.count==0):
+            self.mpc.x0 = x0
+            self.mpc.set_initial_guess()
 
                 
-        # #for i in range(10):
-        # u0 = self.mpc.make_step(x0)
-        # self.u0 = u0
+        #for i in range(10):
+        u0 = self.mpc.make_step(x0)
+        self.u0 = u0
             
 
-        # drive_msg = AckermannDriveStamped()
-        # drive_msg.header.stamp = rospy.Time.now()
-        # drive_msg.drive.steering_angle = float(u0[1])
-        # drive_msg.drive.speed = float(u0[0])
-        # self.drive_publish.publish(drive_msg)
-        #     # if(self.count<=19):
-        # self.count+=1
+        drive_msg = AckermannDriveStamped()
+        drive_msg.header.stamp = rospy.Time.now()
+        drive_msg.drive.steering_angle = float(u0[1])
+        drive_msg.drive.speed = float(u0[0])
+        self.drive_publish.publish(drive_msg)
+            # if(self.count<=19):
+        self.count+=1
     
-        # rospy.logwarn("count: {}".format(self.count))
+        rospy.logwarn("count: {}".format(self.count))
 
-        # self.left_points = [[self.tar_x,self.tar_y]]
+        self.left_points = [[self.tar_x,self.tar_y]]
         self.visualize_points()
 
         # reset left and right points
@@ -423,9 +428,9 @@ class MPCC:
             marker.scale.y = 0.2
             marker.scale.z = 0.2
             marker.color.a = 1.0
-            marker.color.r = 0.0
-            marker.color.g = 0.0
-            marker.color.b = 1.0
+            marker.color.r = 1.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = x
             marker.pose.position.y = y
@@ -447,9 +452,9 @@ class MPCC:
             marker.scale.y = 0.2
             marker.scale.z = 0.2
             marker.color.a = 1.0
-            marker.color.r = 0.1
+            marker.color.r = 0.0
             marker.color.g = 1.0
-            marker.color.b = 0.8
+            marker.color.b = 0.0
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = x
             marker.pose.position.y = y
