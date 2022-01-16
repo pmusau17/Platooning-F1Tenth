@@ -47,7 +47,7 @@ class MPCC:
     # Constructor
     def __init__(self,waypoint_file,obstacle_file):
         self.log_hypers = False
-        self.use_map  = True
+        self.use_map  = False
         self.display_in_rviz = False
         self.use_pure_pursuit = True
         self.increment = 1
@@ -121,6 +121,62 @@ class MPCC:
         return template
 
 
+    # convert lidar scans to cartesian point
+    def lidar_to_cart(self,ranges, position_x, position_y, heading_angle, starting_index):
+
+        # this is correct sort of but I need the individual points and I'll find those
+        l_xmin = np.inf
+        l_xmax = -np.inf
+        l_ymin = np.inf
+        l_ymax = -np.inf
+
+        r_xmin = np.inf
+        r_xmax = -np.inf
+        r_ymin = np.inf
+        r_ymax  = - np.inf
+
+        points = []
+        markerArray = MarkerArray()
+        for index, lidar_range in enumerate(ranges):
+        
+            angle=((starting_index + index)-540)/4.0
+            rad=(angle*math.pi)/180
+            laser_beam_angle = rad
+
+            rotated_angle = laser_beam_angle + heading_angle
+
+            # the 0.265 is the lidar's offset along the x-axis of the car
+            # it's in the xacro file
+            x_coordinate = (lidar_range) * math.cos(rotated_angle) + position_x + 0.265*math.cos(heading_angle)
+            y_coordinate = (lidar_range) * math.sin(rotated_angle) + position_y + 0.265*math.sin(heading_angle)
+            #points.append(CartesianPoint(x_coordinate, y_coordinate))
+            
+            p3 = [x_coordinate,y_coordinate]
+                        
+            if(index<540):
+                l_xmin = min(l_xmin,p3[0])
+                l_xmax = max(l_xmax,p3[0])
+                l_ymin = min(l_ymin,p3[1])
+                l_ymax  = max(l_ymax,p3[1])
+                self.left_points.append(p3)
+            else:
+                r_xmin = min(r_xmin,p3[0])
+                r_xmax = max(r_xmax,p3[0])
+                r_ymin = min(r_ymin,p3[1])
+                r_ymax  = max(r_ymax,p3[1])
+                self.right_points.append(p3)
+        
+        p1 = [l_xmax,l_ymax]
+        p2 = [l_xmin,l_ymin]
+        p3 = [r_xmin,r_ymin]
+        p4 = [r_xmax,r_ymax]
+            
+        
+        return p1,p2,p3,p4
+
+        
+
+
     # Import waypoints.csv into a list (path_points)
     def read_waypoints(self,waypoint_file,obstacle_file):
 
@@ -172,6 +228,8 @@ class MPCC:
     def main_callback(self,lidar_data,pose_msg,hypes,pp_point):
 
         lidar_data = np.asarray(lidar_data.ranges)
+        indices = np.where(lidar_data>10)[0]
+        lidar_data[indices] = 10
         quaternion = np.array([pose_msg.pose.pose.orientation.x,
                             pose_msg.pose.pose.orientation.y,
                             pose_msg.pose.pose.orientation.z,
@@ -254,31 +312,34 @@ class MPCC:
                     
                 # self.visualize_lines([line1,line2])
         else:
-            angle=(0-540)/4.0
-            rad=(angle*math.pi)/180
-            laser_beam_angle = rad
-            rotated_angle = laser_beam_angle + head_angle
-            x_coordinate = (lidar_data[0]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
-            y_coordinate = (lidar_data[0]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
-            left_point = [x_coordinate,y_coordinate]
-            lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
-            line1 = [left_point[0],left_point[1],lx,ly]
+            pass
+            # # angle=(0-540)/4.0
+            # # rad=(angle*math.pi)/180
+            # # laser_beam_angle = rad
+            # # rotated_angle = laser_beam_angle + head_angle
+            # # x_coordinate = (lidar_data[0]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+            # # y_coordinate = (lidar_data[0]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+            # # left_point = [x_coordinate,y_coordinate]
+            # # lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
+            # # line1 = [left_point[0],left_point[1],lx,ly]
 
-            angle=(1080-540)/4.0
-            rad=(angle*math.pi)/180
-            laser_beam_angle = rad
-            rotated_angle = laser_beam_angle + head_angle
-            x_coordinate = (lidar_data[1080]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
-            y_coordinate = (lidar_data[1080]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
-            right_point = [x_coordinate,y_coordinate]
-            rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
+            # # angle=(1080-540)/4.0
+            # # rad=(angle*math.pi)/180
+            # # laser_beam_angle = rad
+            # # rotated_angle = laser_beam_angle + head_angle
+            # # x_coordinate = (lidar_data[1080]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+            # # y_coordinate = (lidar_data[1080]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+            # # right_point = [x_coordinate,y_coordinate]
+            # # rx, ry = right_point[0] + math.cos(head_angle) * 1.0, right_point[1] + math.sin(head_angle)*1.0
             
 
-            line1 = [left_point[0],left_point[1],lx,ly]
-            line2 = [right_point[0],right_point[1],rx, ry]
+            # line1 = [left_point[0],left_point[1],lx,ly]
+            # line2 = [right_point[0],right_point[1],rx, ry]
 
            
-            self.visualize_lines([line1,line2])
+            # self.visualize_lines([line1,line2])
+
+        p1,p2,p3, p4  = self.lidar_to_cart(lidar_data[240:840], pos_x, pos_y, head_angle, 240)
 
         point = pp_point.markers[0]
             
@@ -301,15 +362,16 @@ class MPCC:
         velz = pose_msg.twist.twist.linear.z
 
 
-        p1 = [l_xmax,l_ymax]
-        p2 = [l_xmin,l_ymin]
-        p3 = [r_xmin,r_ymin]
-        p4 = [r_xmax,r_ymax]
+        # p1 = [l_xmax,l_ymax]
+        # p2 = [l_xmin,l_ymin]
+        # p3 = [r_xmin,r_ymin]
+        # p4 = [r_xmax,r_ymax]
         self.left_points = [p1,p2,p3,p4]
         self.right_points = []
         self.visualize_points()
 
 
+        
 
         # magnitude of velocity 
         speed = np.asarray([velx,vely])
