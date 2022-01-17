@@ -40,7 +40,12 @@ def template_mpc(model,horizon):
     mpc.bounds['upper', '_u', 'car_v'] = 0.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
+    
+    # right of left plane 
     mpc.set_nl_cons('constraint_bottom',  1 * (_tvp['a0'] * _x['car_x'] + _tvp['b0'] - _x['car_y']), 0)   # penalty_term_cons=1000)
+
+
+    # left of right plane 
     mpc.set_nl_cons('constraint_upper',   -1 * (_tvp['a1'] * _x['car_x'] + _tvp['b1'] - _x['car_y']) , 0) # penalty_term_cons=1000)
 
     #mpc.setup()

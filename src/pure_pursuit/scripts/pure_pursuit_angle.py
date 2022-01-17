@@ -23,7 +23,7 @@ class pure_pursuit:
         self.waypoint_file = waypoint_file
 
         # pure pursuit parameters
-        self.LOOKAHEAD_DISTANCE = 3.0 #1.70 # meters
+        self.LOOKAHEAD_DISTANCE = 1.5 #1.70 # meters
         
         # Distance from the 
         self.distance_from_rear_wheel_to_front_wheel = 0.5

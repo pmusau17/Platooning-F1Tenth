@@ -47,7 +47,7 @@ class MPCC:
     # Constructor
     def __init__(self,waypoint_file,obstacle_file):
         self.log_hypers = False
-        self.use_map  = True
+        self.use_map  = False
         self.display_in_rviz = False
         self.use_pure_pursuit = True
         self.increment = 1
@@ -59,9 +59,14 @@ class MPCC:
         self.y_min = -100
         self.y_max = 100
 
+        self.a0 = 1
+        self.b0 = 0
+        self.a1 = -1
+        self.b1 = 1
+
         self.count = 0
         # mpc horizon
-        self.horizon = 10 
+        self.horizon = 30 
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -118,10 +123,14 @@ class MPCC:
         for k in range(self.horizon + 1):
             template["_tvp", k, "target_x"] = self.tar_x
             template["_tvp", k, "target_y"] = self.tar_y
-            template["_tvp", k, "x_min"] = self.x_min
-            template["_tvp", k, "x_max"] = self.x_max
-            template["_tvp", k, "y_min"] = self.y_min
-            template["_tvp", k, "y_max"] = self.y_max
+            template["_tvp", k, "a0"] = self.a0
+            template["_tvp", k, "b0"] = self.b0
+            template["_tvp", k, "a1"] = self.a1
+            template["_tvp", k, "b1"] = self.b1
+            # template["_tvp", k, "x_min"] = self.x_min
+            # template["_tvp", k, "x_max"] = self.x_max
+            # template["_tvp", k, "y_min"] = self.y_min
+            # template["_tvp", k, "y_max"] = self.y_max
 
         return template
 
@@ -129,21 +138,12 @@ class MPCC:
     # convert lidar scans to cartesian point
     def lidar_to_cart(self,ranges, position_x, position_y, heading_angle, starting_index):
 
-        # this is correct sort of but I need the individual points and I'll find those
-        l_xmin = (np.inf,np.inf)
-        l_xmax = (-np.inf,-np.inf)
-        l_ymin = (np.inf,np.inf)
-        l_ymax = (-np.inf,-np.inf)
-
-        r_xmin = (np.inf,np.inf)
-        r_xmax = (-np.inf,-np.inf)
-        r_ymin = (np.inf,np.inf)
-        r_ymax  = (-np.inf,-np.inf)
-
         points = []
         markerArray = MarkerArray()
         for index, lidar_range in enumerate(ranges):
-        
+            curr_index = starting_index + index
+            if(curr_index>360 and curr_index<720):
+                continue
             angle=((starting_index + index)-540)/4.0
             rad=(angle*math.pi)/180
             laser_beam_angle = rad
@@ -158,28 +158,12 @@ class MPCC:
             
             p3 = [x_coordinate,y_coordinate]
                         
-            if(index<540):
-                if(p3[0]<l_xmin[0]):
-                    l_xmin = p3
-                if(p3[0]>l_xmax[0]):
-                    l_xmax = p3
-                if(p3[1]<l_ymin[1]):
-                    l_ymin = p3
-                if(p3[1]>l_ymax[0]):
-                    l_ymax = p3
-                #self.left_points.append(p3)
+            if(curr_index>540):
+                self.left_points.append(p3)
             else:
-                if(p3[0]<r_xmin[0]):
-                    r_xmin = p3
-                if(p3[0]>r_xmax[0]):
-                    r_xmax = p3
-                if(p3[1]<r_ymin[1]):
-                    r_ymin = p3
-                if(p3[1]>r_ymax[0]):
-                    r_ymax = p3
-                #self.right_points.append(p3)
-        self.left_points =  [l_xmax,l_ymax,l_xmin,l_ymin]
-        self.right_points = [r_xmin,r_ymin,r_xmax,r_ymax]
+                self.right_points.append(p3)
+        # self.left_points =  [l_xmax,l_ymax,l_xmin,l_ymin]
+        # self.right_points = [r_xmin,r_ymin,r_xmax,r_ymax]
         # p1 = [l_xmax,l_ymax]
         # p2 = [l_xmin,l_ymin]
         # p3 = [r_xmin,r_ymin]
@@ -309,43 +293,104 @@ class MPCC:
                 self.left_points = []
                 self.right_points = []
                 
-                self.x_min = min(lx1,lx,rx,rx1)
-                self.x_max = max(lx1,lx,rx,rx1)
-                self.y_min = min(ly1,ly,ry,ry1)
-                self.y_max = max(ly1,ly,ry,ry1)
                 self.visualize_lines([line1,line2])
         else:
-            index = 180
-            angle=(index-540)/4.0
-            rad=(angle*math.pi)/180
-            laser_beam_angle = rad
-            rotated_angle = laser_beam_angle + head_angle
-            x_coordinate = (lidar_data[index]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
-            y_coordinate = (lidar_data[index]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
-            left_point = [x_coordinate,y_coordinate]
-            lx1, ly1 = left_point[0] + math.cos(head_angle) * (-1.0), left_point[1] + math.sin(head_angle)*(-1.0)
-            lx, ly = left_point[0] + math.cos(head_angle) * 1.0, left_point[1] + math.sin(head_angle)*1.0
 
-            index = 900
-            angle=(index-540)/4.0
-            rad=(angle*math.pi)/180
-            laser_beam_angle = rad
-            rotated_angle = laser_beam_angle + head_angle
-            x_coordinate = (lidar_data[index]) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
-            y_coordinate = (lidar_data[index]) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
-            right_point = [x_coordinate,y_coordinate]
-            rx1, ry1 = right_point[0] + math.cos(head_angle) * (-1.0), right_point[1] + math.sin(head_angle) * (-1.0)
-            rx, ry = right_point[0] + math.cos(head_angle) * (1.0), right_point[1] + math.sin(head_angle) * (1.0)
+            self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
+            self.left_points  = np.asarray(self.left_points).reshape((-1,2))
+            self.right_points  = np.asarray(self.right_points).reshape((-1,2))
+            curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
+            dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
+            dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
+
+            dist = 3.0 
+
+            # left_point = self.left_points[-1]
+            # pp = self.left_points[0]
+
+            # lx, ly  = left_point
+            # lx1, ly1 = pp 
+            
+            left_point = self.left_points[np.argmin(dist_arr)]
+            lx, ly = left_point[0] + math.cos(head_angle) * dist, left_point[1] + math.sin(head_angle)*dist
+            lx1, ly1 = left_point[0] + math.cos(head_angle) * (-dist), left_point[1] + math.sin(head_angle)*(-dist)
+            line1 = [lx,ly,lx1,ly1]
+            
+            
+            right_point = self.right_points[np.argmin(dist_arr2)]
+            rx1, ry1 = right_point[0] + math.cos(head_angle) * (-dist), right_point[1] + math.sin(head_angle) * (-dist)
+            rx, ry = right_point[0] + math.cos(head_angle) * dist, right_point[1] + math.sin(head_angle)*dist
+            
+            # right_point = self.right_points[0]
+            # pp = self.right_points[-1]
+            # rx, ry = right_point
+            # rx1, ry1 = pp
+            line2 = [rx,ry,rx1,ry1]
+
+            # m  = (ly - ly1) / (lx - lx1)
+            # b = ly1 - (m*lx1)
+
+            # m1 = (ry - ry1) / (rx - rx1)
+            # b1 = ry1 - (m*rx1)
+
+            # x1 = rx1 -1 
+            # x2 = rx1 + 1
+            # y1 = m*x1 + b
+            # y2 = m*x2 + b
+
+            # x01 = lx -1 
+            # x02 = lx + 1
+            # y01 = m1*x01 + b1
+            # y02 = m1*x02 + b1
+
+            # line1 = [rx1,ry1,x2,y2]
+            # line2 = [lx,ly,x02,y02]
+
+
+
+        
+        
             
 
-            line1 = [lx1,ly1,lx,ly]
-            line2 = [rx1,ry1,rx,ry]
-
+            #self.visualize_points()
            
+            
+            self.left_points = []
+            self.right_points = []
             self.visualize_lines([line1,line2])
 
         #self.lidar_to_cart(lidar_data[240:840], pos_x, pos_y, head_angle, 240)
 
+        # creating inequalities 
+        m  = (ly1 - ly) / (lx1 - lx)
+        b = ly1 - (m*lx1)
+
+        
+        m1 = (ry1 - ry) / (rx1 - rx)
+        b1 = ry1 - (m*rx1)
+
+        print(m,m1)
+        print(0>=((pos_x*m+b)-pos_y), 0>=(pos_y-(pos_x*m1+b1)))
+        print(0>=((pos_x*m1+b1)-pos_y), 0>=(pos_y-(pos_x*m+b)))
+        print(line1,line2)
+        #print(m,m2,b,b1,head_angle)
+
+        if(0>=((pos_x*m+b)-pos_y)):
+            self.a0 = m
+            self.b0 = b
+            self.a1 = m1
+            self.b1 = b1
+        else:
+            self.a0 = m1
+            self.b0 = b1
+            self.a1 = m
+            self.b1 = b
+            
+           
+
+        # print("cons1:",0 >= b,0>=((pos_x*m+b)-pos_y))
+        # print("cons2:",0 <= b1,0<=((pos_x*m1+b1)-pos_y))
+        
         point = pp_point.markers[0]
             
         tarx,tary = point.pose.position.x, point.pose.position.y

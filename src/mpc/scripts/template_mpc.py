@@ -31,36 +31,44 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     # change the objective function to a time varying parameter
 
     lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
-    mterm = ((_tvp['target_x']- _x['car_x']) ** 4) + ((_tvp['target_y'] - _x['car_y']) ** 4)
+    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
 
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    mpc.set_rterm(car_v=0.3 , car_delta=0.6)
+    mpc.set_rterm(car_v=0.1 , car_delta=0.1)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
     mpc.bounds['upper', '_u', 'car_v'] = 0.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
-    # set the default values for the tvp parameters
-    tvp_struct = mpc.get_tvp_template()
-    for k in range(horizon + 1):
-        tvp_struct["_tvp", k, "x_min"] = float(mpc_x_min)
-        tvp_struct["_tvp", k, "x_max"] = float(mpc_x_max)
-        tvp_struct["_tvp", k, "y_min"] = float(mpc_y_min)
-        tvp_struct["_tvp", k, "y_max"] = float(mpc_y_max)
 
-        print(tvp_struct["_tvp", k, "x_min"],tvp_struct["_tvp", k, "x_max"],
-                tvp_struct["_tvp", k, "y_min"],tvp_struct["_tvp", k, "y_max"])
+     # right of left plane 
+    mpc.set_nl_cons('constraint_bottom',  (_tvp['a0'] * _x['car_x'] + _tvp['b0']) - _x['car_y'], 0)
+
+    # left of right plane 
+    mpc.set_nl_cons('constraint_upper',   _x['car_y']  - (_tvp['a1'] * _x['car_x'] + _tvp['b1']), 0) 
+
+
+    # # set the default values for the tvp parameters
+    # tvp_struct = mpc.get_tvp_template()
+    # for k in range(horizon + 1):
+    #     tvp_struct["_tvp", k, "x_min"] = float(mpc_x_min)
+    #     tvp_struct["_tvp", k, "x_max"] = float(mpc_x_max)
+    #     tvp_struct["_tvp", k, "y_min"] = float(mpc_y_min)
+    #     tvp_struct["_tvp", k, "y_max"] = float(mpc_y_max)
+
+    #     print(tvp_struct["_tvp", k, "x_min"],tvp_struct["_tvp", k, "x_max"],
+    #             tvp_struct["_tvp", k, "y_min"],tvp_struct["_tvp", k, "y_max"])
 
     # Set the boundary constraints, which just end up being linear constraints
     # x<=x_max becomes x - xmax <= 0 
     # x>=x_min become  x_min - x <=0 
     # and liewise for y 
 
-    mpc.set_nl_cons('x_lb', _tvp['x_min'] - _x['car_x'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
-    mpc.set_nl_cons('x_ub', _x['car_x'] - _tvp['x_max'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
-    mpc.set_nl_cons('y_lb', _tvp['y_min'] - _x['car_y'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
-    mpc.set_nl_cons('y_ub', _x['car_y'] - _tvp['y_max'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
+    # mpc.set_nl_cons('x_lb', _tvp['x_min'] - _x['car_x'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
+    # mpc.set_nl_cons('x_ub', _x['car_x'] - _tvp['x_max'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
+    # mpc.set_nl_cons('y_lb', _tvp['y_min'] - _x['car_y'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
+    # mpc.set_nl_cons('y_ub', _x['car_y'] - _tvp['y_max'], ub=0) #, soft_constraint=True, penalty_term_cons=1e2)
 
     # Don't need to set bounds for the states
     # mpc.bounds['lower', '_x', 'car_x'] = mpc_x_min
