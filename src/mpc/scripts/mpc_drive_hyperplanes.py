@@ -48,7 +48,7 @@ class MPC:
 
         self.display_in_rviz = True
         self.use_pure_pursuit = True
-        self.increment = 1
+        self.increment = 20
 
         # parameters for tvp callback function 
         self.tar_x = 0 
@@ -60,7 +60,7 @@ class MPC:
         self.count = 0
 
         # mpc horizon
-        self.horizon = 10 
+        self.horizon = 20 
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -367,12 +367,13 @@ class MPC:
         else:
             a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary)
             
+        dist = 3.0
+        pos_1x, pos1_y = posx + math.cos(head_angle) * dist, posy + math.sin(head_angle)*dist
         
-        pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0
-        x1 = posx * math.cos(head_angle) * -1.0 + 5
+        x1 = posx 
         y1 = a0 * x1 + b0
            
-        x2 = pos_1x - 5
+        x2 = pos_1x 
         y2 = a0 * x2 + b0 
 
         y3 = a1 * x1 + b1

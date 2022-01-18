@@ -66,7 +66,7 @@ class MPCC:
 
         self.count = 0
         # mpc horizon
-        self.horizon = 30 
+        self.horizon = 20
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -86,7 +86,6 @@ class MPCC:
         # self.left_points.append(pt)
 
         self.read_waypoints(waypoint_file,obstacle_file)
-
         self.vis_pub = rospy.Publisher('hyper_planes', MarkerArray,queue_size=100)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
         self.vis_pub2 = rospy.Publisher("wallpoint_classification", MarkerArray, queue_size=10)
@@ -187,6 +186,13 @@ class MPCC:
 
         # list of xy pts 
         self.xy_points = self.read_points(filename)
+
+        # eulers for 
+        self.eulers  = []
+        with open(filename) as f:
+            self.eulers = [tuple(line)[2] for line in csv.reader(f)]
+        self.eulers = np.asarray(self.eulers).astype('double')
+        print(self.eulers)
 
         # get path to obstacle points
         package_path=rospack.get_path('race')
@@ -302,36 +308,53 @@ class MPCC:
             curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
             dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
             dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
+            dist_arr3 = np.linalg.norm(self.xy_points - curr_pos,axis=-1)
 
             dist = 3.0 
-
-            # left_point = self.left_points[-1]
-            # pp = self.left_points[0]
-
-            # lx, ly  = left_point
-            # lx1, ly1 = pp 
             
+
+            #lps = self.left_points[max(np.argmin(dist_arr)-20,0):np.argmin(dist_arr)+20]
+            #print(lps)
+            # lx, ly  = self.left_points[-1]
+            # lx1, ly1 = self.left_points[np.argmin(dist_arr)]
+           
+
+            center_angle = self.eulers[np.argmin(dist_arr3)]
+
+            
+
             left_point = self.left_points[np.argmin(dist_arr)]
-            lx, ly = left_point[0] + math.cos(head_angle) * dist, left_point[1] + math.sin(head_angle)*dist
-            lx1, ly1 = left_point[0] + math.cos(head_angle) * (-dist), left_point[1] + math.sin(head_angle)*(-dist)
+            left_point = self.left_points[-1]
+            lx, ly = left_point[0] + math.cos(center_angle) * dist, left_point[1] + math.sin(center_angle)*dist
+            lx1, ly1 = left_point[0] + math.cos(center_angle) * (-dist), left_point[1] + math.sin(center_angle)*(-dist)
             line1 = [lx,ly,lx1,ly1]
             
             
             right_point = self.right_points[np.argmin(dist_arr2)]
-            rx1, ry1 = right_point[0] + math.cos(head_angle) * (-dist), right_point[1] + math.sin(head_angle) * (-dist)
-            rx, ry = right_point[0] + math.cos(head_angle) * dist, right_point[1] + math.sin(head_angle)*dist
-            
-            # right_point = self.right_points[0]
-            # pp = self.right_points[-1]
-            # rx, ry = right_point
-            # rx1, ry1 = pp
+            right_point = self.right_points[0]
+            rx1, ry1 = right_point[0] + math.cos(center_angle) * (-dist), right_point[1] + math.sin(center_angle) * (-dist)
+            rx, ry = right_point[0] + math.cos(center_angle) * dist, right_point[1] + math.sin(center_angle)*dist
             line2 = [rx,ry,rx1,ry1]
 
-            # m  = (ly - ly1) / (lx - lx1)
+            p1 = self.xy_points[np.argmin(dist_arr3)]
+            print(center_angle,p1)
+            self.left_points = [p1]
+            self.right_points = []
+            self.visualize_points()
+            
+            # #right_point = self.right_points[np.argmin(dist_arr2)]
+            # #print(np.argmin(dist_arr2))
+            # #rps = self.right_points[max(np.argmin(dist_arr2)-20,0):np.argmin(dist_arr2)+20]
+            # #print(rps)
+            # rx, ry = self.right_points[0]
+            # rx1, ry1 = self.right_points[np.argmin(dist_arr2)]
+            
+
+            # m  = (ly1 - ly) / (lx1 - lx)
             # b = ly1 - (m*lx1)
 
-            # m1 = (ry - ry1) / (rx - rx1)
-            # b1 = ry1 - (m*rx1)
+            # m1 = (ry1 - ry) / (rx1 - rx)
+            # b1 = ry1 - (m1*rx1)
 
             # x1 = rx1 -1 
             # x2 = rx1 + 1
@@ -342,21 +365,23 @@ class MPCC:
             # x02 = lx + 1
             # y01 = m1*x01 + b1
             # y02 = m1*x02 + b1
+            
+            # line1 = [x1,y1,x2,y2]
+            # line2 = [x01,y01,x02,y02]
 
             # line1 = [rx1,ry1,x2,y2]
             # line2 = [lx,ly,x02,y02]
 
-
-
-        
-        
-            
-
-            #self.visualize_points()
+            self.visualize_points()
            
-            
+            #self.visualize_points()
             self.left_points = []
             self.right_points = []
+            
+            # closest center point 
+            #self.left_points = [p1]
+            #self.visualize_points()
+
             self.visualize_lines([line1,line2])
 
         #self.lidar_to_cart(lidar_data[240:840], pos_x, pos_y, head_angle, 240)
@@ -372,10 +397,10 @@ class MPCC:
         print(m,m1)
         print(0>=((pos_x*m+b)-pos_y), 0>=(pos_y-(pos_x*m1+b1)))
         print(0>=((pos_x*m1+b1)-pos_y), 0>=(pos_y-(pos_x*m+b)))
-        print(line1,line2)
+        #print(line1,line2)
         #print(m,m2,b,b1,head_angle)
 
-        if(0>=((pos_x*m+b)-pos_y)):
+        if( not 0>=((pos_x*m+b)-pos_y)):
             self.a0 = m
             self.b0 = b
             self.a1 = m1
@@ -411,13 +436,6 @@ class MPCC:
         vely = pose_msg.twist.twist.linear.y
         velz = pose_msg.twist.twist.linear.z
 
-
-        # p1 = [l_xmax,l_ymax]
-        # p2 = [l_xmin,l_ymin]
-        # p3 = [r_xmin,r_ymin]
-        # p4 = [r_xmax,r_ymax]
-        #self.left_points = [p1,p2,p3,p4]
-        #self.right_points = []
         self.visualize_points()
 
 
@@ -443,7 +461,7 @@ class MPCC:
         drive_msg.drive.steering_angle = float(u0[1])
         drive_msg.drive.speed = float(u0[0])
         self.drive_publish.publish(drive_msg)
-            # if(self.count<=19):
+
         self.count+=1
     
         rospy.logwarn("count: {}".format(self.count))
@@ -454,6 +472,8 @@ class MPCC:
         # reset left and right points
         self.left_points = []
         self.right_points = []
+        if(self.count>100):
+            self.count = 1
     
     def visualize_points(self,frame='map'):
         # create a marker array

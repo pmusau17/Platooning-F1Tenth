@@ -37,7 +37,7 @@ def template_mpc(model,horizon):
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 0.5
+    mpc.bounds['upper', '_u', 'car_v'] = 1.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
     
