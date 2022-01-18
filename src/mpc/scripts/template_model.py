@@ -42,6 +42,12 @@ def template_model():
 
     model.set_variable(
             var_type="_tvp",
+            var_name="target_theta",
+            shape=(1, 1)
+    )
+
+    model.set_variable(
+            var_type="_tvp",
             var_name="a0",
             shape=(1, 1)
     )

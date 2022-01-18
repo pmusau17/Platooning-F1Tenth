@@ -21,6 +21,7 @@ import sys
 sys.path.append('../../')
 import do_mpc
 from do_mpc.tools.timer import Timer
+import copy 
 
 
 from template_model import template_model
@@ -54,6 +55,7 @@ class MPCC:
 
         self.tar_x = 0 
         self.tar_y = 0
+        self.tar_theta = 0
         self.x_min = -100
         self.x_max = 100
         self.y_min = -100
@@ -66,7 +68,7 @@ class MPCC:
 
         self.count = 0
         # mpc horizon
-        self.horizon = 20
+        self.horizon = 40
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -126,6 +128,7 @@ class MPCC:
             template["_tvp", k, "b0"] = self.b0
             template["_tvp", k, "a1"] = self.a1
             template["_tvp", k, "b1"] = self.b1
+            template["_tvp",k,"target_theta"] = self.tar_theta
             # template["_tvp", k, "x_min"] = self.x_min
             # template["_tvp", k, "x_max"] = self.x_max
             # template["_tvp", k, "y_min"] = self.y_min
@@ -230,7 +233,8 @@ class MPCC:
 
     # The main callback functions of mpc are called within this callback
     def main_callback(self,lidar_data,pose_msg,hypes,pp_point):
-
+        
+        orig_point = copy.deepcopy(pp_point)
         lidar_data = np.asarray(lidar_data.ranges)
         indices = np.where(lidar_data>10)[0]
         lidar_data[indices] = 10
@@ -337,10 +341,10 @@ class MPCC:
             line2 = [rx,ry,rx1,ry1]
 
             p1 = self.xy_points[np.argmin(dist_arr3)]
-            print(center_angle,p1)
-            self.left_points = [p1]
-            self.right_points = []
-            self.visualize_points()
+            #print(center_angle,p1)
+            #self.left_points = [p1]
+            #self.right_points = []
+            #self.visualize_points()
             
             # #right_point = self.right_points[np.argmin(dist_arr2)]
             # #print(np.argmin(dist_arr2))
@@ -372,7 +376,7 @@ class MPCC:
             # line1 = [rx1,ry1,x2,y2]
             # line2 = [lx,ly,x02,y02]
 
-            self.visualize_points()
+            #self.visualize_points()
            
             #self.visualize_points()
             self.left_points = []
@@ -405,17 +409,27 @@ class MPCC:
         # print("cons1:",0 >= b,0>=((pos_x*m+b)-pos_y))
         # print("cons2:",0 <= b1,0<=((pos_x*m1+b1)-pos_y))
         
-        point = pp_point.markers[0]
+        point = orig_point.markers[0]
             
         tarx,tary = point.pose.position.x, point.pose.position.y
+
+        tar_pos   = np.asarray([tarx,tary]).reshape((1,2))
+        dist_arr3 = np.linalg.norm(self.xy_points - tar_pos,axis=-1)
+        tar_theta = self.eulers[np.argmin(dist_arr3)]
+
+
+        #print(tarx,tary,tar_theta)
         distance = (self.tar_x - pos_x) ** 2 + (self.tar_y - pos_y) ** 2
             #print("Distance:",distance,"tar_x:",self.tar_x,"tar_y:",self.tar_y,tarx,tary)
 
             #if(self.count==0 or distance<0.1):
-            
-        if(True or self.count==0 or distance<0.3 or (rospy.Time.now()-self.iter_time)>rospy.Duration(1.0)):
-            self.tar_x =  tarx
-            self.tar_y =  tary
+        
+        rospy.logwarn("{},{},{},{}".format(point.pose.position.x,point.pose.position.y,self.tar_x,self.tar_y))
+        if(self.count==0 or distance<1.9 or (rospy.Time.now()-self.iter_time).to_sec()>0.3):
+            rospy.logwarn("Change Target")
+            self.tar_x =  point.pose.position.x
+            self.tar_y =  point.pose.position.y
+            self.tar_theta  = tar_theta
             self.iter_time = rospy.Time.now()
 
             if(0>=((pos_x*m+b)-pos_y)):
@@ -428,6 +442,8 @@ class MPCC:
                 self.b0 = b1
                 self.a1 = m
                 self.b1 = b
+
+
                 
         x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
 
@@ -459,19 +475,21 @@ class MPCC:
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = rospy.Time.now()
         drive_msg.drive.steering_angle = float(u0[1])
-        drive_msg.drive.speed = float(u0[0])
+        drive_msg.drive.speed = 1.0
         self.drive_publish.publish(drive_msg)
 
         self.count+=1
     
         rospy.logwarn("count: {}".format(self.count))
 
+        self.left_points = []
+        self.right_points = []
         self.left_points = [[self.tar_x,self.tar_y]]
+        self.right_points = [[pp_point.markers[0].pose.position.x,pp_point.markers[0].pose.position.y]]
         self.visualize_points()
 
         # reset left and right points
-        self.left_points = []
-        self.right_points = []
+        
         if(self.count>100):
             self.count = 1
     

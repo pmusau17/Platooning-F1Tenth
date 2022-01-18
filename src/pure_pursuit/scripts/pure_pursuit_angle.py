@@ -23,7 +23,7 @@ class pure_pursuit:
         self.waypoint_file = waypoint_file
 
         # pure pursuit parameters
-        self.LOOKAHEAD_DISTANCE = 2.5 #1.70 # meters
+        self.LOOKAHEAD_DISTANCE = 2.0 #1.70 # meters
         
         # Distance from the 
         self.distance_from_rear_wheel_to_front_wheel = 0.5
@@ -88,6 +88,7 @@ class pure_pursuit:
         marker.pose.position.x = x
         marker.pose.position.y = y
         marker.pose.position.z = 0
+        marker.lifetime = rospy.Duration(0.01)
         markerArray.markers.append(marker)
         self.goal_pub.publish(markerArray)
 
@@ -126,7 +127,7 @@ class pure_pursuit:
             v2 = [np.cos(yaw), np.sin(yaw)]
 
             angle= self.find_angle(v1,v2)
-            if angle < np.pi/2:
+            if abs(angle) < np.pi/2:
                 pts_infrontofcar.append(pts[idx])
 
         try:
