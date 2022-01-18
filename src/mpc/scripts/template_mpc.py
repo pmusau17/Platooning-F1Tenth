@@ -14,7 +14,7 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
         'n_horizon': horizon,
         'n_robust': 0,                         # Robust horizon for robust scenario-tree MPC,
         'open_loop': 0,
-        't_step': 0.01,
+        't_step': 0.1,
         'state_discretization': 'collocation', # no other option at the moment
         'collocation_type': 'radau',           # no other option at the moment
         'collocation_deg': 2,
@@ -31,23 +31,30 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     # change the objective function to a time varying parameter
 
     #lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
-    lterm = casadi.DM.zeros()
-    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2) + 0.1 * ((_tvp['target_theta'] - _x['car_theta'])**2)
+    #lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
+    #lterm = ((_tvp['target_theta'] - _x['car_theta'])**2)
+    lterm = DM.zeros()
+    #mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2) +  ((_tvp['target_theta'] - _x['car_theta'])**2)
+    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)  
+    #+ ((_tvp['target_theta'] - _x['car_theta'])**2)
+    #lterm = ((_tvp['target_theta'] - _x['car_theta'])**2)
+    #lterm = mterm 
+    #mterm = 1000 * lterm 
 
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    mpc.set_rterm(car_v=30.0 , car_delta=0.0)
+    mpc.set_rterm(car_v=0.3 , car_delta=0.3)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 1.5
+    mpc.bounds['upper', '_u', 'car_v'] = 2.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
 
-    #right of left plane 
-    mpc.set_nl_cons('constraint_bottom',  (_tvp['a0'] * _x['car_x'] + _tvp['b0']) - _x['car_y'], 0)
+    # #right of left plane 
+    # mpc.set_nl_cons('constraint_bottom',  (_tvp['a0'] * _x['car_x'] + _tvp['b0']) - _x['car_y'], 0)
 
-    #left of right plane 
-    mpc.set_nl_cons('constraint_upper',   _x['car_y']  - (_tvp['a1'] * _x['car_x'] + _tvp['b1']), 0) 
+    # #left of right plane 
+    # mpc.set_nl_cons('constraint_upper',   _x['car_y']  - (_tvp['a1'] * _x['car_x'] + _tvp['b1']), 0) 
 
 
     # # set the default values for the tvp parameters

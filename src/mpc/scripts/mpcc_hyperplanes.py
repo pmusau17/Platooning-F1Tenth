@@ -68,7 +68,7 @@ class MPCC:
 
         self.count = 0
         # mpc horizon
-        self.horizon = 40
+        self.horizon = 5
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -306,7 +306,8 @@ class MPCC:
                 self.visualize_lines([line1,line2])
         else:
 
-            self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
+            #self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
+            self.lidar_to_cart(lidar_data,pos_x,pos_y,head_angle,0)
             self.left_points  = np.asarray(self.left_points).reshape((-1,2))
             self.right_points  = np.asarray(self.right_points).reshape((-1,2))
             curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
@@ -328,14 +329,14 @@ class MPCC:
             
 
             left_point = self.left_points[np.argmin(dist_arr)]
-            left_point = self.left_points[-1]
+            #left_point = self.left_points[-1]
             lx, ly = left_point[0] + math.cos(center_angle) * dist, left_point[1] + math.sin(center_angle)*dist
             lx1, ly1 = left_point[0] + math.cos(center_angle) * (-dist), left_point[1] + math.sin(center_angle)*(-dist)
             line1 = [lx,ly,lx1,ly1]
             
             
             right_point = self.right_points[np.argmin(dist_arr2)]
-            right_point = self.right_points[0]
+            #right_point = self.right_points[0]
             rx1, ry1 = right_point[0] + math.cos(center_angle) * (-dist), right_point[1] + math.sin(center_angle) * (-dist)
             rx, ry = right_point[0] + math.cos(center_angle) * dist, right_point[1] + math.sin(center_angle)*dist
             line2 = [rx,ry,rx1,ry1]
@@ -425,7 +426,7 @@ class MPCC:
             #if(self.count==0 or distance<0.1):
         
         rospy.logwarn("{},{},{},{}".format(point.pose.position.x,point.pose.position.y,self.tar_x,self.tar_y))
-        if(self.count==0 or distance<1.9 or (rospy.Time.now()-self.iter_time).to_sec()>0.3):
+        if(self.count==0 or distance<1.9 or (rospy.Time.now()-self.iter_time).to_sec()>15):
             rospy.logwarn("Change Target")
             self.tar_x =  point.pose.position.x
             self.tar_y =  point.pose.position.y
