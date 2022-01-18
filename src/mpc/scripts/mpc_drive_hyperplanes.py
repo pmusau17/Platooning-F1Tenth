@@ -21,6 +21,7 @@ import sys
 sys.path.append('../../')
 import do_mpc
 from do_mpc.tools.timer import Timer
+from rdp import rdp
 
 
 from template_model_hype import template_model
@@ -344,28 +345,53 @@ class MPC:
             
         x_min = min(hw_l_filtered[0][0], hw_l_filtered[len(hw_l_filtered)-1][0], hw_r_filtered[0][0], hw_r_filtered[len(hw_r_filtered)-1][0], posx)
         x_max = max(hw_l_filtered[0][0], hw_l_filtered[len(hw_l_filtered)-1][0], hw_r_filtered[0][0], hw_r_filtered[len(hw_r_filtered)-1][0], posx)
+        
         y_min = min(hw_l_filtered[0][1], hw_l_filtered[len(hw_l_filtered)-1][1], hw_r_filtered[0][1], hw_r_filtered[len(hw_r_filtered)-1][1], posy)
         y_max = max(hw_l_filtered[0][1], hw_l_filtered[len(hw_l_filtered)-1][1], hw_r_filtered[0][1], hw_r_filtered[len(hw_r_filtered)-1][1], posy)
         
         #mpc_interval = [[x_min, x_max],[y_min, y_max]]     
         #self.visualize_rectangles(mpc_interval)
-        
         if(rectangle.count > 0):
-            if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min, rectangle.obstacle_list[rectangle.count-1].y_max)):
-            # update hw_r_filtered or hw_l_filtered
-                rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
+            if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min, rectangle.obstacle_list[rectangle.count-1].y_max)): # If ego-car overlaps with opponent's reachset include reachset points to the left/right arrays
             
-                hw_l_filtered_updated = np.vstack((rectangle_to_array, hw_l_filtered)) # create a new array with reachset included
-                a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
-    
-                #print(hw_r_filtered_updated[:,0].tolist())   
-                #print(hw_r_filtered_updated[:,1].tolist())  
-                #print(posx, posy, tarx, tary, a1, b1)
-            else:             
-                a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
+                bx = self.lidar_to_cart(lidar_data.ranges[540], posx, posy, head_angle, 540).position_x # find b point to create a line from ego car
+                by = self.lidar_to_cart(lidar_data.ranges[540], posx, posy, head_angle, 540).position_y # find b point to create a line from ego car
+                
+                mid_rectangle_x = (rectangle.obstacle_list[rectangle.count-1].x_min + rectangle.obstacle_list[rectangle.count-1].x_max) # mid point of the convex hull
+                mid_rectangle_y = (rectangle.obstacle_list[rectangle.count-1].y_min + rectangle.obstacle_list[rectangle.count-1].y_max) # mid point of the convex hull
+                
+                if (((bx - posx)*(mid_rectangle_y - posy)-(by - posy)*(mid_rectangle_x - posx)) > 0): # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered
+                    rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
+                    
+                    hw_l_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)), epsilon=0.03)
+                    hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)
+                    a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
+
+                else:
+                    rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
+                    
+                    hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=0.03)
+                    hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
+                    
+                    a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
+
+
+            else:
+                hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
+                hw_r_filtered = rdp(hw_r_filtered,  epsilon=0.03)       
+                start = time.time()   
+                a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
+                print(time.time() - start)
+
+                
+
   
-        else:
+        else:   
+            hw_l_filtered = rdp(hw_l_filtered, epsilon=0.03)    
+            hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)   
             a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary)
+
+            
             
         
         pos_1x, pos1_y = posx + math.cos(head_angle) * 1.0, posy + math.sin(head_angle)*1.0

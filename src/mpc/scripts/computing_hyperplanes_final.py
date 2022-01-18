@@ -290,17 +290,10 @@ def find_constraints(ego_x, ego_y, array_left, array_right, tarx, tary):
     cons.append({'type': 'ineq', 'args': (tarx, tary), 'fun': constraint_target_hyperplane_0})  
     
     cons.append({'type': 'ineq', 'args': (tarx, tary), 'fun': constraint_target_hyperplane_1})   
-     
-    #for e in range(len(ar_d_l)): # create dynamic obstacles constraints - obstacles from the left
-     #  arguments2 = (ar_d_l[e][0], ar_d_l[e][1])
-      # cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_dynamic_obstacles_hyperplane_0(e)})     
-       
-    #for f in range(len(ar_d_r)): # create dynamic obstacles constraints - obstacles from the left
-     # arguments2 = (ar_d_r[f][0], ar_d_r[f][1])
-      #cons.append({'type': 'ineq', 'args': arguments2, 'fun': constraint_dynamic_obstacles_hyperplane_1(f)})                  
+            
         
     
-    solution = minimize(objective, x0, method='SLSQP', bounds=None, constraints=cons)
+    solution = minimize(objective, x0, method='SLSQP', bounds=bnds, constraints=cons)
     x = solution.x
 
     return x 
