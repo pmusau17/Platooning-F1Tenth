@@ -394,22 +394,11 @@ class MPCC:
         m1 = (ry1 - ry) / (rx1 - rx)
         b1 = ry1 - (m*rx1)
 
-        print(m,m1)
-        print(0>=((pos_x*m+b)-pos_y), 0>=(pos_y-(pos_x*m1+b1)))
-        print(0>=((pos_x*m1+b1)-pos_y), 0>=(pos_y-(pos_x*m+b)))
-        #print(line1,line2)
-        #print(m,m2,b,b1,head_angle)
+        # print(m,m1)
+        # print(0>=((pos_x*m+b)-pos_y), 0>=(pos_y-(pos_x*m1+b1)))
+        # print(0>=((pos_x*m1+b1)-pos_y), 0>=(pos_y-(pos_x*m+b)))
 
-        if( not 0>=((pos_x*m+b)-pos_y)):
-            self.a0 = m
-            self.b0 = b
-            self.a1 = m1
-            self.b1 = b1
-        else:
-            self.a0 = m1
-            self.b0 = b1
-            self.a1 = m
-            self.b1 = b
+        
             
            
 
@@ -428,6 +417,17 @@ class MPCC:
             self.tar_x =  tarx
             self.tar_y =  tary
             self.iter_time = rospy.Time.now()
+
+            if(0>=((pos_x*m+b)-pos_y)):
+                self.a0 = m
+                self.b0 = b
+                self.a1 = m1
+                self.b1 = b1
+            else:
+                self.a0 = m1
+                self.b0 = b1
+                self.a1 = m
+                self.b1 = b
                 
         x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
 
