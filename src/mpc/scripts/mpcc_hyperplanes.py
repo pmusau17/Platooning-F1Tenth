@@ -65,6 +65,8 @@ class MPCC:
         self.b0 = 0
         self.a1 = -1
         self.b1 = 1
+        self.c1 = 1
+        self.c2 = 1
 
         self.count = 0
         # mpc horizon
@@ -128,6 +130,8 @@ class MPCC:
             template["_tvp", k, "b0"] = self.b0
             template["_tvp", k, "a1"] = self.a1
             template["_tvp", k, "b1"] = self.b1
+            template["_tvp", k, "c1"] = self.c1
+            template["_tvp", k, "c2"] = self.c2
             template["_tvp",k,"target_theta"] = self.tar_theta
             # template["_tvp", k, "x_min"] = self.x_min
             # template["_tvp", k, "x_max"] = self.x_max
@@ -306,8 +310,8 @@ class MPCC:
                 self.visualize_lines([line1,line2])
         else:
 
-            #self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
-            self.lidar_to_cart(lidar_data,pos_x,pos_y,head_angle,0)
+            self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
+            #self.lidar_to_cart(lidar_data,pos_x,pos_y,head_angle,0)
             self.left_points  = np.asarray(self.left_points).reshape((-1,2))
             self.right_points  = np.asarray(self.right_points).reshape((-1,2))
             curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
@@ -330,8 +334,8 @@ class MPCC:
 
             left_point = self.left_points[np.argmin(dist_arr)]
             #left_point = self.left_points[-1]
-            lx, ly = left_point[0] + math.cos(center_angle) * dist, left_point[1] + math.sin(center_angle)*dist
-            lx1, ly1 = left_point[0] + math.cos(center_angle) * (-dist), left_point[1] + math.sin(center_angle)*(-dist)
+            lx1, ly1 = left_point[0] + math.cos(center_angle) * dist, left_point[1] + math.sin(center_angle)*dist
+            lx, ly = left_point[0] + math.cos(center_angle) * (-dist), left_point[1] + math.sin(center_angle)*(-dist)
             line1 = [lx,ly,lx1,ly1]
             
             
@@ -339,9 +343,14 @@ class MPCC:
             #right_point = self.right_points[0]
             rx1, ry1 = right_point[0] + math.cos(center_angle) * (-dist), right_point[1] + math.sin(center_angle) * (-dist)
             rx, ry = right_point[0] + math.cos(center_angle) * dist, right_point[1] + math.sin(center_angle)*dist
+            
             line2 = [rx,ry,rx1,ry1]
 
-            p1 = self.xy_points[np.argmin(dist_arr3)]
+            self.visualize_lines([line1,line2])
+            self.left_points = []
+            self.right_points = []
+
+            #p1 = self.xy_points[np.argmin(dist_arr3)]
             #print(center_angle,p1)
             #self.left_points = [p1]
             #self.right_points = []
@@ -387,7 +396,6 @@ class MPCC:
             #self.left_points = [p1]
             #self.visualize_points()
 
-            self.visualize_lines([line1,line2])
 
         #self.lidar_to_cart(lidar_data[240:840], pos_x, pos_y, head_angle, 240)
 
@@ -407,7 +415,27 @@ class MPCC:
             
            
 
-        # print("cons1:",0 >= b,0>=((pos_x*m+b)-pos_y))
+        # above the left line 
+        print(m,m1,b,b1)
+        print("cons1u:", 0>=((pos_x*m+b)-pos_y))
+        # below the left line
+        print("cons1b:", 0>=(pos_y)-(pos_x*m+b))
+        # above the right line
+        print("cons2u:", 0>=((pos_x*m1+b1)-pos_y))
+        # below the right line 
+        print("cons2b:", 0>=(pos_y)-(pos_x*m1+b1))
+
+        if(0>=((pos_x*m+b)-pos_y)):
+            self.c1 = 1
+        else:
+            self.c1 = -1
+
+        if(0>=((pos_x*m1+b1)-pos_y)):
+            self.c2 = 1
+        else:
+            self.c2 = -1
+
+
         # print("cons2:",0 <= b1,0<=((pos_x*m1+b1)-pos_y))
         
         point = orig_point.markers[0]
@@ -433,16 +461,11 @@ class MPCC:
             self.tar_theta  = tar_theta
             self.iter_time = rospy.Time.now()
 
-            if(0>=((pos_x*m+b)-pos_y)):
-                self.a0 = m
-                self.b0 = b
-                self.a1 = m1
-                self.b1 = b1
-            else:
-                self.a0 = m1
-                self.b0 = b1
-                self.a1 = m
-                self.b1 = b
+        
+        self.a0 = m
+        self.b0 = b
+        self.a1 = m1
+        self.b1 = b1
 
 
                 
@@ -476,18 +499,16 @@ class MPCC:
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = rospy.Time.now()
         drive_msg.drive.steering_angle = float(u0[1])
-        drive_msg.drive.speed = 1.0
+        drive_msg.drive.speed = 1.0 #float(u0[0])
         self.drive_publish.publish(drive_msg)
 
-        self.count+=1
+        # self.count+=1
     
-        rospy.logwarn("count: {}".format(self.count))
+        # rospy.logwarn("count: {}".format(self.count))
 
-        self.left_points = []
-        self.right_points = []
-        self.left_points = [[self.tar_x,self.tar_y]]
-        self.right_points = [[pp_point.markers[0].pose.position.x,pp_point.markers[0].pose.position.y]]
-        self.visualize_points()
+        #self.left_points = [[self.tar_x,self.tar_y]]
+        #self.right_points = [[pp_point.markers[0].pose.position.x,pp_point.markers[0].pose.position.y]]
+        #self.visualize_points()
 
         # reset left and right points
         
