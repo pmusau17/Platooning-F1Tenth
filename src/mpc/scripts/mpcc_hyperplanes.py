@@ -62,15 +62,17 @@ class MPCC:
         self.y_max = 100
 
         self.a0 = 1
-        self.b0 = 0
-        self.a1 = -1
+        self.b0 = 1
+        self.a1 = 1
         self.b1 = 1
         self.c1 = 1
         self.c2 = 1
 
         self.count = 0
         # mpc horizon
-        self.horizon = 5
+        # self.horizon = 5 so far the most successful horizon
+        
+        self.horizon = 6
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -133,10 +135,6 @@ class MPCC:
             template["_tvp", k, "c1"] = self.c1
             template["_tvp", k, "c2"] = self.c2
             template["_tvp",k,"target_theta"] = self.tar_theta
-            # template["_tvp", k, "x_min"] = self.x_min
-            # template["_tvp", k, "x_max"] = self.x_max
-            # template["_tvp", k, "y_min"] = self.y_min
-            # template["_tvp", k, "y_max"] = self.y_max
 
         return template
 
@@ -168,15 +166,6 @@ class MPCC:
                 self.left_points.append(p3)
             else:
                 self.right_points.append(p3)
-        # self.left_points =  [l_xmax,l_ymax,l_xmin,l_ymin]
-        # self.right_points = [r_xmin,r_ymin,r_xmax,r_ymax]
-        # p1 = [l_xmax,l_ymax]
-        # p2 = [l_xmin,l_ymin]
-        # p3 = [r_xmin,r_ymin]
-        # p4 = [r_xmax,r_ymax]
-            
-        
-        #return p1,p2,p3,p4
 
         
 
@@ -310,8 +299,8 @@ class MPCC:
                 self.visualize_lines([line1,line2])
         else:
 
-            self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
-            #self.lidar_to_cart(lidar_data,pos_x,pos_y,head_angle,0)
+            #self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
+            self.lidar_to_cart(lidar_data,pos_x,pos_y,head_angle,0)
             self.left_points  = np.asarray(self.left_points).reshape((-1,2))
             self.right_points  = np.asarray(self.right_points).reshape((-1,2))
             curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
@@ -321,13 +310,6 @@ class MPCC:
 
             dist = 3.0 
             
-
-            #lps = self.left_points[max(np.argmin(dist_arr)-20,0):np.argmin(dist_arr)+20]
-            #print(lps)
-            # lx, ly  = self.left_points[-1]
-            # lx1, ly1 = self.left_points[np.argmin(dist_arr)]
-           
-
             center_angle = self.eulers[np.argmin(dist_arr3)]
 
             
@@ -469,7 +451,8 @@ class MPCC:
 
 
                 
-        x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
+        #x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
+        x0 = np.array([pos_x, pos_y, head_angle,1]).reshape(-1, 1)
 
         # linear velocity 
         velx = pose_msg.twist.twist.linear.x
@@ -499,7 +482,8 @@ class MPCC:
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = rospy.Time.now()
         drive_msg.drive.steering_angle = float(u0[1])
-        drive_msg.drive.speed = 1.0 #float(u0[0])
+        #drive_msg.drive.speed = 1.0 
+        drive_msg.drive.speed = float(u0[0])
         self.drive_publish.publish(drive_msg)
 
         # self.count+=1

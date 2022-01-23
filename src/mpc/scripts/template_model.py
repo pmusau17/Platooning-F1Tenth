@@ -14,6 +14,7 @@ def template_model():
     car_x = model.set_variable(var_type='_x', var_name='car_x', shape=(1, 1))
     car_y = model.set_variable(var_type='_x', var_name='car_y', shape=(1, 1))
     car_theta = model.set_variable(var_type='_x', var_name='car_theta', shape=(1, 1))
+    car_time = model.set_variable(var_type='_x', var_name='time', shape=(1, 1))
 
     car_v = model.set_variable(var_type='_u', var_name='car_v')
     car_delta = model.set_variable(var_type='_u', var_name='car_delta')
@@ -27,6 +28,7 @@ def template_model():
     model.set_rhs("car_x", car_v * casadi.cos(car_theta + slip_factor))
     model.set_rhs("car_y", car_v * casadi.sin(car_theta + slip_factor))
     model.set_rhs("car_theta", car_v * casadi.tan(car_delta)* casadi.cos(slip_factor) / WHEELBASE_LENGTH)
+    model.set_rhs("time",car_v/car_v)
 
     # Create time-varying-parameters, these will be populated with (potentially) different data at each call
     model.set_variable(

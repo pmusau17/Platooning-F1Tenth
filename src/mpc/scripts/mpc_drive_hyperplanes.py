@@ -49,7 +49,7 @@ class MPC:
 
         self.display_in_rviz = True
         self.use_pure_pursuit = True
-        self.increment = 1
+        self.increment = 10
 
         # parameters for tvp callback function 
         self.tar_x = 0 
@@ -353,8 +353,8 @@ class MPC:
         if(rectangle.count > 0):
             if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min, rectangle.obstacle_list[rectangle.count-1].y_max)): # If ego-car overlaps with opponent's reachset include reachset points to the left/right arrays
             
-                bx = self.lidar_to_cart(lidar_data.ranges[540], posx, posy, head_angle, 540).position_x # find b point to create a line from ego car
-                by = self.lidar_to_cart(lidar_data.ranges[540], posx, posy, head_angle, 540).position_y # find b point to create a line from ego car
+                bx = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][0]  # find b point to create a line from ego car
+                by = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][1]  # find b point to create a line from ego car
                 
                 mid_rectangle_x = (rectangle.obstacle_list[rectangle.count-1].x_min + rectangle.obstacle_list[rectangle.count-1].x_max) # mid point of the convex hull
                 mid_rectangle_y = (rectangle.obstacle_list[rectangle.count-1].y_min + rectangle.obstacle_list[rectangle.count-1].y_max) # mid point of the convex hull
