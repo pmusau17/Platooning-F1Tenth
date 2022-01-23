@@ -49,7 +49,7 @@ class MPC:
 
         self.display_in_rviz = True
         self.use_pure_pursuit = True
-        self.increment = 20
+        self.increment = 1
 
         # parameters for tvp callback function 
         self.tar_x = 0 
@@ -330,8 +330,7 @@ class MPC:
     
     def mpc_drive(self, posx, posy, head_angle, tarx, tary,lidar_data,hypes):
 
-        drive_msg = AckermannDriveStamped()
-        drive_msg.header.stamp = rospy.Time.now()
+
                 
         rectangle = hypes # Get hyper-rectangles of the opponent vehicle
                  
@@ -365,7 +364,7 @@ class MPC:
                     
                     hw_l_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)), epsilon=0.03)
                     hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)
-                    a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
+                    a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
 
                 else:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
@@ -373,23 +372,24 @@ class MPC:
                     hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=0.03)
                     hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
                     
-                    a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
+                    a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
 
 
             else:
+                print(hw_l_filtered[:,0].tolist())
+                print(hw_l_filtered[:,1].tolist())
+                print(hw_r_filtered[:,0].tolist())
+                print(hw_r_filtered[:,1].tolist())
                 hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
                 hw_r_filtered = rdp(hw_r_filtered,  epsilon=0.03)       
                 start = time.time()   
-                a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
-                print(time.time() - start)
+                a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
+                print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
-                
-
-  
         else:   
             hw_l_filtered = rdp(hw_l_filtered, epsilon=0.03)    
             hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)   
-            a0, b0, a1, b1 = find_constraints(posx, posy, hw_l_filtered, hw_r_filtered, tarx, tary)
+            a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary)
 
             
             
@@ -425,23 +425,31 @@ class MPC:
 
             
         
-        # if(tarx==-1 and tary==-1):
-        #     drive_msg.drive.steering_angle = 0.0
-        #     drive_msg.drive.speed = 0.0
-        # else:
-        #     model = template_model()
-        #     mpc = template_mpc(model, tarx, tary, a0, b0, a1, b1, flag0, flag1)  
-        #     x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-        #     mpc.x0 = x0
-        #     mpc.set_initial_guess()
+        #drive_msg = AckermannDriveStamped()
+        #drive_msg.header.stamp = rospy.Time.now()
+             #model = template_model()
+             #mpc = template_mpc(model, self.horizon)  
+             #x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+             #mpc.x0 = x0
+             #mpc.set_initial_guess()
+        #x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)     
+        #if(self.count==0):
+        #    self.mpc.x0 = x0
+        #    self.mpc.set_initial_guess()    
                 
-        #     u0 = mpc.make_step(x0)
+        #u0 = self.mpc.make_step(x0)
+               
+        #drive_msg.drive.steering_angle = float(u0[1])
+        #drive_msg.drive.speed = 1
+        #self.drive_publish.publish(drive_msg)
 
-        #     drive_msg.drive.steering_angle = float(u0[1])
-        #     drive_msg.drive.speed = float(u0[0])
-        #     self.drive_publish.publish(drive_msg)
 
+        #self.count+=1
+    
+        #rospy.logwarn("count: {}".format(self.count))
         
+        #if(self.count>100):
+        #    self.count = 1        
             
 
     def visualize_lines(self, lines):
