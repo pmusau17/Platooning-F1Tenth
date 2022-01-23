@@ -92,9 +92,9 @@ class MPCC:
         # self.left_points.append(pt)
 
         self.read_waypoints(waypoint_file,obstacle_file)
-        self.vis_pub = rospy.Publisher('hyper_planes', MarkerArray,queue_size=100)
+        self.vis_pub = rospy.Publisher('hyper_planes', MarkerArray,queue_size=1)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
-        self.vis_pub2 = rospy.Publisher("wallpoint_classification", MarkerArray, queue_size=10)
+        self.vis_pub2 = rospy.Publisher("wallpoint_classification", MarkerArray, queue_size=1)
 
         # instantiate the subscribers
 
@@ -110,7 +110,7 @@ class MPCC:
    
 
         #create the time synchronizer
-        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 20, slop = 0.019,allow_headerless=True)
+        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 1, slop = 0.019,allow_headerless=True)
         
         #register the callback to the synchronizer
         self.main_sub.registerCallback(self.main_callback)
@@ -146,8 +146,10 @@ class MPCC:
         markerArray = MarkerArray()
         for index, lidar_range in enumerate(ranges):
             curr_index = starting_index + index
-            if(curr_index>360 and curr_index<720):
-                continue
+            # if(curr_index>360 and curr_index<720):
+            #     continue
+            if(curr_index>180 and curr_index<900):
+                 continue
             angle=((starting_index + index)-540)/4.0
             rad=(angle*math.pi)/180
             laser_beam_angle = rad
@@ -158,7 +160,6 @@ class MPCC:
             # it's in the xacro file
             x_coordinate = (lidar_range) * math.cos(rotated_angle) + position_x + 0.265*math.cos(heading_angle)
             y_coordinate = (lidar_range) * math.sin(rotated_angle) + position_y + 0.265*math.sin(heading_angle)
-            #points.append(CartesianPoint(x_coordinate, y_coordinate))
             
             p3 = [x_coordinate,y_coordinate]
                         
@@ -188,7 +189,6 @@ class MPCC:
         with open(filename) as f:
             self.eulers = [tuple(line)[2] for line in csv.reader(f)]
         self.eulers = np.asarray(self.eulers).astype('double')
-        print(self.eulers)
 
         # get path to obstacle points
         package_path=rospack.get_path('race')
@@ -299,20 +299,34 @@ class MPCC:
                 self.visualize_lines([line1,line2])
         else:
 
-            #self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
+            
+            
+            # convert each of the lidar points to cartesian
             self.lidar_to_cart(lidar_data,pos_x,pos_y,head_angle,0)
+            #self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
+
+            # convert the points to numpy arrays to make distance computations easier
             self.left_points  = np.asarray(self.left_points).reshape((-1,2))
             self.right_points  = np.asarray(self.right_points).reshape((-1,2))
+            
+            # get the current position
             curr_pos= np.asarray([pos_x,pos_y]).reshape((1,2))
+            
+            # compute the distances to all the left points
             dist_arr = np.linalg.norm(self.left_points-curr_pos,axis=-1)
+
+            # compute the distances to all the right points
             dist_arr2 = np.linalg.norm(self.right_points-curr_pos,axis=-1)
+
+            # compute the distance to the closest waypoint
             dist_arr3 = np.linalg.norm(self.xy_points - curr_pos,axis=-1)
 
-            dist = 3.0 
+            
             
             center_angle = self.eulers[np.argmin(dist_arr3)]
 
-            
+            # half the distance of the lines
+            dist = 3.0 
 
             left_point = self.left_points[np.argmin(dist_arr)]
             #left_point = self.left_points[-1]
@@ -331,48 +345,6 @@ class MPCC:
             self.visualize_lines([line1,line2])
             self.left_points = []
             self.right_points = []
-
-            #p1 = self.xy_points[np.argmin(dist_arr3)]
-            #print(center_angle,p1)
-            #self.left_points = [p1]
-            #self.right_points = []
-            #self.visualize_points()
-            
-            # #right_point = self.right_points[np.argmin(dist_arr2)]
-            # #print(np.argmin(dist_arr2))
-            # #rps = self.right_points[max(np.argmin(dist_arr2)-20,0):np.argmin(dist_arr2)+20]
-            # #print(rps)
-            # rx, ry = self.right_points[0]
-            # rx1, ry1 = self.right_points[np.argmin(dist_arr2)]
-            
-
-            # m  = (ly1 - ly) / (lx1 - lx)
-            # b = ly1 - (m*lx1)
-
-            # m1 = (ry1 - ry) / (rx1 - rx)
-            # b1 = ry1 - (m1*rx1)
-
-            # x1 = rx1 -1 
-            # x2 = rx1 + 1
-            # y1 = m*x1 + b
-            # y2 = m*x2 + b
-
-            # x01 = lx -1 
-            # x02 = lx + 1
-            # y01 = m1*x01 + b1
-            # y02 = m1*x02 + b1
-            
-            # line1 = [x1,y1,x2,y2]
-            # line2 = [x01,y01,x02,y02]
-
-            # line1 = [rx1,ry1,x2,y2]
-            # line2 = [lx,ly,x02,y02]
-
-            #self.visualize_points()
-           
-            #self.visualize_points()
-            self.left_points = []
-            self.right_points = []
             
             # closest center point 
             #self.left_points = [p1]
@@ -388,14 +360,6 @@ class MPCC:
         
         m1 = (ry1 - ry) / (rx1 - rx)
         b1 = ry1 - (m*rx1)
-
-        # print(m,m1)
-        # print(0>=((pos_x*m+b)-pos_y), 0>=(pos_y-(pos_x*m1+b1)))
-        # print(0>=((pos_x*m1+b1)-pos_y), 0>=(pos_y-(pos_x*m+b)))
-
-        
-            
-           
 
         # above the left line 
         print(m,m1,b,b1)
@@ -420,8 +384,9 @@ class MPCC:
 
         # print("cons2:",0 <= b1,0<=((pos_x*m1+b1)-pos_y))
         
+
         point = orig_point.markers[0]
-            
+
         tarx,tary = point.pose.position.x, point.pose.position.y
 
         tar_pos   = np.asarray([tarx,tary]).reshape((1,2))
@@ -459,7 +424,7 @@ class MPCC:
         vely = pose_msg.twist.twist.linear.y
         velz = pose_msg.twist.twist.linear.z
 
-        self.visualize_points()
+        #self.visualize_points()
 
 
         
@@ -643,4 +608,7 @@ if __name__ == '__main__':
     waypoint_file = "track_porto_26780.csv"
     obstacle_file = "track_porto_obstacles.txt"
     mpc = MPCC(waypoint_file,obstacle_file)
-    rospy.spin()
+    r = rospy.Rate(80)
+    while not rospy.is_shutdown():
+        r.sleep()
+    #rospy.spin()

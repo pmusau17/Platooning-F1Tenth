@@ -74,9 +74,9 @@ class MPC:
         self.mpc.set_tvp_fun(self.change_target_position_template)
         self.mpc.setup()
 
-        self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=100)
+        self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=1)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
-        self.vis_pub = rospy.Publisher("sanity_pub", MarkerArray, queue_size=10)
+        self.vis_pub = rospy.Publisher("sanity_pub", MarkerArray, queue_size=1)
 
         # instantiate the subscribers
 
@@ -86,7 +86,7 @@ class MPC:
         self.pp_sub = Subscriber('racecar2/goal_point', MarkerArray)
 
         #create the time synchronizer
-        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 20, slop = 0.019,allow_headerless=True)
+        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 1, slop = 0.019,allow_headerless=True)
         
         #register the callback to the synchronizer
         self.main_sub.registerCallback(self.main_callback)
@@ -542,4 +542,6 @@ class MPC:
 if __name__ == '__main__':
     rospy.init_node('mpc_node')
     mpc = MPC()
-    rospy.spin()
+    r = rospy.Rate(80)
+    while not rospy.is_shutdown():
+        r.sleep()
