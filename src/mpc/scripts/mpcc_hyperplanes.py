@@ -146,10 +146,8 @@ class MPCC:
         markerArray = MarkerArray()
         for index, lidar_range in enumerate(ranges):
             curr_index = starting_index + index
-            # if(curr_index>360 and curr_index<720):
-            #     continue
-            if(curr_index>180 and curr_index<900):
-                 continue
+            # if(curr_index>180 and curr_index<900):
+            #      continue
             angle=((starting_index + index)-540)/4.0
             rad=(angle*math.pi)/180
             laser_beam_angle = rad
@@ -611,4 +609,3 @@ if __name__ == '__main__':
     r = rospy.Rate(80)
     while not rospy.is_shutdown():
         r.sleep()
-    #rospy.spin()

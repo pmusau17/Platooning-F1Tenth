@@ -35,7 +35,7 @@
     <arg name="wall_time" default="1.0"/>
 
     <!--number of vehicles to launch in the simulation environment-->
-    <arg name='number_of_cars' default='2'/>
+    <arg name='number_of_cars' default='3'/>
 
     <!--Select the car we are computing reachability for-->
     <arg name='car_name' default='racecar2'/>
@@ -76,7 +76,14 @@
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 
     <!-- controller for opponent vehicle  -->
-    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/>
+    <!-- <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/> -->
+
+    <!-- controller for opponent vehicle  -->
+    <!-- <node pkg="race" name="disparity_extender_opponent_vehicle2" type="disparity_extender_vanderbilt_gen.py" args="racecar3 10"/> -->
+
+  <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)" output="screen" required="true"/> -->
+  <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)" output="screen" required="true"/> -->
+
 
 
 
