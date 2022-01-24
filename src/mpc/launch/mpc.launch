@@ -70,8 +70,11 @@
     <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==2)" required="true"/>
 
 
-    <!--Launch Pure Pursuit Node-->
-    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="screen" required="true"/> -->
+    <!--Launch Pure Pursuit Node
+    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="screen" required="true"/>-->
+
+    <!--Launch Disparity Extender Waypoint Following-->
+    <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2" required="true"/>
 
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 
@@ -81,8 +84,10 @@
     <!-- controller for opponent vehicle  -->
     <!-- <node pkg="race" name="disparity_extender_opponent_vehicle2" type="disparity_extender_vanderbilt_gen.py" args="racecar3 10"/> -->
 
-  <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)" output="screen" required="true"/> -->
-  <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)" output="screen" required="true"/> -->
+    
+
+  <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)" output="screen" required="true"/> 
+  <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)" output="screen" required="true"/> 
 
 
 
