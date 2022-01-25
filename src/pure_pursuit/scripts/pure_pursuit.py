@@ -22,7 +22,7 @@ class pure_pursuit:
         self.waypoint_file = waypoint_file
 
         # pure pursuit parameters
-        self.LOOKAHEAD_DISTANCE = 1.1#1.70 # meters
+        self.LOOKAHEAD_DISTANCE = 1.7#1.70 # meters
         
         # Distance from the 
         self.distance_from_rear_wheel_to_front_wheel = 0.5
@@ -148,13 +148,14 @@ class pure_pursuit:
         
         # calculate the steering angle
         angle = math.atan2(ygv,xgv)
-        self.const_speed(angle)
-        #self.set_speed(angle)
+        #self.const_speed(angle)
+        self.set_speed(angle)
    
     # USE THIS FUNCTION IF CHANGEABLE SPEED IS NEEDED
     def set_speed(self,angle):
 
         msg = drive_param()
+        msg.angle = angle
         
         angle = abs(angle)
         if(angle <0.01):
@@ -204,6 +205,7 @@ if __name__ == '__main__':
     racecar_name=args[0]
     # get the path to the file containing the waypoints
     waypoint_file=args[1]
+    rospy.sleep(5.0)
     C = pure_pursuit(racecar_name,waypoint_file)  
 
     # spin

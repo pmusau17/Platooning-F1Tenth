@@ -156,6 +156,7 @@ class DisparityExtenderDriving(object):
 
         """Yeah nah this aint working for us: velocity=self.duty_cycle_from_distance(limited_ranges[540])
         print(velocity)"""
+        velocity = self.set_speed(thresholded_angle)
         self.publish_speed_and_angle(thresholded_angle,velocity)
 
 
@@ -176,6 +177,30 @@ class DisparityExtenderDriving(object):
                 velocity=self.min_speed
         rospy.loginfo("Chosen Distance: "+str(forward_distance)+", Velocity: "+str(velocity)+" straight ahead: "+str(straight_ahead_distance))
         return velocity
+
+
+    def set_speed(self,angle):
+        angle = abs(angle)
+        if(angle <0.01):
+            speed = 3.0#11.5
+        elif(angle<0.0336332):
+            speed = 2.7#11.1
+        elif(angle < 0.0872665):
+            speed = 2.4#7.6
+        elif(angle<0.1309):
+            speed = 2.3#6.5 
+        elif(angle < 0.174533):
+            speed = 2.2#6.0
+        elif(angle < 0.261799):
+            speed = 2.1#5.5
+        elif(angle < 0.349066):
+            speed = 1.5#3.2
+        elif(angle < 0.436332):
+            speed = 1.3#5.1
+        else:
+            speed = 1.0
+        return speed
+        
 
    
     """function that make sure we don't turn too sharply and collide with a wall
@@ -221,7 +246,7 @@ class DisparityExtenderDriving(object):
     def publish_speed_and_angle(self,angle,speed):
         msg = drive_param()
         msg.angle = angle
-        msg.velocity = 0.9 #right now I want constant speed
+        msg.velocity = speed #right now I want constant speed
         self.pub_drive_param.publish(msg)
 
 
