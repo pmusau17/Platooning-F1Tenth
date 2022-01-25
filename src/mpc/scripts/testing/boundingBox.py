@@ -21,11 +21,12 @@ def isinbox(box,inside=True):
 
         plt.plot(points[i][0],points[i][1],colors[i])
     
+    visited = []
+    for i in range(1):
 
-    for i in range(1000):
-
-        #point = [3,3]
         point = [np.random.randint(box[0][0]-10,box[0][1]+10),np.random.randint(box[1][0]-10,box[1][1]+10)]
+        if(point in visited):
+            continue
         p1 = np.asarray(point)
         v1 = (top_left_corner-bottom_left_corner)
         v2 = (bottom_right_corner-bottom_left_corner)
@@ -48,6 +49,7 @@ def isinbox(box,inside=True):
                 plt.plot(point[0],point[1],'m.')
             else:
                 plt.plot(point[0],point[1],'k.')
+        visited.append(point)
 
     plt.xlim([-20, 20])
     plt.ylim([-20, 20])
