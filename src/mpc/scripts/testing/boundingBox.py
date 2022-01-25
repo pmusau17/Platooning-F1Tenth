@@ -6,7 +6,7 @@ This is where I got this procedure but essentially it's just some vector math
 
 """
 
-def isinbox(box):
+def isinbox(box,inside=True):
 
     bottom_left_corner = np.asarray([box[0][0],box[1][0]])
     bottom_right_corner = np.asarray([box[0][1],box[1][0]])
@@ -31,18 +31,23 @@ def isinbox(box):
         v2 = (bottom_right_corner-bottom_left_corner)
         v3  = (p1 - bottom_left_corner)
 
-        # this to check for all the points with in the rectangle
-        eq1 =   (np.dot(v1,bottom_left_corner) <np.dot(v1,p1))  and (np.dot(v1,p1)< np.dot(v1,top_left_corner))
-        eq2 =   (np.dot(v2,bottom_left_corner) <np.dot(v2,p1)) and (np.dot(v2,p1)<np.dot(v2,bottom_right_corner))
-
-        # now what I need is the negation of the above formula
-        eq1 =   (np.dot(v1,bottom_left_corner) <np.dot(v1,p1))  and (np.dot(v1,p1)< np.dot(v1,top_left_corner))
-        eq2 =   (np.dot(v2,bottom_left_corner) <np.dot(v2,p1)) and (np.dot(v2,p1)<np.dot(v2,bottom_right_corner))
-
-        if(eq1 and eq2):
-            plt.plot(point[0],point[1],'m.')
+        if(inside):
+            # this to check for all the points with in the rectangle
+            eq1 =   (np.dot(v1,bottom_left_corner) <np.dot(v1,p1))  and (np.dot(v1,p1)< np.dot(v1,top_left_corner))
+            eq2 =   (np.dot(v2,bottom_left_corner) <np.dot(v2,p1)) and (np.dot(v2,p1)<np.dot(v2,bottom_right_corner))
+            if(eq1 and eq2):
+                plt.plot(point[0],point[1],'m.')
+            else:
+                plt.plot(point[0],point[1],'k.')
         else:
-            plt.plot(point[0],point[1],'k.')
+            # now what I need is the negation of the above formula
+            eq1 =   (np.dot(v1,bottom_left_corner) > np.dot(v1,p1))  or (np.dot(v1,p1)> np.dot(v1,top_left_corner))
+            eq2 =   (np.dot(v2,bottom_left_corner) > np.dot(v2,p1)) or (np.dot(v2,p1)>np.dot(v2,bottom_right_corner))
+
+            if(eq1 or eq2):
+                plt.plot(point[0],point[1],'m.')
+            else:
+                plt.plot(point[0],point[1],'k.')
 
     plt.xlim([-20, 20])
     plt.ylim([-20, 20])
