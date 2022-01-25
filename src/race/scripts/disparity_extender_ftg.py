@@ -88,7 +88,7 @@ class DisparityExtenderDriving(object):
 
         self.no_obstacles_distance = 6.0
 
-        self.lookahead = 0.8
+        self.lookahead = 1.0
 
 
         # subscribers 
@@ -202,7 +202,6 @@ class DisparityExtenderDriving(object):
 
         x = float(pt[0])
         y = float(pt[1])
-        rospy.logwarn("This is working {} {}".format(x,y))
         marker = Marker()
         marker.header.frame_id = frame
         marker.header.stamp = rospy.Time.now()

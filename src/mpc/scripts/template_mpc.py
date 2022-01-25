@@ -34,11 +34,13 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     #lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
     #lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)  + (_x["time"])**2
 
+    #lterm = (_x["time"])**2
+
     # I've tried penalizing theta but it might be that the model theta error is quite large since
     # it's a linear model ((_tvp['target_theta'] - _x['car_theta']) ** 2)
     
     # objective function of euclidean distance in xyz
-    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
+    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)# +  (_x["time"])**2
     
     mpc.set_objective(mterm=mterm, lterm=lterm)
     # configurations that I've tried
@@ -48,11 +50,11 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     # the r_term is quite sensitive
     # use this one if the speed is over 2
     #mpc.set_rterm(car_v=15.0 , car_delta=0.0)
-    mpc.set_rterm(car_v=0.6 , car_delta=0.6)
+    mpc.set_rterm(car_v=1.0 , car_delta=0.1)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 3.5
+    mpc.bounds['upper', '_u', 'car_v'] = 1.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
     #mpc.scaling['_x', 'car_theta'] = 2

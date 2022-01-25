@@ -71,8 +71,11 @@ class MPCC:
         self.count = 0
         # mpc horizon
         # self.horizon = 5 so far the most successful horizon
+        # self.horizon = 10 is too much
+
+        # The horizon is probably the most important thing
         
-        self.horizon = 6
+        self.horizon = 4
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -93,6 +96,7 @@ class MPCC:
 
         self.read_waypoints(waypoint_file,obstacle_file)
         self.vis_pub = rospy.Publisher(racecar_name+'/hyper_planes', MarkerArray,queue_size=1)
+        self.vis_pub3 = rospy.Publisher('opponent/convex_hull', MarkerArray,queue_size=1)
         if(racecar_name=='racecar'):
             self.drive_publish = rospy.Publisher('/vesc/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
         elif(racecar_name=="racecar2"):
@@ -106,16 +110,14 @@ class MPCC:
         self.lidar_sub = Subscriber(racecar_name+'/scan', LaserScan)
         self.odom_sub  = Subscriber(racecar_name+'/odom', Odometry)
         self.reach_sub = Subscriber('racecar/reach_tube', reach_tube)
+        self.reach_sub2 = Subscriber('racecar3/reach_tube', reach_tube)
         self.pp_sub = Subscriber(racecar_name+'/goal_point', MarkerArray)
 
       
         self.u0 = [0,0]
 
-         
-   
-
         #create the time synchronizer
-        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.pp_sub], queue_size = 1, slop = 0.019,allow_headerless=True)
+        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.reach_sub2,self.pp_sub], queue_size = 1, slop = 0.019,allow_headerless=True)
         
         #register the callback to the synchronizer
         self.main_sub.registerCallback(self.main_callback)
@@ -228,7 +230,7 @@ class MPCC:
     """
 
     # The main callback functions of mpc are called within this callback
-    def main_callback(self,lidar_data,pose_msg,hypes,pp_point):
+    def main_callback(self,lidar_data,pose_msg,hypes_opp1,hypes_opp2,pp_point):
         
         orig_point = copy.deepcopy(pp_point)
         lidar_data = np.asarray(lidar_data.ranges)
@@ -404,7 +406,7 @@ class MPCC:
             #if(self.count==0 or distance<0.1):
         
         rospy.logwarn("{},{},{},{}".format(point.pose.position.x,point.pose.position.y,self.tar_x,self.tar_y))
-        if(self.count==0 or distance<1.9 or (rospy.Time.now()-self.iter_time).to_sec()>15):
+        if(True or self.count==0 or distance<1.9 or (rospy.Time.now()-self.iter_time).to_sec()>15):
             rospy.logwarn("Change Target")
             self.tar_x =  point.pose.position.x
             self.tar_y =  point.pose.position.y
@@ -412,6 +414,26 @@ class MPCC:
             self.iter_time = rospy.Time.now()
 
         
+        intervals = []
+        # visualize the convex hull for sanity checking
+        if(hypes_opp1.count>0):
+            convex_hull = hypes_opp1.obstacle_list[hypes_opp1.count-1]
+            intvl = [[convex_hull.x_min,convex_hull.x_max],
+                    [convex_hull.y_min,convex_hull.y_max]]
+            intervals.append(intvl)
+
+        if(hypes_opp2.count>0):
+            convex_hull = hypes_opp2.obstacle_list[hypes_opp2.count-1]
+            intvl = [[convex_hull.x_min,convex_hull.x_max],
+                    [convex_hull.y_min,convex_hull.y_max]]
+            intervals.append(intvl)
+            
+            
+            
+        self.visualize_rectangles(intervals)
+
+
+        # set the constants for the hyper-planes
         self.a0 = m
         self.b0 = b
         self.a1 = m1
@@ -566,12 +588,10 @@ class MPCC:
 
         self.vis_pub.publish(markerArray)
         
-    def visualize_rectangles(self,mpc_inteval):
+    def visualize_rectangles(self,intervals):
         markerArray = MarkerArray()
 
-        intervals = [mpc_inteval]
-
-        for i in range(1):
+        for i in range(len(intervals)):
             hull = intervals[i]
 
             marker = Marker()
@@ -604,7 +624,7 @@ class MPCC:
 
             markerArray.markers.append(marker)
 
-        self.vis_pub.publish(markerArray)        
+        self.vis_pub3.publish(markerArray)        
 
 if __name__ == '__main__':
     rospy.init_node('mpcc_node')

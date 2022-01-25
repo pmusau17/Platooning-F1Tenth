@@ -29,7 +29,7 @@
     <arg name="box_display_limit" default="100"/>
 
     <!-- reach-time is the time we are computing reachability for-->
-    <arg name="reach_time" default="1.0"/>
+    <arg name="reach_time" default="0.5"/>
 
     <!--wall-time is the time we allow the reachability algorithm to run for-->
     <arg name="wall_time" default="1.0"/>
@@ -66,7 +66,7 @@
 
     <!-- <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/>  -->
     <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar2" required="true"/>
-    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/>
+    <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
     <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" if="$(eval arg('mpc_model')==1)" required="true"/>
     <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==2)" required="true"/>
 
@@ -76,15 +76,16 @@
 
     <!--Launch Disparity Extender Waypoint Following-->
     <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2" required="true"/>
-    <node pkg="race" name="disparity_extender_target_point1" type="disparity_extender_ftg.py" args="racecar" required="true"/>
+    <!-- <node pkg="race" name="disparity_extender_target_point1" type="disparity_extender_ftg.py" args="racecar" required="true"/> -->
 
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
+    <node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 
     <!-- controller for opponent vehicle  -->
-    <!-- <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/> -->
+    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/>
 
     <!-- controller for opponent vehicle  -->
-    <node pkg="race" name="disparity_extender_opponent_vehicle2" type="disparity_extender_vanderbilt_gen.py" args="racecar3 10"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle2" type="disparity_extender_vanderbilt_gen.py" args="racecar3 15"/>
 
     
 
