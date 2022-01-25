@@ -9,6 +9,9 @@ Panels:
         - /LaserScan1
         - /TF1
         - /LaserScan2
+        - /MarkerArray3
+        - /MarkerArray4
+        - /MarkerArray5
         - /MarkerArray7
         - /MarkerArray8
         - /MarkerArray9
@@ -300,13 +303,13 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /racecar/reach_hull_obs
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /racecar2/reach_hull
@@ -318,14 +321,6 @@ Visualization Manager:
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /racecar2/reach_hull_param
-      Name: MarkerArray
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /sanity_pub
       Name: MarkerArray
       Namespaces:
         {}
@@ -349,7 +344,15 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /hyper_planes
+      Marker Topic: racecar2/hyper_planes
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /racecar/hyper_planes
       Name: MarkerArray
       Namespaces:
         "": true
@@ -383,7 +386,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 17.105432510375977
+      Distance: 35.01319885253906
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

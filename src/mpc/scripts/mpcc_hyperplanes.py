@@ -46,7 +46,7 @@ import csv
 class MPCC: 
 
     # Constructor
-    def __init__(self,waypoint_file,obstacle_file):
+    def __init__(self,waypoint_file,obstacle_file,racecar_name="racecar2"):
         self.log_hypers = False
         self.use_map  = False
         self.display_in_rviz = False
@@ -92,16 +92,21 @@ class MPCC:
         # self.left_points.append(pt)
 
         self.read_waypoints(waypoint_file,obstacle_file)
-        self.vis_pub = rospy.Publisher('hyper_planes', MarkerArray,queue_size=1)
-        self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
-        self.vis_pub2 = rospy.Publisher("wallpoint_classification", MarkerArray, queue_size=1)
+        self.vis_pub = rospy.Publisher(racecar_name+'/hyper_planes', MarkerArray,queue_size=1)
+        if(racecar_name=='racecar'):
+            self.drive_publish = rospy.Publisher('/vesc/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+        elif(racecar_name=="racecar2"):
+            self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+        else:
+            self.drive_publish = rospy.Publisher('/vesc3/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
+        self.vis_pub2 = rospy.Publisher(racecar_name+"/wallpoint_classification", MarkerArray, queue_size=1)
 
         # instantiate the subscribers
 
-        self.lidar_sub = Subscriber('racecar2/scan', LaserScan)
-        self.odom_sub  = Subscriber('racecar2/odom', Odometry)
+        self.lidar_sub = Subscriber(racecar_name+'/scan', LaserScan)
+        self.odom_sub  = Subscriber(racecar_name+'/odom', Odometry)
         self.reach_sub = Subscriber('racecar/reach_tube', reach_tube)
-        self.pp_sub = Subscriber('racecar2/goal_point', MarkerArray)
+        self.pp_sub = Subscriber(racecar_name+'/goal_point', MarkerArray)
 
       
         self.u0 = [0,0]
@@ -605,7 +610,9 @@ if __name__ == '__main__':
     rospy.init_node('mpcc_node')
     waypoint_file = "track_porto_26780.csv"
     obstacle_file = "track_porto_obstacles.txt"
-    mpc = MPCC(waypoint_file,obstacle_file)
+    args = rospy.myargv()[1:]
+    racecar_name=args[0]
+    mpc = MPCC(waypoint_file,obstacle_file,racecar_name=racecar_name)
     r = rospy.Rate(80)
     while not rospy.is_shutdown():
         r.sleep()
