@@ -88,7 +88,7 @@ class DisparityExtenderDriving(object):
 
         self.no_obstacles_distance = 6.0
 
-        self.lookahead = 1.0
+        self.lookahead = 0.5
 
 
         # subscribers 
@@ -173,7 +173,11 @@ class DisparityExtenderDriving(object):
         #figure out which direction we should target based on the max distances we computed from disparities
         driving_distance=self.calculate_target_distance(target_distances)
 
-        driving_distance = int(np.clip(driving_distance,360,720))
+        # only select points within  45 degrees
+        #driving_distance = int(np.clip(driving_distance,360,720))
+
+        # only selectpoints with -60 to + 60 
+        driving_distance = int(np.clip(driving_distance,300,780))
 
         quaternion = np.array([pose_msg.pose.pose.orientation.x,
                             pose_msg.pose.pose.orientation.y,

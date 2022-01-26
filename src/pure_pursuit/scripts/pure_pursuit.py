@@ -148,8 +148,8 @@ class pure_pursuit:
         
         # calculate the steering angle
         angle = math.atan2(ygv,xgv)
-        #self.const_speed(angle)
-        self.set_speed(angle)
+        self.const_speed(angle)
+        #self.set_speed(angle)
    
     # USE THIS FUNCTION IF CHANGEABLE SPEED IS NEEDED
     def set_speed(self,angle):
