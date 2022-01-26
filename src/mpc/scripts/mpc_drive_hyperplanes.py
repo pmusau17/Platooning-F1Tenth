@@ -48,7 +48,7 @@ class MPC:
         self.log_hypers = False
 
         self.display_in_rviz = True
-        self.use_pure_pursuit = True
+        self.use_pure_pursuit = False
         self.increment = 10
 
         # parameters for tvp callback function 
@@ -219,7 +219,7 @@ class MPC:
             marker.pose.position.z = -0.075
             markerArray.markers.append(marker)
             
-            self.vis_pub.publish(markerArray)
+            #self.vis_pub.publish(markerArray)
         
         return points[len(points)//2].cartesian
 
@@ -350,30 +350,40 @@ class MPC:
         
         #mpc_interval = [[x_min, x_max],[y_min, y_max]]     
         #self.visualize_rectangles(mpc_interval)
+        
+        bx = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][0]  # find b point to create a line from ego car
+        by = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][1]  # find b point to create a line from ego car
         if(rectangle.count > 0):
             if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min, rectangle.obstacle_list[rectangle.count-1].y_max)): # If ego-car overlaps with opponent's reachset include reachset points to the left/right arrays
             
-                bx = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][0]  # find b point to create a line from ego car
-                by = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][1]  # find b point to create a line from ego car
                 
                 mid_rectangle_x = (rectangle.obstacle_list[rectangle.count-1].x_min + rectangle.obstacle_list[rectangle.count-1].x_max) # mid point of the convex hull
                 mid_rectangle_y = (rectangle.obstacle_list[rectangle.count-1].y_min + rectangle.obstacle_list[rectangle.count-1].y_max) # mid point of the convex hull
                 
-                if (((bx - posx)*(mid_rectangle_y - posy)-(by - posy)*(mid_rectangle_x - posx)) > 0): # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered
+                if (((posx - tarx)*(mid_rectangle_y - tary)-(posy - tary)*(mid_rectangle_x - tarx)) > 0): # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered
+                    
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_l_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)), epsilon=0.03)
+                    print(hw_l_filtered_updated[:,0].tolist())
+                    print(hw_l_filtered_updated[:,1].tolist())
+                    print(hw_r_filtered[:,0].tolist())
+                    print(hw_r_filtered[:,1].tolist())
                     hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
+                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
                 else:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=0.03)
-                    hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
-                    
+                    print(hw_l_filtered[:,0].tolist())
+                    print(hw_l_filtered[:,1].tolist())
+                    print(hw_r_filtered_updated[:,0].tolist())
+                    print(hw_r_filtered_updated[:,1].tolist())
+                    hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)                   
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
-
+                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
             else:
                 print(hw_l_filtered[:,0].tolist())
@@ -391,15 +401,15 @@ class MPC:
             hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)   
             a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary)
 
-            
+  
             
         dist = 3.0
         pos_1x, pos1_y = posx + math.cos(head_angle) * dist, posy + math.sin(head_angle)*dist
         
-        x1 = posx 
+        x1 = posx -3
         y1 = a0 * x1 + b0
            
-        x2 = pos_1x 
+        x2 = pos_1x + 3
         y2 = a0 * x2 + b0 
 
         y3 = a1 * x1 + b1

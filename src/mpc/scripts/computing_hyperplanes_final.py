@@ -16,16 +16,20 @@ def objective(x): # Objective function tries to simply minimize constants a,b,c 
 
 def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
 
-    def g(x, a, b, c, d):
+    def g(x, a, b, c, d): # c,d = ego_x, ego_y
     # select a, b of the formula
+    # Algorithm for project ego and target coordinates to the hyperplane - https://stackoverflow.com/questions/10301001/perpendicular-on-a-line-segment-from-a-given-point
     
+          
+        # Find aX, aY        
         aX = d
-        aY = x[0] * aX + x[1]
-
-	    
+        aY =  x[0] * aX + x[1] 
+        
+        # Find bX, bY	
         bX = c
         bY = x[0] * bX + x[1] 
-		
+	
+	#Find cX, cY
         cX = a
         cY = b          
 		
@@ -39,10 +43,13 @@ def constraint_ego_car_hyperplane_1(i): #  hyperplane to left from the ego car
     def g(x, a, b, c, d):
     # select a, b of the formula
                 
+        # Find aX, aY
+        
         aX = c
-        aY = x[2] * aX + x[3]
+        aY = x[2] * aX + x[3] 
 
 	    
+        # Find bX, bY
         bX = d
         bY = x[2] * bX + x[3] 
 		
@@ -56,55 +63,71 @@ def constraint_ego_car_hyperplane_1(i): #  hyperplane to left from the ego car
 
 def constraint_opp_car_hyperplane_0(i):
 
-    def g(x, a, b, c, d):
-           
-        aX = c
-        aY = x[0]*aX + x[1]
+    def g(x, a, b, c, d): # c,d = ego_x, ego_y
+    # select a, b of the formula
+    # Algorithm for project ego and target coordinates to the hyperplane - https://stackoverflow.com/questions/10301001/perpendicular-on-a-line-segment-from-a-given-point
     
+          
+        # Find aX, aY        
+        aX = c
+        aY =  x[0] * aX + x[1] 
+        
+        # Find bX, bY	
         bX = d
         bY = x[0] * bX + x[1] 
-        
+	
+	#Find cX, cY
         cX = a
-        cY =  b          
+        cY = b          
+		
 
-        return ((bX - aX)*(cY - aY) - (bY - aY)*(cX - aX))  
+        return ((bX - aX)*(cY - aY) - (bY - aY)*(cX - aX)) 
 
      
     return g
     
 def constraint_opp_car_hyperplane_1(k):
 
-    def f(x, a, b, c, d):
-         
+    def g(x, a, b, c, d):
+    # select a, b of the formula
+                
+        # Find aX, aY
+        
         aX = d
-        aY = x[2]*aX + x[3]
-    
+        aY = x[2] * aX + x[3] 
+
+	    
+        # Find bX, bY
         bX = c
         bY = x[2] * bX + x[3] 
-        
+		
         cX = a
-        cY =  b                   
-    
-        return ((bX - aX)*(cY - aY) - (bY - aY)*(cX - aX))  
+        cY = b          
+		 
 
+        return ((bX - aX)*(cY - aY) - (bY - aY)*(cX - aX)) 
      
-    return f
+    return g
 
 
 
 
 def constraint_target_hyperplane_0(k):
 
-    def g(x, a, b, c, d):
+    def g(x, a, b, c, d): # c,d = ego_x, ego_y
     # select a, b of the formula
+    # Algorithm for project ego and target coordinates to the hyperplane - https://stackoverflow.com/questions/10301001/perpendicular-on-a-line-segment-from-a-given-point
     
+          
+        # Find aX, aY        
         aX = d
-        aY = x[0] * aX + x[1]
-
-	    
+        aY =  x[0] * aX + x[1] 
+        
+        # Find bX, bY	
         bX = c
         bY = x[0] * bX + x[1] 
-		
+	
+	#Find cX, cY
         cX = a
         cY = b          
 		
@@ -119,10 +142,13 @@ def constraint_target_hyperplane_1(k):
     def g(x, a, b, c, d):
     # select a, b of the formula
                 
+        # Find aX, aY
+        
         aX = c
-        aY = x[2] * aX + x[3]
+        aY = x[2] * aX + x[3] 
 
 	    
+        # Find bX, bY
         bX = d
         bY = x[2] * bX + x[3] 
 		
@@ -141,7 +167,7 @@ def constraint_target_hyperplane_1(k):
 
 
 
-def find_constraints(ego_x, ego_y, angle, array_left, array_right, tarx, tary):
+def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, tary):
 
 
  # initial guesses
@@ -150,6 +176,8 @@ def find_constraints(ego_x, ego_y, angle, array_left, array_right, tarx, tary):
     b = (-100, 100)
     bnds = (b, b, b, b)
     #xp = 3
+    
+    angle =  head_angle * (180/math.pi)
     
     tr_x= ego_x + ((0.203 / 2) * math.cos(angle)) - ((0.15875) * math.sin(angle))
     tr_y = ego_y + ((0.203  / 2) * math.sin(angle)) + ((0.15875) * math.cos(angle))
@@ -166,7 +194,7 @@ def find_constraints(ego_x, ego_y, angle, array_left, array_right, tarx, tary):
 
     cons = []
     ar_ego =  np.array([[tr_x, tr_y], [tl_x, tl_y], [bl_x, bl_y], [br_x, br_y]])
-    ar_tar =  np.array([[tarx+0.3, tary+0.3], [tarx-0.3, tary-0.3], [tarx+0.3, tary-0.3], [tarx-0.3, tary+0.3]])
+    ar_tar =  np.array([[tarx, tary], [tarx, tary], [tarx, tary], [tarx, tary]])
 
 
     
