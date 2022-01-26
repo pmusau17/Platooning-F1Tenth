@@ -65,6 +65,18 @@ def template_model():
             var_name="b1",
             shape=(1, 1)
     )
+    
+    # Create time-varying-parameters, these will be populated with (potentially) different data at each call
+    model.set_variable(
+            var_type="_tvp",
+            var_name="c1",
+            shape=(1, 1)
+    )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="c2",
+            shape=(1, 1)
+    )
 
     # Build the model
     model.setup()

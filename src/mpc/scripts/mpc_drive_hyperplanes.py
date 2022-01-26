@@ -54,10 +54,12 @@ class MPC:
         # parameters for tvp callback function 
         self.tar_x = 0 
         self.tar_y = 0
-        self.a0 = 0 
-        self.b0 = 0
-        self.a1 = 0 
-        self.b1 = 0
+        self.a0 = 1
+        self.b0 = 1
+        self.a1 = 1
+        self.b1 = 1
+        self.c1 = 1
+        self.c2 = 1
         self.count = 0
 
         # mpc horizon
@@ -76,7 +78,7 @@ class MPC:
 
         self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=1)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
-        self.vis_pub = rospy.Publisher("sanity_pub", MarkerArray, queue_size=1)
+        self.vis_pub = rospy.Publisher("racecar2/hyper_planes", MarkerArray, queue_size=1)
 
         # instantiate the subscribers
 
@@ -117,6 +119,8 @@ class MPC:
         else:
             tarx,tary,_,_,_,_ = self.adjust_target_position(pose_msg.pose.pose.position.x, pose_msg.pose.pose.position.y, head_angle,lidar_data)
         
+        self.tar_x =  tarx
+        self.tar_y =  tary
         self.mpc_drive(position[0], position[1], head_angle, tarx, tary,lidar_data,hypes)
 
 
@@ -141,6 +145,8 @@ class MPC:
             template["_tvp", k, "b0"] = self.b0
             template["_tvp", k, "a1"] = self.a1
             template["_tvp", k, "b1"] = self.b1
+            template["_tvp", k, "c1"] = self.c1
+            template["_tvp", k, "c2"] = self.c2
 
         return template
 
@@ -365,36 +371,36 @@ class MPC:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_l_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)), epsilon=0.03)
-                    print(hw_l_filtered_updated[:,0].tolist())
-                    print(hw_l_filtered_updated[:,1].tolist())
-                    print(hw_r_filtered[:,0].tolist())
-                    print(hw_r_filtered[:,1].tolist())
+                    #print(hw_l_filtered_updated[:,0].tolist())
+                    #print(hw_l_filtered_updated[:,1].tolist())
+                    #print(hw_r_filtered[:,0].tolist())
+                    #print(hw_r_filtered[:,1].tolist())
                     hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
-                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
                 else:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=0.03)
-                    print(hw_l_filtered[:,0].tolist())
-                    print(hw_l_filtered[:,1].tolist())
-                    print(hw_r_filtered_updated[:,0].tolist())
-                    print(hw_r_filtered_updated[:,1].tolist())
+                    # print(hw_l_filtered[:,0].tolist())
+                    # print(hw_l_filtered[:,1].tolist())
+                    # print(hw_r_filtered_updated[:,0].tolist())
+                    # print(hw_r_filtered_updated[:,1].tolist())
                     hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)                   
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
-                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    # print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
             else:
-                print(hw_l_filtered[:,0].tolist())
-                print(hw_l_filtered[:,1].tolist())
-                print(hw_r_filtered[:,0].tolist())
-                print(hw_r_filtered[:,1].tolist())
+                # print(hw_l_filtered[:,0].tolist())
+                # print(hw_l_filtered[:,1].tolist())
+                # print(hw_r_filtered[:,0].tolist())
+                # print(hw_r_filtered[:,1].tolist())
                 hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
                 hw_r_filtered = rdp(hw_r_filtered,  epsilon=0.03)       
                 start = time.time()   
                 a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
-                print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                # print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
         else:   
             hw_l_filtered = rdp(hw_l_filtered, epsilon=0.03)    
@@ -419,20 +425,64 @@ class MPC:
 
         lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
 
+        # you need these slopes in order to compute the sig of the bounds
+        m  = (y2 - y1) / (x2 - x1)
+        b = y2 - (m*x2)
+
+        
+        m1 = (y4 - y3) / (x2 - x1)
+        b1 = y4 - (m*x2)
+
+        # set the constants for the hyper-planes
+        self.a0 = m
+        self.b0 = b
+        self.a1 = m1
+        self.b1 = b1
+
+        print(m,m1)
+
+
+        # above the left line 
+        print(m,m1,b,b1)
+        print("cons1u:", 0>=((posx*m+b)-posy))
+        # below the left line
+        print("cons1b:", 0>=(posy)-(posx*m+b))
+        # above the right line
+        print("cons2u:", 0>=((posx*m1+b1)-posy))
+        # below the right line 
+        print("cons2b:", 0>=(posy)-(posx*m1+b1))
+
+        if(0>=((posx*m+b)-posy)):
+            self.c1 = 1
+        else:
+            self.c1 = -1
+
+        if(0>=((posx*m1+b1)-posy)):
+            self.c2 = 1
+        else:
+            self.c2 = -1
+
         if(self.display_in_rviz):
             self.visualize_lines(lines)
 
+        x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
 
-        # if (a0 * posx + b0 - posy > 0): # New Lines -- 
-        #     flag0 = 1
-        # else: 
-        #     flag0 = -1
+        if(self.count==0):
+            self.mpc.x0 = x0
+            self.mpc.set_initial_guess()
+
                 
-        # if (a1 * posx + b1 - posy > 0):
-        #     flag1 = 1
-        # else: 
-        #     flag1 = -1    
+        #for i in range(10):
+        u0 = self.mpc.make_step(x0)
+        self.u0 = u0
+            
 
+        drive_msg = AckermannDriveStamped()
+        drive_msg.header.stamp = rospy.Time.now()
+        drive_msg.drive.steering_angle = float(u0[1])
+        #drive_msg.drive.speed = 1.0 
+        drive_msg.drive.speed = float(u0[0])
+        self.drive_publish.publish(drive_msg)
             
         
         #drive_msg = AckermannDriveStamped()
@@ -454,7 +504,9 @@ class MPC:
         #self.drive_publish.publish(drive_msg)
 
 
-        #self.count+=1
+        self.count+=1
+        if(self.count>100):
+            self.count = 1
     
         #rospy.logwarn("count: {}".format(self.count))
         
@@ -551,7 +603,7 @@ class MPC:
 
 if __name__ == '__main__':
     rospy.init_node('mpc_node')
-    mpc = MPC()
+    mpc_node = MPC()
     r = rospy.Rate(80)
     while not rospy.is_shutdown():
         r.sleep()

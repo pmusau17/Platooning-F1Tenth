@@ -29,26 +29,23 @@ def template_mpc(model,horizon):
     _tvp = model.tvp
 
     # change the objective function to a time varying parameter
-    lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
-    mterm = ((_tvp['target_x']- _x['car_x']) ** 4) + ((_tvp['target_y'] - _x['car_y']) ** 4)
+    # lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
+
+    lterm = DM.zeros()
+    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
 
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    mpc.set_rterm(car_v=0.3 , car_delta=0.6)
+    mpc.set_rterm(car_v=1.3 , car_delta=0.1)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 1.5
+    mpc.bounds['upper', '_u', 'car_v'] = 0.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
+    # left plane constraint, this basically bounds it to the right or to the left
+    mpc.set_nl_cons('constraint_left_plane',  _tvp['c1'] * ((_tvp['a0'] * _x['car_x'] + _tvp['b0']) - _x['car_y']), 0)
+
+    # left plane constraint, this basically bounds it to the right or to the left
+    mpc.set_nl_cons('constraint_right_plane', _tvp['c2'] * ((_tvp['a1'] * _x['car_x'] + _tvp['b1']) - _x['car_y']), 0)
     
-    # right of left plane 
-    #mpc.set_nl_cons('constraint_bottom',  (_tvp['a0'] * _x['car_x'] + _tvp['b0'] - _x['car_y']), 0)   # penalty_term_cons=1000)
-
-
-    # left of right plane 
-    #mpc.set_nl_cons('constraint_upper',   (_tvp['a1'] * _x['car_x'] + _tvp['b1'] - _x['car_y']) , 0) # penalty_term_cons=1000)
-
-    #mpc.setup()
-
-
     return mpc
