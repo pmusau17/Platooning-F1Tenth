@@ -413,7 +413,7 @@ class MPC:
 
   
             
-        dist = 3.0
+        dist = 5.0
 
         pos_1x, pos1_y = posx + math.cos(head_angle) * dist, posy + math.sin(head_angle)*dist
         
@@ -467,8 +467,6 @@ class MPC:
         if(self.display_in_rviz):
             self.visualize_lines(lines)
 
-        x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-
         if(self.count==0):
             self.mpc.x0 = x0
             self.mpc.set_initial_guess()
@@ -481,7 +479,6 @@ class MPC:
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = rospy.Time.now()
         drive_msg.drive.steering_angle = float(u0[1])
-        #drive_msg.drive.speed = 1.0 
         drive_msg.drive.speed = float(u0[0])
         self.drive_publish.publish(drive_msg)
             
