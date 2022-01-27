@@ -370,7 +370,7 @@ class MPC:
                 mid_rectangle_x = (rectangle.obstacle_list[rectangle.count-1].x_min + rectangle.obstacle_list[rectangle.count-1].x_max) # mid point of the convex hull
                 mid_rectangle_y = (rectangle.obstacle_list[rectangle.count-1].y_min + rectangle.obstacle_list[rectangle.count-1].y_max) # mid point of the convex hull
                 
-                if (((tarx - posx)*(mid_rectangle_y - posy)-(tary - posy)*(mid_rectangle_x - posx)) > 0): # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered
+                if (((tarx - posx)*(mid_rectangle_y - posy)-(tary - posy)*(mid_rectangle_x - posx)) > 0): # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered
                     
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
