@@ -49,7 +49,7 @@ class MPC:
 
         self.display_in_rviz = True
         self.use_pure_pursuit = False
-        self.increment = 10
+        self.increment = 1
 
         # parameters for tvp callback function 
         self.tar_x = 0 
