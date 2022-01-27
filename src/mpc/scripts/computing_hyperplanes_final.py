@@ -194,7 +194,7 @@ def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, ta
 
     cons = []
     ar_ego =  np.array([[tr_x, tr_y], [tl_x, tl_y], [bl_x, bl_y], [br_x, br_y]])
-    ar_tar =  np.array([[tarx, tary], [tarx, tary], [tarx, tary], [tarx, tary]])
+    ar_tar =  np.array([[tarx+.7, tary+.7], [tarx-.7, tary-.7], [tarx+.7, tary-.7], [tarx-.7, tary+.7]])
 
 
     
