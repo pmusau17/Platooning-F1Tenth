@@ -463,8 +463,6 @@ class MPCC:
             self.mpc.x0 = x0
             self.mpc.set_initial_guess()
 
-                
-        #for i in range(10):
         u0 = self.mpc.make_step(x0)
         self.u0 = u0
             
@@ -472,22 +470,42 @@ class MPCC:
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = rospy.Time.now()
         drive_msg.drive.steering_angle = float(u0[1])
-        #drive_msg.drive.speed = 1.0 
         drive_msg.drive.speed = float(u0[0])
         self.drive_publish.publish(drive_msg)
 
-        # self.count+=1
-    
-        # rospy.logwarn("count: {}".format(self.count))
+        self.count+=1
 
-        #self.left_points = [[self.tar_x,self.tar_y]]
-        #self.right_points = [[pp_point.markers[0].pose.position.x,pp_point.markers[0].pose.position.y]]
-        #self.visualize_points()
-
-        # reset left and right points
-        
+        self.compute_bounding_box_for_racecar(pos_x,pos_y,head_angle)
         if(self.count>100):
             self.count = 1
+
+    
+    def compute_bounding_box_for_racecar(self,pos_x,pos_y,head_angle):
+        rad=(45*math.pi)/180
+        distance = 0.1939115
+        rotated_angle = rad + head_angle
+        x_1 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_1 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+
+        rotated_angle = -rad + head_angle
+        x_2 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_2 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+
+        rad=(135*math.pi)/180
+        rotated_angle = rad + head_angle
+        x_3 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_3 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+
+        rotated_angle = -rad + head_angle
+        x_4 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_4 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+        self.left_points = [[x_1,y_1],[x_2,y_2],[x_3,y_3],[x_4,y_4]]
+        self.right_points = [[x_1,y_1],[x_2,y_2]]
+
+        self.visualize_points()
+
+        self.left_points = []
+        self.right_points = []
     
     def visualize_points(self,frame='map'):
         # create a marker array
