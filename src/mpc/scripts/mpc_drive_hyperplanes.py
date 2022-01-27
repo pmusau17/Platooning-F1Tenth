@@ -48,8 +48,8 @@ class MPC:
         self.log_hypers = False
 
         self.display_in_rviz = True
-        self.use_pure_pursuit = False
-        self.increment = 1
+        self.use_pure_pursuit = True
+        self.increment = 10
 
         # parameters for tvp callback function 
         self.tar_x = 0 
@@ -370,7 +370,7 @@ class MPC:
                 mid_rectangle_x = (rectangle.obstacle_list[rectangle.count-1].x_min + rectangle.obstacle_list[rectangle.count-1].x_max) # mid point of the convex hull
                 mid_rectangle_y = (rectangle.obstacle_list[rectangle.count-1].y_min + rectangle.obstacle_list[rectangle.count-1].y_max) # mid point of the convex hull
                 
-                if (((posx - tarx)*(mid_rectangle_y - tary)-(posy - tary)*(mid_rectangle_x - tarx)) > 0): # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered
+                if (((tarx - posx)*(mid_rectangle_y - posy)-(tary - posy)*(mid_rectangle_x - posx)) > 0): # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered # if opponent's convex hull is to the left, add convex hull points to hw_l_filtered
                     
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
@@ -387,24 +387,24 @@ class MPC:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=0.03)
-                    # print(hw_l_filtered[:,0].tolist())
-                    # print(hw_l_filtered[:,1].tolist())
-                    # print(hw_r_filtered_updated[:,0].tolist())
-                    # print(hw_r_filtered_updated[:,1].tolist())
+                    #print(hw_l_filtered[:,0].tolist())
+                    #print(hw_l_filtered[:,1].tolist())
+                    #print(hw_r_filtered_updated[:,0].tolist())
+                    #print(hw_r_filtered_updated[:,1].tolist())
                     hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)                   
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
-                    # print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
             else:
-                # print(hw_l_filtered[:,0].tolist())
-                # print(hw_l_filtered[:,1].tolist())
-                # print(hw_r_filtered[:,0].tolist())
-                # print(hw_r_filtered[:,1].tolist())
+                #print(hw_l_filtered[:,0].tolist())
+                #print(hw_l_filtered[:,1].tolist())
+                #print(hw_r_filtered[:,0].tolist())
+                #print(hw_r_filtered[:,1].tolist())
                 hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
                 hw_r_filtered = rdp(hw_r_filtered,  epsilon=0.03)       
                 start = time.time()   
                 a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
-                # print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
         else:   
             hw_l_filtered = rdp(hw_l_filtered, epsilon=0.03)    
@@ -429,6 +429,8 @@ class MPC:
    
 
         lines = [[x1,y1,x2,y2],[x1,y3,x2,y4]]
+        
+        
 
         # you need these slopes in order to compute the sig of the bounds
         m  = (y2 - y1) / (x2 - x1)
