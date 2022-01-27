@@ -88,6 +88,8 @@ class DisparityExtenderDriving(object):
 
         self.no_obstacles_distance = 6.0
 
+        #self.lookahead = 2.5
+
         self.lookahead = 0.5
 
 

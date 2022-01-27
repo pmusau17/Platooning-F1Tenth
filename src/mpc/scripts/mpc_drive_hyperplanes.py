@@ -63,7 +63,7 @@ class MPC:
         self.count = 0
 
         # mpc horizon
-        self.horizon = 20 
+        self.horizon = 5 
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -319,8 +319,12 @@ class MPC:
         pts = self.find_sequence(points, FTG_IGNORE_RANGE)
         tarx, tary = self.get_target(pts)
 
-        minx, miny = pts[0].cartesian
-        maxx, maxy = pts[len(pts)-1].cartesian
+        # prevents logical error
+        if(pts):
+            minx, miny = pts[0].cartesian
+            maxx, maxy = pts[len(pts)-1].cartesian
+        else:
+            minx,miny,maxx,maxy = -1,-1,-1,-1
     
         return tarx, tary, min(minx, maxx), max(minx, maxx), min(miny, maxy), max(miny, maxy)
         
@@ -410,12 +414,13 @@ class MPC:
   
             
         dist = 3.0
+
         pos_1x, pos1_y = posx + math.cos(head_angle) * dist, posy + math.sin(head_angle)*dist
         
-        x1 = posx -3
+        x1 = posx + math.cos(head_angle) * (-dist)
         y1 = a0 * x1 + b0
            
-        x2 = pos_1x + 3
+        x2 = pos_1x 
         y2 = a0 * x2 + b0 
 
         y3 = a1 * x1 + b1
@@ -438,9 +443,6 @@ class MPC:
         self.b0 = b
         self.a1 = m1
         self.b1 = b1
-
-        print(m,m1)
-
 
         # above the left line 
         print(m,m1,b,b1)
@@ -472,7 +474,6 @@ class MPC:
             self.mpc.set_initial_guess()
 
                 
-        #for i in range(10):
         u0 = self.mpc.make_step(x0)
         self.u0 = u0
             
@@ -484,34 +485,9 @@ class MPC:
         drive_msg.drive.speed = float(u0[0])
         self.drive_publish.publish(drive_msg)
             
-        
-        #drive_msg = AckermannDriveStamped()
-        #drive_msg.header.stamp = rospy.Time.now()
-             #model = template_model()
-             #mpc = template_mpc(model, self.horizon)  
-             #x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-             #mpc.x0 = x0
-             #mpc.set_initial_guess()
-        #x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)     
-        #if(self.count==0):
-        #    self.mpc.x0 = x0
-        #    self.mpc.set_initial_guess()    
-                
-        #u0 = self.mpc.make_step(x0)
-               
-        #drive_msg.drive.steering_angle = float(u0[1])
-        #drive_msg.drive.speed = 1
-        #self.drive_publish.publish(drive_msg)
-
-
         self.count+=1
         if(self.count>100):
-            self.count = 1
-    
-        #rospy.logwarn("count: {}".format(self.count))
-        
-        #if(self.count>100):
-        #    self.count = 1        
+            self.count = 1    
             
 
     def visualize_lines(self, lines):
