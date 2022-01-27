@@ -162,38 +162,6 @@ Visualization Manager:
           Value: true
         racecar2/zed_camera_right_link:
           Value: true
-        racecar3/base_link:
-          Value: true
-        racecar3/camera_link:
-          Value: true
-        racecar3/chassis:
-          Value: true
-        racecar3/chassis_inertia:
-          Value: true
-        racecar3/contact_link:
-          Value: true
-        racecar3/imu_link:
-          Value: true
-        racecar3/laser:
-          Value: true
-        racecar3/left_front_wheel:
-          Value: true
-        racecar3/left_rear_wheel:
-          Value: true
-        racecar3/left_steering_hinge:
-          Value: true
-        racecar3/odom:
-          Value: true
-        racecar3/right_front_wheel:
-          Value: true
-        racecar3/right_rear_wheel:
-          Value: true
-        racecar3/right_steering_hinge:
-          Value: true
-        racecar3/zed_camera_link:
-          Value: true
-        racecar3/zed_camera_right_link:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -253,32 +221,6 @@ Visualization Manager:
                   racecar2/camera_link:
                     {}
                   racecar2/zed_camera_right_link:
-                    {}
-          racecar3/odom:
-            racecar3/base_link:
-              racecar3/chassis:
-                racecar3/chassis_inertia:
-                  {}
-                racecar3/contact_link:
-                  {}
-                racecar3/imu_link:
-                  {}
-                racecar3/laser:
-                  {}
-                racecar3/left_rear_wheel:
-                  {}
-                racecar3/left_steering_hinge:
-                  racecar3/left_front_wheel:
-                    {}
-                racecar3/right_rear_wheel:
-                  {}
-                racecar3/right_steering_hinge:
-                  racecar3/right_front_wheel:
-                    {}
-                racecar3/zed_camera_link:
-                  racecar3/camera_link:
-                    {}
-                  racecar3/zed_camera_right_link:
                     {}
       Update Interval: 0
       Value: true
@@ -394,10 +336,10 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /wallpoint_classification
+      Marker Topic: racecar2/wallpoint_classification
       Name: MarkerArray
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -452,7 +394,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 35.01319885253906
+      Distance: 11.416370391845703
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
