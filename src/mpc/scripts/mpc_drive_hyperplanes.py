@@ -469,11 +469,12 @@ class MPC:
         if(self.display_in_rviz):
             self.visualize_lines(lines)
 
+        x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
         if(self.count==0):
             self.mpc.x0 = x0
             self.mpc.set_initial_guess()
 
-                
+        
         u0 = self.mpc.make_step(x0)
         self.u0 = u0
             
