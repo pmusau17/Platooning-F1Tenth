@@ -4,14 +4,29 @@ import random
 import math
 
 from scipy.optimize import minimize
+from scipy import integrate
 
 
 
 
-def objective(x): # Objective function tries to simply minimize constants a,b,c in ax+by+c >= 0
+def objective(x, a, b): # Objective function tries to simply minimize constants a,b,c in ax+by+c >= 0
 
+    if ((x[0]*b + x[1]) -  (x[2]*b + x[3]) > 0):
+        at = x[0]
+        bt = x[1]
+        
+        ab = x[2]
+        bb = x[3]
+    else:
+        at = x[2]
+        bt = x[3]
+        
+        ab = x[0]
+        bb = x[1]       
 
-    return 1
+    integrate_x = lambda x: (at * x + bt) - (ab * x + bb)
+
+    return -(integrate.quad(integrate_x, min(b-1, b+1), max(b-1, b+1))[0])
 
 
 def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
@@ -173,7 +188,7 @@ def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, ta
  # initial guesses
     n = 4
     x0 = np.zeros(n)
-    b = (-100, 100)
+    b = (-10, 10)
     bnds = (b, b, b, b)
     #xp = 3
     
@@ -194,7 +209,7 @@ def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, ta
 
     cons = []
     ar_ego =  np.array([[tr_x, tr_y], [tl_x, tl_y], [bl_x, bl_y], [br_x, br_y]])
-    ar_tar =  np.array([[tarx+.7, tary+.7], [tarx-.7, tary-.7], [tarx+.7, tary-.7], [tarx-.7, tary+.7]])
+    ar_tar =  np.array([[tarx, tary], [tarx+1, tary], [tarx-1, tary]])
 
 
     
@@ -225,7 +240,7 @@ def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, ta
    
   
        
-    solution = minimize(objective, x0, method='SLSQP', bounds=None, constraints=cons)
+    solution = minimize(objective, x0, args=(ego_x, tarx), method='SLSQP', bounds=bnds, constraints=cons)
     x = solution.x
 
     return x 

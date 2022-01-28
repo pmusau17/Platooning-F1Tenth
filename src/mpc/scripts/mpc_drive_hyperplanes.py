@@ -375,36 +375,36 @@ class MPC:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_l_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)), epsilon=0.03)
-                    #print(hw_l_filtered_updated[:,0].tolist())
-                    #print(hw_l_filtered_updated[:,1].tolist())
-                    #print(hw_r_filtered[:,0].tolist())
-                    #print(hw_r_filtered[:,1].tolist())
+                    print(hw_l_filtered_updated[:,0].tolist())
+                    print(hw_l_filtered_updated[:,1].tolist())
+                    print(hw_r_filtered[:,0].tolist())
+                    print(hw_r_filtered[:,1].tolist())
                     hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
-                    #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
                 else:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=0.03)
-                    #print(hw_l_filtered[:,0].tolist())
-                    #print(hw_l_filtered[:,1].tolist())
-                    #print(hw_r_filtered_updated[:,0].tolist())
-                    #print(hw_r_filtered_updated[:,1].tolist())
+                    print(hw_l_filtered[:,0].tolist())
+                    print(hw_l_filtered[:,1].tolist())
+                    print(hw_r_filtered_updated[:,0].tolist())
+                    print(hw_r_filtered_updated[:,1].tolist())
                     hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)                   
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
-                    #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
             else:
-                #print(hw_l_filtered[:,0].tolist())
-                #print(hw_l_filtered[:,1].tolist())
-                #print(hw_r_filtered[:,0].tolist())
-                #print(hw_r_filtered[:,1].tolist())
+                print(hw_l_filtered[:,0].tolist())
+                print(hw_l_filtered[:,1].tolist())
+                print(hw_r_filtered[:,0].tolist())
+                print(hw_r_filtered[:,1].tolist())
                 hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
                 hw_r_filtered = rdp(hw_r_filtered,  epsilon=0.03)       
                 start = time.time()   
                 a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
-                #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
         else:   
             hw_l_filtered = rdp(hw_l_filtered, epsilon=0.03)    
