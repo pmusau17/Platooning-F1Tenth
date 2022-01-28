@@ -83,31 +83,31 @@ def template_model():
     )
 
 
-    # My Attempt at using time varying parameters to change constraints online
+#     My Attempt at using time varying parameters to change constraints online
+#     Create time-varying-parameters, these will be populated with (potentially) different data at each call
+#     These will be leveraged in the non_linear constraints. They will actually be linear but this allows 
+#     you to change the bounds online with time varying parameters.
+    model.set_variable(
+            var_type="_tvp",
+            var_name="x_min",
+            shape=(1, 1)
+    )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="x_max",
+            shape=(1, 1)
+    )
     # Create time-varying-parameters, these will be populated with (potentially) different data at each call
-    # These will be leveraged in the non_linear constraints. They will actually be linear but this allows 
-    # you to change the bounds online with time varying parameters.
-#     model.set_variable(
-#             var_type="_tvp",
-#             var_name="x_min",
-#             shape=(1, 1)
-#     )
-#     model.set_variable(
-#             var_type="_tvp",
-#             var_name="x_max",
-#             shape=(1, 1)
-#     )
-#     # Create time-varying-parameters, these will be populated with (potentially) different data at each call
-#     model.set_variable(
-#             var_type="_tvp",
-#             var_name="y_min",
-#             shape=(1, 1)
-#     )
-#     model.set_variable(
-#             var_type="_tvp",
-#             var_name="y_max",
-#             shape=(1, 1)
-#     )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="y_min",
+            shape=(1, 1)
+    )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="y_max",
+            shape=(1, 1)
+    )
 
 
     # Build the model

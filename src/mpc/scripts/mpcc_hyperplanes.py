@@ -51,15 +51,15 @@ class MPCC:
         self.use_map  = False
         self.display_in_rviz = False
         self.use_pure_pursuit = True
-        self.increment = 1
+        self.increment = 5
 
         self.tar_x = 0 
         self.tar_y = 0
         self.tar_theta = 0
-        self.x_min = -100
-        self.x_max = 100
-        self.y_min = -100
-        self.y_max = 100
+        self.x_min = 100
+        self.x_max = -100
+        self.y_min = 100
+        self.y_max = -100
 
         self.a0 = 1
         self.b0 = 1
@@ -75,7 +75,7 @@ class MPCC:
 
         # The horizon is probably the most important thing
         
-        self.horizon = 4
+        self.horizon = 40
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -141,6 +141,10 @@ class MPCC:
             template["_tvp", k, "b1"] = self.b1
             template["_tvp", k, "c1"] = self.c1
             template["_tvp", k, "c2"] = self.c2
+            template["_tvp", k, "x_min"] = self.x_min
+            template["_tvp", k, "x_max"] = self.x_max
+            template["_tvp", k, "y_min"] = self.y_min
+            template["_tvp", k, "y_max"] = self.y_max
             template["_tvp",k,"target_theta"] = self.tar_theta
 
         return template
@@ -421,6 +425,22 @@ class MPCC:
             intvl = [[convex_hull.x_min,convex_hull.x_max],
                     [convex_hull.y_min,convex_hull.y_max]]
             intervals.append(intvl)
+            
+
+            if((pos_x>=convex_hull.x_min and pos_x<=convex_hull.x_max) or (self.tar_x>=convex_hull.x_min and self.tar_x<=convex_hull.x_max)):
+                self.x_min = 100
+                self.x_max = -100
+            else:
+                self.x_min = convex_hull.x_min
+                self.x_max = convex_hull.x_max
+            if((pos_y>=convex_hull.y_min and pos_y<=convex_hull.y_max) or (self.tar_y>=convex_hull.y_min and self.tar_y<=convex_hull.y_max)):
+                self.y_min = 100
+                self.y_max = -100
+            else:
+                self.y_min = convex_hull.y_min
+                self.y_max = convex_hull.y_max
+
+            print(self.x_min,self.x_max,self.y_min,self.y_max)
 
         if(hypes_opp2.count>0):
             convex_hull = hypes_opp2.obstacle_list[hypes_opp2.count-1]

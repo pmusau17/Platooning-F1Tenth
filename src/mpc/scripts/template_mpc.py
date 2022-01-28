@@ -53,16 +53,19 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     # the r_term is quite sensitive
     # use this one if the speed is over 2
     #mpc.set_rterm(car_v=15.0 , car_delta=0.0)
-    mpc.set_rterm(car_v=0.1 , car_delta=0.1)
+    mpc.set_rterm(car_v=1.1 , car_delta=0.1)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 2.0
+    mpc.bounds['upper', '_u', 'car_v'] = 0.5
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
     #mpc.scaling['_x', 'car_theta'] = 2
     #mpc.scaling['_x', 'car_x'] = 2
     #mpc.scaling['_x', 'car_y'] = 2
+
+    
+
 
 
     # left plane constraint, this basically bounds it to the right or to the left
@@ -70,5 +73,14 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
 
     # left plane constraint, this basically bounds it to the right or to the left
     mpc.set_nl_cons('constraint_right_plane', _tvp['c2'] * ((_tvp['a1'] * _x['car_x'] + _tvp['b1']) - _x['car_y']), 0)
+
+
+    # constraints to remain outside of opponent hyper_rectangle I think this makes the search space nonconvex....
+    # mpc.set_nl_cons('x_min_cons',  _x['car_x']-_tvp['x_min'], 0)
+    # mpc.set_nl_cons('x_max_cons',  _tvp['x_max']-_x['car_x'], 0)
+    # mpc.set_nl_cons('y_min_cons',  _x['car_y']-_tvp['y_min'], 0)
+    # mpc.set_nl_cons('y_max_cons',  _tvp['y_max']-_x['car_y'], 0)
+
+
  
     return mpc
