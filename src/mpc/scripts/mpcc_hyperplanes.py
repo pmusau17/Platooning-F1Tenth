@@ -426,21 +426,8 @@ class MPCC:
                     [convex_hull.y_min,convex_hull.y_max]]
             intervals.append(intvl)
             
-
-            if((pos_x>=convex_hull.x_min and pos_x<=convex_hull.x_max) or (self.tar_x>=convex_hull.x_min and self.tar_x<=convex_hull.x_max)):
-                self.x_min = 100
-                self.x_max = -100
-            else:
-                self.x_min = convex_hull.x_min
-                self.x_max = convex_hull.x_max
-            if((pos_y>=convex_hull.y_min and pos_y<=convex_hull.y_max) or (self.tar_y>=convex_hull.y_min and self.tar_y<=convex_hull.y_max)):
-                self.y_min = 100
-                self.y_max = -100
-            else:
-                self.y_min = convex_hull.y_min
-                self.y_max = convex_hull.y_max
-
-            print(self.x_min,self.x_max,self.y_min,self.y_max)
+            self.x_min,self.x_max,self.y_min,self.y_max = self.decide_bounds(pos_x,pos_y,intvl)
+            print("x_min:",self.x_min,"x_max:",self.x_max,"y_min:",self.y_min,"y_max:",self.y_max)
 
         if(hypes_opp2.count>0):
             convex_hull = hypes_opp2.obstacle_list[hypes_opp2.count-1]
@@ -579,6 +566,42 @@ class MPCC:
             markerArray.markers.append(marker)
         self.vis_pub2.publish(markerArray)
 
+    # self.x_min = 100
+    # self.x_max = -100
+    # self.y_min = 100
+    # self.y_max = -100
+    def decide_bounds(self,x,y,convex_hull):
+
+        x_min = convex_hull[0][0] 
+        x_max = convex_hull[0][1]
+        y_min = convex_hull[1][0]
+        y_max = convex_hull[1][1]
+
+        # case 1 
+        if(x>=x_max and y<=y_min):
+            return 100, x_max, y_min,-100
+        # case2
+        elif (x>=x_max and y>=y_max):
+            return 100, x_max, 100, y_max
+        # case 3
+        elif(x<=x_min and y<=y_min):
+            return x_min,-100,y_min,-100
+        # case 4
+        elif(x<=x_min and y>=y_max):
+            return x_min,-100,100,y_max
+
+        
+        elif(x>=x_min and x<=x_max):
+            if(y>=y_max):
+                return 100,-100,100,y_max
+            else:
+                return 100,-100,y_min,-100
+
+        elif(y>=y_min and y<=y_max):
+            if(x>=x_max):
+                return 100,x_max,100,-100
+            else:
+                return x_min,-100,100,-100
 
     def visualize_lines(self, lines):
         
