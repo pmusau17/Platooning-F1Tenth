@@ -75,7 +75,7 @@ class MPCC:
 
         # The horizon is probably the most important thing
         
-        self.horizon = 40
+        self.horizon = 4
         # set up the model used for the mpc controller
         self.model =  template_model()
 
