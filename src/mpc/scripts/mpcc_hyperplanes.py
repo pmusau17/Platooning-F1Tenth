@@ -566,10 +566,6 @@ class MPCC:
             markerArray.markers.append(marker)
         self.vis_pub2.publish(markerArray)
 
-    # self.x_min = 100
-    # self.x_max = -100
-    # self.y_min = 100
-    # self.y_max = -100
     def decide_bounds(self,x,y,convex_hull):
 
         x_min = convex_hull[0][0] 
@@ -693,6 +689,7 @@ if __name__ == '__main__':
     obstacle_file = "track_porto_obstacles.txt"
     args = rospy.myargv()[1:]
     racecar_name=args[0]
+    rospy.sleep(30)
     mpc = MPCC(waypoint_file,obstacle_file,racecar_name=racecar_name)
     r = rospy.Rate(80)
     while not rospy.is_shutdown():

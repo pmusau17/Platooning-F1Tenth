@@ -339,7 +339,7 @@ Visualization Manager:
       Marker Topic: racecar2/wallpoint_classification
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -347,7 +347,7 @@ Visualization Manager:
       Marker Topic: racecar2/hyper_planes
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -363,7 +363,15 @@ Visualization Manager:
       Marker Topic: /opponent/convex_hull
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /obstacle_locations
+      Name: MarkerArray
+      Namespaces:
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -394,7 +402,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.416370391845703
+      Distance: 13.113120079040527
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

@@ -20,6 +20,7 @@ scripts/gazebo_odometry_gen.py
 scripts/gazebo_odometry.py
 scripts/kill_simulation.py
 scripts/spawn_cone.py
+scripts/spawn_zigzag.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

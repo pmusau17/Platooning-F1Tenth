@@ -157,7 +157,7 @@ class DisparityExtenderDriving(object):
         """Yeah nah this aint working for us: velocity=self.duty_cycle_from_distance(limited_ranges[540])
         print(velocity)"""
         velocity = self.set_speed(thresholded_angle)
-        velocity = 0.7
+        #velocity = 0.7
         self.publish_speed_and_angle(thresholded_angle,velocity)
 
 
