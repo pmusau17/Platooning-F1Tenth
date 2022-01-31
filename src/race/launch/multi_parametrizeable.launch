@@ -55,8 +55,6 @@
  <!-- Run map server -->
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
-
-
   <!--test of running a keyboard_node
       Additionally you can run a node from the command line via rosrun race keyboard_gen.py racecar2 with the appropriate
       car_name

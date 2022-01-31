@@ -1,0 +1,43 @@
+<actor name="animated_box">
+        <link name="box_link">
+         <collision name="collision">
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <box size="0.2 0.2 0.2"/>
+          </geometry>
+          </collision>
+          <visual name="visual">
+            <geometry>
+              <box>
+                <size>.2 .2 .2</size>
+              </box>
+            </geometry>
+          </visual>
+        </link>
+        <script>
+          <loop>true</loop>
+          <auto_start>true</auto_start>
+          <trajectory id="0" type="square">
+             <waypoint>
+                <time>0.0</time>
+                <pose>1.9 3.04 -0.2 0 0 0</pose>
+             </waypoint>
+             <waypoint>
+                <time>1.0</time>
+                <pose>2.62 0.69 -0.2 0 0 0</pose>
+             </waypoint>
+             <waypoint>
+                <time>2.0</time>
+                <pose>4.61 2.44 -0.2 0 0 0</pose>
+             </waypoint>
+             <waypoint>
+                <time>3.0</time>
+                <pose>3.7 3.89 -0.2 0 0 0</pose>
+             </waypoint>
+             <waypoint>
+                <time>4.0</time>
+                <pose>1.9 3.04 -0.2 0 0 0</pose>
+             </waypoint>
+          </trajectory>
+        </script>
+      </actor>

@@ -4,7 +4,7 @@
     <arg name="car_name"/>
     <arg name='init_pose'/>
 
-    <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
+  <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
   <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/racecar_gen.xacro'" />
 
   <!--spawn the robot with the specified name and init pose-->

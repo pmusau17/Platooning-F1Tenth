@@ -93,7 +93,13 @@
     <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)" output="screen" required="true"/>  -->
 
     <!--Spawn Cones-->
-    <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" output= "screen" required="true"/>
+    <!-- <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" output= "screen" required="true"/> -->
+
+  <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file
+  <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/floatingbox.gazebo'" />
+  <!--spawn the robot with the specified name and init pose-->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="$(arg racecar_pose) -urdf -param robot_description -model floating_box" output="screen"/>-->
+
 
 
 
