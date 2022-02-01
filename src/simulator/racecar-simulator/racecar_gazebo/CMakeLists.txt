@@ -21,6 +21,8 @@ scripts/gazebo_odometry.py
 scripts/kill_simulation.py
 scripts/spawn_cone.py
 scripts/spawn_zigzag.py
+scripts/floating_box_odometry.py
+scripts/floating_box_odom_to_tf.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

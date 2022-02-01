@@ -10,6 +10,7 @@
 
     <!--Initial States of Vehicles for this scenario, ego car is racecar2-->
     <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"/>
+    <arg name="box1_pose" default="-x -5.5 -y -0.2 -z 0.05"/>
     <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"/>
     <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
 
@@ -65,7 +66,7 @@
     -->
 
     <!-- <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/>  -->
-    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar2" required="true"/>
+    <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar2" required="true"/> -->
     <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
     <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" if="$(eval arg('mpc_model')==1)" required="true"/>
     <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==2)" required="true"/>
@@ -95,10 +96,27 @@
     <!--Spawn Cones-->
     <!-- <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" output= "screen" required="true"/> -->
 
-  <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file
-  <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/floatingbox.gazebo'" />
-  <!--spawn the robot with the specified name and init pose-->
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="$(arg racecar_pose) -urdf -param robot_description -model floating_box" output="screen"/>-->
+  <group ns="floating_box">
+    
+    <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
+    <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/floatingbox.gazebo'" />
+    
+    <!-- spawn the robot with the specified name and init pose-->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="$(arg box1_pose) -urdf -param robot_description -model floating_box" output="screen"/>
+
+    <!--joint state publisher for rviz and the tf transforms-->
+    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/> -->
+    <!--robot state publisher is needed-->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+      <param name="publish_frequency" value="100.0" />
+      <param name="tf_prefix" value="floating_box" />
+    </node>
+  </group>
+
+  <!--create the odometry file for the floating objects-->
+  <node pkg="racecar_gazebo" name="floating_odometry_node" type="floating_box_odometry.py" required="true" args="floating_box" output="screen"/>
+
+  <node name="message_to_tf_box" pkg="racecar_gazebo" type="floating_box_odom_to_tf.py" args='floating_box'/>
 
 
 

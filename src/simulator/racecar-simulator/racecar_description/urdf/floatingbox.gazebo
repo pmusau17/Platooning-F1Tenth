@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="test_model">
+<robot name="floating_box">
 
   <!-- root link, on the ground just below the model origin -->
   <link name="base_footprint">
@@ -44,8 +44,9 @@
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
-      <odometryRate>20.0</odometryRate>
+      <odometryRate>0.0</odometryRate>
       <robotBaseFrame>base_footprint</robotBaseFrame>
+      <publishOdom>False</publishOdom>
     </plugin>
   </gazebo>
 
