@@ -67,7 +67,7 @@
     -->
 
     <!-- <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/>  -->
-    <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar2" required="true"/> -->
+    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar2" required="true"/>
     <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
     <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" if="$(eval arg('mpc_model')==1)" required="true"/>
     <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==2)" required="true"/>
@@ -84,8 +84,8 @@
     <node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 
     <!-- controller for opponent vehicle  -->
-    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/>
-    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" args="racecar2 10"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 30"/>
+    <!-- <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" args="racecar2 10"/> -->
     
 
     <!-- controller for opponent vehicle  -->

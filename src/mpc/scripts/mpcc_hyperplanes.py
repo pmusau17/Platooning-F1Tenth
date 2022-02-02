@@ -689,7 +689,7 @@ if __name__ == '__main__':
     obstacle_file = "track_porto_obstacles.txt"
     args = rospy.myargv()[1:]
     racecar_name=args[0]
-    rospy.sleep(30)
+    rospy.sleep(10)
     mpc = MPCC(waypoint_file,obstacle_file,racecar_name=racecar_name)
     r = rospy.Rate(80)
     while not rospy.is_shutdown():

@@ -5,13 +5,13 @@
     <arg name='init_pose'/>
     
     <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
-    <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/floatingbox.gazebo'" />
+    <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/floatingbox.gazebo' robot_namespace:=$(arg box_name)" />
     
     <!-- spawn the robot with the specified name and init pose-->
-    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="$(arg init_pose) -urdf -param robot_description -model $(arg box_name)" output="screen"/>
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="$(arg init_pose) -urdf -param robot_description -model $(arg box_name) robot_namespace:=$(arg box_name)" output="screen"/>
 
     <!--joint state publisher for rviz and the tf transforms-->
-    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/> -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
     <!--robot state publisher is needed-->
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
       <param name="publish_frequency" value="100.0" />
