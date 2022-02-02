@@ -3,6 +3,8 @@
 
     <!--initialize the arguments-->
     <arg name="world_name" default="track_porto"/>
+    <!-- <arg name="world_name" default="racecar_walker"/> -->
+    <!-- <arg name="world_name" value="track_barca"/> -->
     <arg name="gui" default="true" />
     <arg name="mpc_model" default="0"/>
     <arg name="enable_dynamic_obstacles" default="false"/>
@@ -17,8 +19,12 @@
 
     <!--waypoint file used by pure pursuit algorithm-->
     <arg name="csv_filename" default="track_porto_26780.csv"/>
+    <!-- <arg name="csv_filename" default="racecar_walker_29418.csv"/> -->
+    <!-- <arg name="csv_filename" default="track_barca_4676.csv"/> -->
 
     <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+    <!-- <arg name="map_file" value="$(find race)/maps/racecar_walker.yaml"/>
+    <arg name="map_file"  value="$(find race)/maps/track_barca.yaml"/> -->
     <!--random seed used to allocte obstacles within vehicle environment-->
     <arg name="random_seed" default = "1516"/>
 
@@ -46,15 +52,17 @@
 
 
     <!--  This is the main launch file that launches the world, plugins, controllers, vehicles -->
-    <include file="$(find race)/launch/multi_parametrizeable.launch">
+    <include file="$(find race)/launch/multi_agent_gen.launch">
       <arg name="racecar_pose" value="$(arg racecar_pose)"/>
       <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
       <arg name="racecar3_pose" value="$(arg racecar3_pose)"/>
       <arg name="number_of_cars" value="$(arg number_of_cars)"/>
       <arg name="gui" value="$(arg gui)"/>
       <arg name="rviz_disp" value="$(arg rviz_disp)"/>
+      <arg name="world_name" value="$(arg world_name)"/>
     </include>
 
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <!--
       GPU based particle filtering from MIT

@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<launch>
+
+<!--define arguments
+  - the first part defines the namespaces for the cars
+  - whether or not to launch the keyboard
+  - the world name
+-->
+
+<arg name='car_name' value='racecar'/>
+<arg name='car_name2' value='racecar2'/>
+<arg name='car_name3' value='racecar3'/>
+
+
+<arg name="racecar_pose" default="-x 1.5 -y 0.05 -z 0.05"/>
+<arg name="racecar2_pose" default="-x 3.5 -y 1.05 -z 0.05"/>
+<arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
+
+<arg name='enable_keyboard' default='false'/>
+<arg name='world_name' default='track_porto'/> 
+<arg name='number_of_cars' default='2'/>
+<arg name="gui" default="true" />
+<arg name="rviz_disp" default="multicar.rviz"/>
+
+<!--  This is the main launch file that launches the world, plugins, controllers -->
+  <include file="$(find racecar_gazebo)/launch/many_car.launch" if = "$(eval arg('number_of_cars') ==3)">
+      <arg name="racecar_pose" value="$(arg racecar_pose)"/>
+      <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
+      <arg name="racecar3_pose" value="$(arg racecar3_pose)"/>
+      <arg name="world_name" value="$(arg world_name)"/>
+      <arg name="gui" value="$(arg gui)"/>
+  </include>
+
+
+  <include file="$(find racecar_gazebo)/launch/two_car.launch" if = "$(eval arg('number_of_cars') ==2)" >
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="racecar_pose" value="$(arg racecar_pose)"/>
+    <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
+  </include>
+  
+
+  <!--Launch the nodes for the disparity extender NOTE: THESE NAMES SHOULD CORRESPOND TO THOSE LAUNCHED IN many_car.launch-->
+  
+    <!-- Run map server -->
+	
+
+  <!--test of running a keyboard_node
+      Additionally you can run a node from the command line via rosrun race keyboard_gen.py racecar2 with the appropriate
+      car_name
+  -->
+
+
+  <!--Launch the visualizitation rviz-->
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find race)/rviz/$(arg rviz_disp)"/>
+
+
+</launch>
