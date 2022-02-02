@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!--initialize the arguments-->
+    <arg name="world_name" default="track_porto"/>
+    <arg name="gui" default="true" />
+    <arg name="mpc_model" default="0"/>
+    <arg name="opponent_model" default="0"/>
+    <arg name="target_model" default="0"/>
+    <arg name="enable_dynamic_obstacles" default="false"/>
+    <arg name="enable_static_obstacles" default="false"/>
+    <arg name="experiment_number" default="0"/>
+    <arg name="random_seed" default="15"/>
+    <arg name="output" default="log"/>
+    
+    <!--how long to run each experiment before timeout-->
+    <arg name="timeout" default = "-1"/>
+
+    <!--Initial States of Vehicles for this scenario, ego car is racecar2-->
+    <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"/>
+    <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"/>
+    <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
+
+    <!--waypoint file used by pure pursuit algorithm-->
+    <arg name="csv_filename" default="track_porto_26780.csv"/>
+    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+
+      <!--docker requirements-->
+    <arg name="use_sim_time" default = "true"/>
+    <arg name="verbose" default ="false"/>
+
+    <!--multi-agent parameters-->
+    <!--How many boxes to let rviz visualize-->
+    <arg name="box_display_limit" default="100"/>
+
+    <!-- reach-time is the time we are computing reachability for-->
+    <arg name="reach_time" default="0.5"/>
+
+    <!--wall-time is the time we allow the reachability algorithm to run for-->
+    <arg name="wall_time" default="1.0"/>
+
+    <!--number of vehicles to launch in the simulation environment-->
+    <arg name='number_of_cars' default='2'/>
+
+    <!--Select the car we are computing reachability for-->
+    <arg name='car_name' default='racecar2'/>
+
+    <arg name="rviz_disp" default="multiagent_reach.rviz"/>
+
+
+    <!--  This is the main launch file that launches the world, plugins, controllers, vehicles -->
+    <include file="$(find race)/launch/multi_parametrizeable.launch">
+      <arg name="racecar_pose" value="$(arg racecar_pose)"/>
+      <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
+      <arg name="racecar3_pose" value="$(arg racecar3_pose)"/>
+      <arg name="number_of_cars" value="$(arg number_of_cars)"/>
+      <arg name="gui" value="$(arg gui)"/>
+      <arg name="rviz_disp" value="$(arg rviz_disp)"/>
+    </include>
+
+    <!--The next few blocks handle generating the labels for the log files that will 
+        be generated during the experimental campaigns-->
+    <!--Handles selecting mpc version-->
+    <arg name="controller_name" if="$(eval arg('mpc_model')==0)" value="mpc_hype"/>
+    <arg name="controller_name" if="$(eval arg('mpc_model')==1)" value="mpcc"/>
+
+    <!--Handles selecting opponent controller-->
+    <arg name="opp_controller" if="$(eval arg('opponent_model')==0)" value="disparity_extender"/>
+    <arg name="opp_controller" if="$(eval arg('opponent_model')==1)" value="pure_pursuit"/>
+
+    <!--Handles selecting controller for target point selection-->
+    <arg name="target_controller" if="$(eval arg('target_model')==0)" value="disparity_extender"/>
+    <arg name="target_controller" if="$(eval arg('target_model')==1)" value="pure_pursuit"/>
+
+    <!-- how many obstacles are allocated in the environment-->
+    <arg name="num_obstacles" if="$(arg enable_dynamic_obstacles)" value="4"/>
+    <arg name="num_obstacles" if="$(arg enable_static_obstacles)" value="10"/>
+    <arg name="num_obstacles" unless="$(eval arg('enable_dynamic_obstacles') or arg('enable_static_obstacles'))" value="0"/>
+
+    <!-- name of collision log file-->
+    <arg name="collision_file" value ="collisions_mpc_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
+    <node pkg = "mpc" name= "collision_logger_$(arg car_name)" output="$(arg output)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file) $(arg experiment_number)"/>
+
+
+    <!--Launch The Node Providing the target point for mpc-->
+    <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2"  if="$(eval arg('target_model')==0)" required="true"/>
+    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" if="$(eval arg('target_model')==1)" args="$(arg car_name) $(arg csv_filename) none" output="$(arg output)" required="true"/>
+   
+
+    <!--Launch MPC Files-->
+    <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)" required="true"/> 
+    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==1)" args="racecar2" required="true"/>
+
+    <!--Launch Reachability Nodes-->
+    <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
+    <node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
+
+
+    <!-- controller for opponent vehicle  -->
+    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py"  if="$(eval arg('target_model')==0)" args="racecar 30"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" if="$(eval arg('target_model')==0)" args="racecar3 30"/>
+    
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('target_model')==1)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('target_model')==1)" output="$(arg output)" required="true"/> 
+
+    <!--Spawn Static and Dynamic Obstacles-->
+    <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" if="$(arg enable_static_obstacles)" output= "screen" required="true"/>
+    <include file="$(find mpc)/launch/dynamic_boxes_launch.launch" if="$(arg enable_dynamic_obstacles)"/>
+
+    <!--time out node-->
+    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="$(arg output)"/>
+
+
+    <!--I'll leave this here for now but we can also test if we want both cars to race using the mpc formulation-->
+    <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="$(arg output)" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
+
+</launch>
