@@ -12,9 +12,9 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 class BoxOscillation:
 
-    def __init__(self,box_name='floating_box'):
+    def __init__(self,box_name,p1,p2):
 
-        self.set_points = [[-5.91,-2.51],[-5.5,0.2]]
+        self.set_points = [p2,p1]
 
         # Publisher for 'drive_parameters' (speed and steering angle)
         self.pub = rospy.Publisher(box_name+'/cmd_vel', Twist, queue_size=1)
@@ -55,7 +55,13 @@ if __name__ == "__main__":
     rospy.init_node('dynamic_box_oscillation', anonymous=True)
     args = rospy.myargv()[1:]
     box_name=args[0]
-    BoxOscillation(box_name=box_name)
+    x_init = args[1]
+    y_init = args[2]
+    x_set = args[3]
+    y_set = args[4]
+    p1 = [float(x_init),float(y_init)]
+    p2 = [float(x_set),float(y_set)]
+    BoxOscillation(box_name,p1,p2)
     rospy.spin()
 
 

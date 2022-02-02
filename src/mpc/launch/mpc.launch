@@ -10,7 +10,6 @@
 
     <!--Initial States of Vehicles for this scenario, ego car is racecar2-->
     <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"/>
-    <arg name="box1_pose" default="-x -5.5 -y -0.2 -z 0.05"/>
     <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"/>
     <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
 
@@ -83,8 +82,8 @@
     <node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
 
     <!-- controller for opponent vehicle  -->
-    <!-- <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 30"/>
-    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" args="racecar2 30"/> -->
+    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py" args="racecar 10"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" args="racecar2 10"/>
     
 
     <!-- controller for opponent vehicle  -->
@@ -96,32 +95,5 @@
     <!--Spawn Cones-->
     <!-- <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" output= "screen" required="true"/> -->
 
-  <group ns="floating_box">
-    
-    <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
-    <param name="robot_description" command="$(find xacro)/xacro '$(find racecar_description)/urdf/floatingbox.gazebo'" />
-    
-    <!-- spawn the robot with the specified name and init pose-->
-    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="$(arg box1_pose) -urdf -param robot_description -model floating_box" output="screen"/>
-
-    <!--joint state publisher for rviz and the tf transforms-->
-    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/> -->
-    <!--robot state publisher is needed-->
-    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
-      <param name="publish_frequency" value="100.0" />
-      <param name="tf_prefix" value="floating_box" />
-    </node>
-  </group>
-
-  <!--create the odometry file for the floating objects-->
-  <node pkg="racecar_gazebo" name="floating_odometry_node" type="floating_box_odometry.py" required="true" args="floating_box" output="screen"/>
-
-  <node name="message_to_tf_box" pkg="racecar_gazebo" type="floating_box_odom_to_tf.py" args='floating_box'/>
-
-  <node name="dynamic_box_oscillation" pkg="race" type="dynamic_box_oscillation.py" args="floating_box" output="screen"/>
-
-
-
-
-
+    <include file="$(find mpc)/launch/dynamic_boxes_launch.launch"/>
 </launch>

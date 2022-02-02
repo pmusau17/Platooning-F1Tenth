@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="box_name"/>
+
+    <!--create the odometry file for the floating objects-->
+    <node pkg="racecar_gazebo" name="floating_odometry_node_$(arg box_name)" type="floating_box_odometry.py" required="true" args="$(arg box_name)" output="screen"/>
+    <node pkg="racecar_gazebo" name="message_to_tf_box_$(arg box_name)"  type="floating_box_odom_to_tf.py" args="$(arg box_name)"/>
+
+</launch>

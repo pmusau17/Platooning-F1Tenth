@@ -12,7 +12,7 @@
   </link>
 
   <joint name="base_link_joint" type="fixed">
-    <origin xyz="0.0 0 1.25" rpy="0 0 0" />
+    <origin xyz="0.0 0 0.1" rpy="0 0 0" />
     <parent link="base_footprint"/>
     <child link="base_link" />
   </joint>
@@ -21,21 +21,30 @@
   <link name="base_link">
     <inertial>
       <mass value="50" />
-      <origin xyz="0 0 -1.25" />
+      <origin xyz="0 0 -0.1" />
       <inertia ixx="50.0" ixy="0.0" ixz="0.0"
         iyy="50.0" iyz="0.0"
         izz="50.0" />
     </inertial>
     <visual>
+
+      <!-- does not need to match collision -->
+      <!-- <geometry>
+        <cylinder length="0.5" radius="0.25" />
+      </geometry> -->
       <geometry>
-        <box size="0.5 0.5 1.0" /> <!-- does not need to match collision -->
+        <box size="0.5 0.5 1.0" /> 
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0 0 -1.0" />
+      <origin xyz="0 0 0.0" />
       <geometry>
-        <cylinder length="0.5" radius="0.25" />
+        <box size="0.5 0.5 1.0" /> 
       </geometry>
+
+      <!-- <geometry>
+        <cylinder length="0.5" radius="0.25" />
+      </geometry> -->
     </collision>
   </link>
 
