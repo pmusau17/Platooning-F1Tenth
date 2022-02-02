@@ -42,7 +42,7 @@ class BoxOscillation:
 
         dist = np.asarray([x_error,y_error]).reshape((1,2))
         dist = np.linalg.norm(dist,axis=-1)
-        if(dist<0.1):
+        if(dist<0.15):
             self.count = (self.count+1) %2
 
         vel_msg.linear.x = np.clip(x_error,-1.0,1.0)

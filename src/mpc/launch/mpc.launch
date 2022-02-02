@@ -5,6 +5,8 @@
     <arg name="world_name" default="track_porto"/>
     <arg name="gui" default="true" />
     <arg name="mpc_model" default="0"/>
+    <arg name="enable_dynamic_obstacles" default="false"/>
+    <arg name="enable_static_obstacles" default="false"/>
 
 
 
@@ -93,7 +95,7 @@
     <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)" output="screen" required="true"/>  -->
 
     <!--Spawn Cones-->
-    <!-- <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" output= "screen" required="true"/> -->
+    <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" if="$(arg enable_static_obstacles)" output= "screen" required="true"/>
 
-    <include file="$(find mpc)/launch/dynamic_boxes_launch.launch"/>
+    <include file="$(find mpc)/launch/dynamic_boxes_launch.launch" if="$(arg enable_dynamic_obstacles)"/>
 </launch>

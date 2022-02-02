@@ -20,7 +20,7 @@
     <arg name="box_name" value="$(arg box1_name)"/>
   </include>
    
-  <node name="dynamic_box_oscillation" pkg="race" type="dynamic_box_oscillation.py" 
+  <node name="$(arg box1_name)" pkg="race" type="dynamic_box_oscillation.py" 
   args="$(arg box1_name) $(arg box1_x_init) $(arg box1_y_init) $(arg box1_x_set) $(arg box1_y_set)" 
   output="screen"/>
 
@@ -44,56 +44,56 @@
     <arg name="box_name" value="$(arg box2_name)"/>
   </include>
    
-  <node name="dynamic_box_oscillation2" pkg="race" type="dynamic_box_oscillation.py" 
+  <node name="$(arg box2_name)" pkg="race" type="dynamic_box_oscillation.py" 
   args="$(arg box2_name) $(arg box2_x_init) $(arg box2_y_init) $(arg box2_x_set) $(arg box2_y_set)" 
   output="screen"/>
 
   <!--BOX 3 -->
- <!-- <arg name="box1_name" default="floating_box"/>
- <arg name="box1_x_init" default="-5.5"/>
- <arg name="box1_y_init" default="0.2"/>
- <arg name="box1_x_set" default="-5.91"/>
- <arg name="box1_y_set" default="-2.51"/>
- <arg name="box1_pose" default="-x $(arg box1_x_init) -y $(arg box1_y_init) -z 0.05"/>
+ <arg name="box3_name" default="floating_box3"/>
+ <arg name="box3_x_init" default="1.44"/>
+ <arg name="box3_y_init" default="7.44"/>
+ <arg name="box3_x_set" default="1.3"/>
+ <arg name="box3_y_set" default="5.28"/>
+ <arg name="box3_pose" default="-x $(arg box3_x_init) -y $(arg box3_y_init) -z 0.05"/>
 
- <group ns="$(arg box1_name)">
+ <group ns="$(arg box3_name)">
      <include file="$(find racecar_gazebo)/launch/dynamic_box.launch">
-      <arg name="box_name" value="$(arg box1_name)"/>
-      <arg name="init_pose" value="$(arg box1_pose)"/>
+      <arg name="box_name" value="$(arg box3_name)"/>
+      <arg name="init_pose" value="$(arg box3_pose)"/>
     </include>
   </group>
 
   <include file="$(find racecar_gazebo)/launch/dynamic_box_odometry.launch">
-    <arg name="box_name" value="$(arg box1_name)"/>
+    <arg name="box_name" value="$(arg box3_name)"/>
   </include>
    
-  <node name="dynamic_box_oscillation" pkg="race" type="dynamic_box_oscillation.py" 
-  args="$(arg box1_name) $(arg box1_x_init) $(arg box1_y_init) $(arg box1_x_set) $(arg box1_y_set)" 
-  output="screen"/> -->
+  <node name="$(arg box3_name)" pkg="race" type="dynamic_box_oscillation.py" 
+  args="$(arg box3_name) $(arg box3_x_init) $(arg box3_y_init) $(arg box3_x_set) $(arg box3_y_set)" 
+  output="screen"/>
 
 
 
   <!--BOX 4 -->
- <!-- <arg name="box1_name" default="floating_box"/>
- <arg name="box1_x_init" default="-5.5"/>
- <arg name="box1_y_init" default="0.2"/>
- <arg name="box1_x_set" default="-5.91"/>
- <arg name="box1_y_set" default="-2.51"/>
- <arg name="box1_pose" default="-x $(arg box1_x_init) -y $(arg box1_y_init) -z 0.05"/>
+ <arg name="box4_name" default="floating_box4"/>
+ <arg name="box4_x_init" default="10.8"/>
+ <arg name="box4_y_init" default="0.437"/>
+ <arg name="box4_x_set" default="11.0"/>
+ <arg name="box4_y_set" default="-3.12"/>
+ <arg name="box4_pose" default="-x $(arg box4_x_init) -y $(arg box4_y_init) -z 0.05"/>
 
- <group ns="$(arg box1_name)">
+ <group ns="$(arg box4_name)">
      <include file="$(find racecar_gazebo)/launch/dynamic_box.launch">
-      <arg name="box_name" value="$(arg box1_name)"/>
-      <arg name="init_pose" value="$(arg box1_pose)"/>
+      <arg name="box_name" value="$(arg box4_name)"/>
+      <arg name="init_pose" value="$(arg box4_pose)"/>
     </include>
   </group>
 
   <include file="$(find racecar_gazebo)/launch/dynamic_box_odometry.launch">
-    <arg name="box_name" value="$(arg box1_name)"/>
+    <arg name="box_name" value="$(arg box4_name)"/>
   </include>
    
-  <node name="dynamic_box_oscillation" pkg="race" type="dynamic_box_oscillation.py" 
-  args="$(arg box1_name) $(arg box1_x_init) $(arg box1_y_init) $(arg box1_x_set) $(arg box1_y_set)" 
-  output="screen"/> -->
+  <node name="$(arg box4_name)" pkg="race" type="dynamic_box_oscillation.py" 
+  args="$(arg box4_name) $(arg box4_x_init) $(arg box4_y_init) $(arg box4_x_set) $(arg box4_y_set)" 
+  output="screen"/>
 
 </launch>
