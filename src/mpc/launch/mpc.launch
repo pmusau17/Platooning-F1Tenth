@@ -118,6 +118,8 @@
 
   <node name="message_to_tf_box" pkg="racecar_gazebo" type="floating_box_odom_to_tf.py" args='floating_box'/>
 
+  <node name="dynamic_box_oscillation" pkg="race" type="dynamic_box_oscillation.py" args="floating_box" output="screen"/>
+
 
 
 
