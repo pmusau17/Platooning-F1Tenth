@@ -26,6 +26,8 @@ class WaypointLogger():
         package_path=rospack.get_path('pure_pursuit')
         # get the pid to create "unique" filenames
         self.filename=package_path+'/waypoints/{}_{}.csv'.format(world_name,os.getpid())
+        self.filename = self.filename.replace('install/pure_pursuit/share/pure_pursuit','src/pure_pursuit')
+        print(self.filename)
         self.file = open(self.filename, 'w')
 
         self.waypoints=[[0,0]]
@@ -33,14 +35,21 @@ class WaypointLogger():
     def save_waypoint(self,data):
         pt = np.asarray([[data.pose.pose.position.x,data.pose.pose.position.y]])
         dist_arr = np.linalg.norm(np.asarray(self.waypoints)-pt,axis=-1)
+
+        quaternion = np.array([data.pose.pose.orientation.x, 
+                            data.pose.pose.orientation.y, 
+                            data.pose.pose.orientation.z, 
+                            data.pose.pose.orientation.w])
+
+        euler = tf.transformations.euler_from_quaternion(quaternion)
         
         min_dist= np.min(dist_arr)
         if min_dist>0.14142135623730953:
             self.waypoints.append([data.pose.pose.position.x,data.pose.pose.position.y])
          
             print("x: {}, y: {}".format(data.pose.pose.position.x,data.pose.pose.position.y))
-            self.file.write('%f, %f\n' % (data.pose.pose.position.x,
-                                        data.pose.pose.position.y))
+            self.file.write('%f, %f, %f\n' % (data.pose.pose.position.x,
+                                        data.pose.pose.position.y,euler[2]))
 
     def shutdown(self):
         self.file.close()

@@ -2,14 +2,15 @@
 <launch>
 
     <!--initialize the arguments-->
-    <arg name="world_name" default="track_porto"/>
+    <arg name="world_number" default="0"/>
     <arg name="gui" default="true" />
     <arg name="mpc_model" default="0"/>
     <arg name="opponent_model" default="0"/>
     <arg name="target_model" default="0"/>
+    <arg name="experiment_number" default="0"/>
     <arg name="enable_dynamic_obstacles" default="false"/>
     <arg name="enable_static_obstacles" default="false"/>
-    <arg name="experiment_number" default="0"/>
+
     <arg name="random_seed" default="15"/>
     <arg name="output" default="log"/>
     
@@ -17,13 +18,37 @@
     <arg name="timeout" default = "-1"/>
 
     <!--Initial States of Vehicles for this scenario, ego car is racecar2-->
-    <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"/>
-    <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"/>
-    <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
+    <arg name="world_name" if="$(eval arg('world_number')==0)" value="track_porto"/>
+    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_walker"/>
+    <arg name="world_name" if="$(eval arg('world_number')==2)" value="track_barca"/>
+
+    <!--Initial States of Vehicles for this scenario, ego car is racecar2
+        The intitial positions also depend on the racetrack-->
+    <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"  if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"   if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05" if="$(eval arg('world_name')=='track_porto')"/>
+
+    <arg name="racecar_pose" default="-x 0.0898 -y -0.174 -z 0.05"  if="$(eval arg('world_name')=='track_barca')"/>
+    <arg name="racecar2_pose" default="-x -2.68 -y 1.38 -z 0.05"   if="$(eval arg('world_name')=='track_barca')"/>
+    <arg name="racecar3_pose" default="-x -7.63 -y 3.61 -z 0.05" if="$(eval arg('world_name')=='track_barca')"/>
+
+    <arg name="racecar_pose" default="-x 4.03 -y 0.324 -z 0.05"  if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="racecar2_pose" default="-x -0.219 -y 0.376 -z 0.05"   if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="racecar3_pose" default="-x -3.5 -y -0.711 -z 0.05" if="$(eval arg('world_name')=='racecar_walker')"/>
 
     <!--waypoint file used by pure pursuit algorithm-->
-    <arg name="csv_filename" default="track_porto_26780.csv"/>
-    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+    <arg name="csv_filename" default="track_porto_26780.csv"    if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="csv_filename" default="racecar_walker_28998.csv" if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="csv_filename" default="track_barca_47396.csv"    if="$(eval arg('world_name')=='track_barca')"/>
+
+    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"  if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="map_file" value="$(find race)/maps/racecar_walker.yaml" if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="map_file"  value="$(find race)/maps/track_barca.yaml"   if="$(eval arg('world_name')=='track_barca')"/> 
+
+    <!--Handles finding the wall points-->
+    <arg name="wall_points" if="$(eval arg('world_name')=='track_porto')" value="porto_obstacles.txt"/>
+    <arg name="wall_points" if="$(eval arg('world_name')=='racecar_walker')" value="racecar_walker_obstacles.txt"/>
+    <arg name="wall_points" if="$(eval arg('world_name')=='track_barca')" value="track_barca_obstacles.txt"/>
 
       <!--docker requirements-->
     <arg name="use_sim_time" default = "true"/>
@@ -49,14 +74,17 @@
 
 
     <!--  This is the main launch file that launches the world, plugins, controllers, vehicles -->
-    <include file="$(find race)/launch/multi_parametrizeable.launch">
+     <include file="$(find race)/launch/multi_agent_gen.launch">
       <arg name="racecar_pose" value="$(arg racecar_pose)"/>
       <arg name="racecar2_pose" value="$(arg racecar2_pose)"/>
       <arg name="racecar3_pose" value="$(arg racecar3_pose)"/>
       <arg name="number_of_cars" value="$(arg number_of_cars)"/>
       <arg name="gui" value="$(arg gui)"/>
       <arg name="rviz_disp" value="$(arg rviz_disp)"/>
+      <arg name="world_name" value="$(arg world_name)"/>
     </include>
+
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <!--The next few blocks handle generating the labels for the log files that will 
         be generated during the experimental campaigns-->
@@ -78,7 +106,7 @@
     <arg name="num_obstacles" unless="$(eval arg('enable_dynamic_obstacles') or arg('enable_static_obstacles'))" value="0"/>
 
     <!-- name of collision log file-->
-    <arg name="collision_file" value ="collisions_mpc_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
+    <arg name="collision_file" value ="collisions_$(arg world_name)_mpc_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
     <node pkg = "mpc" name= "collision_logger_$(arg car_name)" output="$(arg output)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file) $(arg experiment_number)"/>
 
 
@@ -89,7 +117,7 @@
 
     <!--Launch MPC Files-->
     <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)" required="true"/> 
-    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==1)" args="racecar2" required="true"/>
+    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==1)" args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/>
 
     <!--Launch Reachability Nodes-->
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>

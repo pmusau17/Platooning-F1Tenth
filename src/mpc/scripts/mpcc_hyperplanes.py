@@ -685,10 +685,12 @@ class MPCC:
 
 if __name__ == '__main__':
     rospy.init_node('mpcc_node')
-    waypoint_file = "track_porto_26780.csv"
-    obstacle_file = "track_porto_obstacles.txt"
+    # waypoint_file = "track_porto_26780.csv"
+    # obstacle_file = "track_porto_obstacles.txt"
     args = rospy.myargv()[1:]
     racecar_name=args[0]
+    waypoint_file=args[1]
+    obstacle_file=args[2]
     rospy.sleep(10)
     mpc = MPCC(waypoint_file,obstacle_file,racecar_name=racecar_name)
     r = rospy.Rate(80)

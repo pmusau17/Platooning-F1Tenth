@@ -2,29 +2,47 @@
 <launch>
 
     <!--initialize the arguments-->
-    <arg name="world_name" default="track_porto"/>
-    <!-- <arg name="world_name" default="racecar_walker"/> -->
-    <!-- <arg name="world_name" value="track_barca"/> -->
+
+    <arg name="world_number" default="0"/>
+    
     <arg name="gui" default="true" />
     <arg name="mpc_model" default="0"/>
     <arg name="enable_dynamic_obstacles" default="false"/>
     <arg name="enable_static_obstacles" default="false"/>
+    <arg name="output" default="log"/>
 
+    <arg name="world_name" if="$(eval arg('world_number')==0)" value="track_porto"/>
+    <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_walker"/>
+    <arg name="world_name" if="$(eval arg('world_number')==2)" value="track_barca"/>
 
+    <!--Initial States of Vehicles for this scenario, ego car is racecar2
+        The intitial positions also depend on the racetrack-->
+    <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"  if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"   if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05" if="$(eval arg('world_name')=='track_porto')"/>
 
-    <!--Initial States of Vehicles for this scenario, ego car is racecar2-->
-    <arg name="racecar_pose" default="-x -3.5 -y -0.2 -z 0.05"/>
-    <arg name="racecar2_pose" default="-x 1.5 -y 1.0 -z 0.05"/>
-    <arg name="racecar3_pose" default="-x -1.5 -y 0.05 -z 0.05"/>
+    <arg name="racecar_pose" default="-x 0.0898 -y -0.174 -z 0.05"  if="$(eval arg('world_name')=='track_barca')"/>
+    <arg name="racecar2_pose" default="-x -2.68 -y 1.38 -z 0.05"   if="$(eval arg('world_name')=='track_barca')"/>
+    <arg name="racecar3_pose" default="-x -7.63 -y 3.61 -z 0.05" if="$(eval arg('world_name')=='track_barca')"/>
+
+    <arg name="racecar_pose" default="-x 4.03 -y 0.324 -z 0.05"  if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="racecar2_pose" default="-x -0.219 -y 0.376 -z 0.05"   if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="racecar3_pose" default="-x -3.5 -y -0.711 -z 0.05" if="$(eval arg('world_name')=='racecar_walker')"/>
 
     <!--waypoint file used by pure pursuit algorithm-->
-    <arg name="csv_filename" default="track_porto_26780.csv"/>
-    <!-- <arg name="csv_filename" default="racecar_walker_29418.csv"/> -->
-    <!-- <arg name="csv_filename" default="track_barca_4676.csv"/> -->
+    <arg name="csv_filename" default="track_porto_26780.csv"    if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="csv_filename" default="racecar_walker_28998.csv" if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="csv_filename" default="track_barca_47396.csv"    if="$(eval arg('world_name')=='track_barca')"/>
 
-    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
-    <!-- <arg name="map_file" value="$(find race)/maps/racecar_walker.yaml"/>
-    <arg name="map_file"  value="$(find race)/maps/track_barca.yaml"/> -->
+    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"  if="$(eval arg('world_name')=='track_porto')"/>
+    <arg name="map_file" value="$(find race)/maps/racecar_walker.yaml" if="$(eval arg('world_name')=='racecar_walker')"/>
+    <arg name="map_file"  value="$(find race)/maps/track_barca.yaml"   if="$(eval arg('world_name')=='track_barca')"/> 
+
+    <!--Handles finding the wall points-->
+    <arg name="wall_points" if="$(eval arg('world_name')=='track_porto')" value="porto_obstacles.txt"/>
+    <arg name="wall_points" if="$(eval arg('world_name')=='racecar_walker')" value="racecar_walker_obstacles.txt"/>
+    <arg name="wall_points" if="$(eval arg('world_name')=='track_barca')" value="track_barca_obstacles.txt"/>
+
     <!--random seed used to allocte obstacles within vehicle environment-->
     <arg name="random_seed" default = "1516"/>
 
@@ -74,15 +92,15 @@
     </include>
     -->
 
-    <!-- <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" required="true"/>  -->
-    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar2" required="true"/>
-    <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="screen" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
-    <node pkg="mpc" type="mpc_gen.py" name="mpc_gen" output="screen" if="$(eval arg('mpc_model')==1)" required="true"/>
-    <node pkg="mpc" type="mpc_bicycle.py" name="mpc_node" output="screen" if="$(eval arg('mpc_model')==2)" required="true"/>
+    <!-- <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)" required="true"/>  -->
+    <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" 
+                    if="$(eval arg('mpc_model')==0)" args="racecar2 $(arg csv_filename) $(arg wall_points)" 
+                    required="true"/>
+    <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="$(arg output)" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
 
 
     <!--Launch Pure Pursuit Node
-    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="screen" required="true"/>-->
+    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="$(arg output)" required="true"/>-->
 
     <!--Launch Disparity Extender Waypoint Following-->
     <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2" required="true"/>
@@ -99,8 +117,8 @@
     <!-- controller for opponent vehicle  -->
     <!-- <node pkg="race" name="disparity_extender_opponent_vehicle2" type="disparity_extender_vanderbilt_gen.py" args="racecar3 15"/> -->
 
-    <!-- <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)" output="screen" required="true"/> 
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)" output="screen" required="true"/>  -->
+    <!-- <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)" output="$(arg output)" required="true"/>  -->
 
     <!--Spawn Cones-->
     <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" if="$(arg enable_static_obstacles)" output= "screen" required="true"/>

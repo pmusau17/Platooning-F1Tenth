@@ -16,6 +16,12 @@
 # for future reference generating a random number within a range
 # $(shuf -i 0-4 -n 1)
 
+# Change this to change the track
+# 0 track_porto
+# 1 racecar_walker
+# 2 track_barca
+world_number=2
+
 # Change this to evaluate different mpc models
 # 0 is mpc with the hyper-plane formulation
 # 1 is the mpcc formulation
@@ -33,7 +39,7 @@ target_model=0
 
 # Change this to toggle obstacles
 enable_static_obstacles=false
-enable_dynamic_obstacles=true
+enable_dynamic_obstacles=false
 
 # timeout 
 timeout=60
@@ -59,6 +65,7 @@ roslaunch mpc mpc_batch.launch mpc_model:=$mpc_model target_model:=$target_model
 opponent_model:=$opponent_model timeout:=$timeout \
 enable_dynamic_obstacles:=$enable_dynamic_obstacles \
 enable_static_obstacles:=$enable_static_obstacles \
+world_number:=$world_number \
 experiment_number:=$count &
 
 
