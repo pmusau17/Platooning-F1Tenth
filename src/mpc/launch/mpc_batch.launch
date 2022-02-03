@@ -139,6 +139,21 @@
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="$(arg output)"/>
 
 
+
+
+    <arg name="progression_file" value ="progress_$(arg world_name)_mpc_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
+
+    <!--node for computing progress-->
+    <node pkg = "mpc" name= "progress_logger_$(arg car_name)" output="screen"
+      required="true" type ="compute_track_progress.py" 
+      args="$(arg car_name) $(arg csv_filename) $(arg progression_file) $(arg experiment_number)"/>
+
+    <node pkg = "mpc" name= "progress_logger_racecar" output="screen"
+      required="true" type ="compute_track_progress.py" 
+      args="racecar $(arg csv_filename) $(arg progression_file) $(arg experiment_number)"/>
+
+
+
     <!--I'll leave this here for now but we can also test if we want both cars to race using the mpc formulation-->
     <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="$(arg output)" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
 

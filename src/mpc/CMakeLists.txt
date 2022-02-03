@@ -45,6 +45,7 @@ scripts/visualize_point.py
 scripts/visualize_points.py
 scripts/mpc_bicycle.py
 scripts/collision_logger.py
+scripts/compute_track_progress.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -20,7 +20,7 @@
 # 0 track_porto
 # 1 racecar_walker
 # 2 track_barca
-world_number=2
+world_number=0
 
 # Change this to evaluate different mpc models
 # 0 is mpc with the hyper-plane formulation

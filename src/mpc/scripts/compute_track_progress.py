@@ -11,8 +11,8 @@ from numpy import linalg as la
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import csv
 import os
-import rospkg 
 from scipy import stats
+import rospkg 
 
 """
 Class that computes the progress of the F1Tenth around the track. Takes a lot of inspiration from the 
@@ -42,8 +42,10 @@ class ComputeProgress:
         self.initialize_start_point = False
         # self start point
         self.start_point = []
+        self.idxs = []
 
         self.lap_count = 0 
+
         self.count=0
         self.total_elapsed =rospy.Time.now()
         self.start_time = rospy.Time.now()
@@ -51,8 +53,8 @@ class ComputeProgress:
 
         # for logging purposes
         rospack = rospkg.RosPack()
-        self.progress_file = os.path.join(rospack.get_path('race'),"logs",log_file)
-        self.progress_file = self.progress_file.replace('install/race/share/race','src/race')
+        self.progress_file = os.path.join(rospack.get_path('mpc'),"logs",log_file)
+        self.progress_file = self.progress_file.replace('install/mpc/share/mpc','src/mpc')
         rospy.logwarn(self.progress_file)
 
     # Import waypoints.csv into a list (path_points)
@@ -126,26 +128,34 @@ class ComputeProgress:
         point = np.asarray(self.xy_points[idx,:])
 
         # Initialize the first point as the start point
-        # this prevents small errors 
-        if(self.count>5):
-            vals, counts = np.unique(np.asarray(self.idxs), return_counts=True)
-            mode_value = np.argwhere(counts == np.max(counts))
-            self.start_index = stats.mode(self.idxs).mode[0]
-            self.initialize_start_point = True
-            # reshape the array so that it starts from zero it makes computing progress much easier
-            # self.xy_points = self.xy_points[self.start_point:] + self.xy_points[:self.start_point]
-            self.xy_points = np.concatenate([self.xy_points[self.start_index:],self.xy_points[:self.start_index]])
+        if(not self.initialize_start_point):
+            self.start_point = point
+            self.start_index = idx
+            self.idxs.append(idx)
+
+
+            # this prevents small errors 
+            if(self.count>5):
+                vals, counts = np.unique(np.asarray(self.idxs), return_counts=True)
+                mode_value = np.argwhere(counts == np.max(counts))
+                self.start_index = stats.mode(self.idxs).mode[0]
+                self.initialize_start_point = True
+                # reshape the array so that it starts from zero it makes computing progress much easier
+                # self.xy_points = self.xy_points[self.start_point:] + self.xy_points[:self.start_point]
+                self.xy_points = np.concatenate([self.xy_points[self.start_index:],self.xy_points[:self.start_index]])
+            else:
+                self.count+=1
+
         else:
-            self.count+=1
+            # Visualize both points as the start point 
+            #self.visualize_point(point,self.goal_pub)
 
             # Visualize both points as the start point 
-            self.visualize_point(point,self.goal_pub)
-
-            # Visualize both points as the start point 
-            self.visualize_point(self.start_point,self.start_pub,r=0.0,g=0.0)
+            #self.visualize_point(self.start_point,self.start_pub,r=0.0,g=0.0)
 
             # current point to starting point
-            norm = np.linalg.norm(self.start_point - point) 
+            #norm = np.linalg.norm(self.start_point - point) 
+
             self.progress = idx/float(self.xy_points.shape[0])
             # prevent from counting laps more than once
             td = rospy.Time.now() - self.start_time
@@ -161,11 +171,11 @@ class ComputeProgress:
         print("total_laps_completed:",self.lap_count+self.progress,'total_time_taken:',elapsedTime)
         if(os.path.exists(self.progress_file)):
             fi = open(self.progress_file, "a")
-            fi.write("{}, {}, {}\n".format(self.lap_count+self.progress,elapsedTime,self.experiment_number))
+            fi.write("{},{}, {}, {}\n".format(self.racecar_name,self.lap_count+self.progress,elapsedTime,self.experiment_number))
             fi.close()
         else: 
             fi = open(self.progress_file, "w")
-            fi.write("{}, {}, {}\n".format(self.lap_count+self.progress,elapsedTime,self.experiment_number))
+            fi.write("{},{}, {}, {}\n".format(self.racecar_name,self.lap_count+self.progress,elapsedTime,self.experiment_number))
             fi.close()
         print('Goodbye')
 
@@ -187,9 +197,8 @@ if __name__ == '__main__':
     else:
         experiment_number = 0 
     rospy.logwarn("experiment number: "+str(experiment_number))
-
+    rospy.sleep(10)
     C = ComputeProgress(racecar_name,waypoint_file,log_file,experiment_number=experiment_number)  
-
     while not rospy.is_shutdown():
         pass 
     C.shutdown()
