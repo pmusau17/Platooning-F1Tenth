@@ -22,7 +22,9 @@ def objective(x, a, b, c): # Objective function tries to simply minimize constan
     for i in range(len(u1)):
         v1[i] = [u1[i][0], x[2]*u1[i][0] + x[3]]  
         
-    return max(max(directed_hausdorff(u0, v0)[0], directed_hausdorff(v0, u0)[0]), max(directed_hausdorff(u1, v1)[0], directed_hausdorff(v1, u1)[0]))
+    return np.sum((u0-v0)**2) + np.sum((u1-v1)**2) 
+    
+# Objective function based on Hausdorff distance - max(max(directed_hausdorff(u0, v0)[0], directed_hausdorff(v0, u0)[0]), max(directed_hausdorff(u1, v1)[0], directed_hausdorff(v1, u1)[0]))
 
 
 def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car

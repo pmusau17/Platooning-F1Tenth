@@ -448,8 +448,7 @@ class MPC:
                     #print(hw_r_filtered[:,1].tolist())
                     hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)
                     start = time.time()
-                    a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
-                    a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
+                    a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
                     print(time.time() - start)
                     #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
@@ -463,8 +462,8 @@ class MPC:
                     #print(hw_r_filtered_updated[:,1].tolist())
                     hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03) 
                     start = time.time()                  
-                    a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
-                    a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
+                    a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
+                    #a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
                     print(time.time() - start)
                     #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
@@ -476,8 +475,8 @@ class MPC:
                 #print(hw_r_filtered[:,0].tolist())
                 #print(hw_r_filtered[:,1].tolist())  
                 start = time.time()   
-                a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
-                a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
+                a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
+                #a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
                 print(time.time() - start)
                 print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
@@ -485,8 +484,7 @@ class MPC:
             hw_l_filtered = rdp(hw_l_filtered, epsilon=0.03)    
             hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)   
             start = time.time()
-            a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners)
-            a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners)
+            a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
             print(time.time() - start)
 
   

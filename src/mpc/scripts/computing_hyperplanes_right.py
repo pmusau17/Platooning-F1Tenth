@@ -17,7 +17,7 @@ def objective(x, a, b, c): # Objective function tries to simply minimize constan
     for i in range(len(u1)):
         v1[i] = [u1[i][0], x[0]*u1[i][0] + x[1]]  
         
-    return max(directed_hausdorff(u1, v1)[0], directed_hausdorff(v1, u1)[0])
+    return  np.sum((u1-v1)**2)
 
 
 

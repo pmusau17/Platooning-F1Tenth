@@ -18,7 +18,7 @@ def objective(x, a, b, c): # Objective function tries to simply minimize constan
         v0[i] = [u0[i][0], x[0]*u0[i][0] + x[1]]   
 
         
-    return max(directed_hausdorff(u0, v0)[0], directed_hausdorff(v0, u0)[0])
+    return np.sum((u0-v0)**2)
 
 
 def constraint_ego_car_hyperplane_0(i): #  hyperplane to left from the ego car
