@@ -30,7 +30,7 @@ mpc_model=1
 # Change this to change the opponent driving model
 # 0 is the disparity extender
 # 1 is pure pursuit
-opponent_model=0
+opponent_model=1
 
 # Change this to change the target point selection
 # 0 is the disparity extender
