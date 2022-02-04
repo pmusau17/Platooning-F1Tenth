@@ -26,6 +26,9 @@ from rdp import rdp
 
 from template_model_hype import template_model
 from template_mpc_hyperplanes import template_mpc
+
+from computing_hyperplanes_left import find_constraints_left
+from computing_hyperplanes_right import find_constraints_right
 from computing_hyperplanes_final import find_constraints
 
 
@@ -251,7 +254,10 @@ class MPC:
             x_coordinate = (lidar_range) * math.cos(rotated_angle) + position_x + 0.265*math.cos(heading_angle)
             y_coordinate = (lidar_range) * math.sin(rotated_angle) + position_y + 0.265*math.sin(heading_angle)
             #points.append(CartesianPoint(x_coordinate, y_coordinate))
-            points.append([x_coordinate,y_coordinate])
+            if (lidar_range <= 2):
+                points.append([x_coordinate,y_coordinate])
+            else:
+                points.append([np.inf,np.inf])    
 
             if(self.display_in_rviz):
                 marker = Marker()
@@ -337,6 +343,29 @@ class MPC:
             return False
             
         return True 
+
+    def compute_bounding_box_for_racecar(self,pos_x,pos_y,head_angle):
+        rad=(45*math.pi)/180
+        distance = 0.1939115
+        rotated_angle = rad + head_angle
+        x_1 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_1 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+
+        rotated_angle = -rad + head_angle
+        x_2 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_2 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+
+        rad=(135*math.pi)/180
+        rotated_angle = rad + head_angle
+        x_3 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_3 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+
+        rotated_angle = -rad + head_angle
+        x_4 = (distance) * math.cos(rotated_angle) + pos_x + 0.265*math.cos(head_angle)
+        y_4 = (distance) * math.sin(rotated_angle) + pos_y + 0.265*math.sin(head_angle)
+
+        return np.asarray([[x_1, y_1], [x_2, y_2], [x_3, y_3], [x_4, y_4]])
+
     
     def mpc_drive(self, posx, posy, head_angle, tarx, tary,lidar_data,hypes):
 
@@ -344,13 +373,47 @@ class MPC:
                 
         rectangle = hypes # Get hyper-rectangles of the opponent vehicle
                  
-        ar_0 = self.lidar_to_cart(lidar_data.ranges[240:840], posx, posy, head_angle, 240)   # Convert LiDaR points to Cartesian Points
+        ar_0 = self.lidar_to_cart(lidar_data.ranges[135:945], posx, posy, head_angle, 135)   # Convert LiDaR points to Cartesian Points
         
-        hw_l = np.asarray(ar_0[680-240:840-240:self.increment])           
-        hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T   
+        hw_l = np.asarray(ar_0[505:809:self.increment])           
+        hw_l_filtered = np.vstack((hw_l[:,0][np.logical_not(np.isinf(hw_l[:,0]))], hw_l[:,1][np.logical_not(np.isinf(hw_l[:,1]))])).T
+        
+        if (hw_l_filtered.size == 0):
+            rad=(45*math.pi)/180
+            distance = 2
+            rotated_angle = rad + head_angle
+            x_1 = (distance) * math.cos(rotated_angle) + posx + 0.265*math.cos(head_angle)
+            y_1 = (distance) * math.sin(rotated_angle) + posy + 0.265*math.sin(head_angle)
+                      
+            rad=(135*math.pi)/180
+            rotated_angle = rad + head_angle
+            x_3 = (distance) * math.cos(rotated_angle) + posx + 0.265*math.cos(head_angle)
+            y_3 = (distance) * math.sin(rotated_angle) + posy + 0.265*math.sin(head_angle)
 
-        hw_r =  np.asarray(ar_0[240-240:480-240:self.increment])               
+           
+            hw_l_filtered = np.array([[x_1, y_1], [x_3, y_3]])
+            
+               
+
+        hw_r =  np.asarray(ar_0[0:304:self.increment])               
         hw_r_filtered = np.vstack((hw_r[:,0][np.logical_not(np.isinf(hw_r[:,0]))], hw_r[:,1][np.logical_not(np.isinf(hw_r[:,1]))])).T   
+        
+        if (hw_r_filtered.size == 0):
+            rad=(45*math.pi)/180
+            distance = 2
+            
+            rotated_angle = -rad + head_angle
+            x_2 = (distance) * math.cos(rotated_angle) + posx + 0.265*math.cos(head_angle)
+            y_2 = (distance) * math.sin(rotated_angle) + posy + 0.265*math.sin(head_angle)
+
+            rotated_angle = -rad + head_angle
+            x_4 = (distance) * math.cos(rotated_angle) + posx + 0.265*math.cos(head_angle)
+            y_4 = (distance) * math.sin(rotated_angle) + posy + 0.265*math.sin(head_angle)
+
+            
+            hw_r_filtered = np.array([[x_2, y_2], [x_4, y_4]])
+
+
             
         x_min = min(hw_l_filtered[0][0], hw_l_filtered[len(hw_l_filtered)-1][0], hw_r_filtered[0][0], hw_r_filtered[len(hw_r_filtered)-1][0], posx)
         x_max = max(hw_l_filtered[0][0], hw_l_filtered[len(hw_l_filtered)-1][0], hw_r_filtered[0][0], hw_r_filtered[len(hw_r_filtered)-1][0], posx)
@@ -363,6 +426,10 @@ class MPC:
         
         bx = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][0]  # find b point to create a line from ego car
         by = self.lidar_to_cart([lidar_data.ranges[540]], posx, posy, head_angle, 540)[0][1]  # find b point to create a line from ego car
+        
+        ego_car_corners = self.compute_bounding_box_for_racecar(posx, posy, head_angle)
+        
+        
         if(rectangle.count > 0):
             if (self.overlap(x_min, x_max, y_min, y_max, rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min, rectangle.obstacle_list[rectangle.count-1].y_max)): # If ego-car overlaps with opponent's reachset include reachset points to the left/right arrays
             
@@ -375,41 +442,52 @@ class MPC:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_l_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)), epsilon=0.03)
-                    print(hw_l_filtered_updated[:,0].tolist())
-                    print(hw_l_filtered_updated[:,1].tolist())
-                    print(hw_r_filtered[:,0].tolist())
-                    print(hw_r_filtered[:,1].tolist())
+                    #print(hw_l_filtered_updated[:,0].tolist())
+                    #print(hw_l_filtered_updated[:,1].tolist())
+                    #print(hw_r_filtered[:,0].tolist())
+                    #print(hw_r_filtered[:,1].tolist())
                     hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)
-                    a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes 
-                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    start = time.time()
+                    a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
+                    a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered_updated, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
+                    print(time.time() - start)
+                    #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
                 else:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
                     hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=0.03)
-                    print(hw_l_filtered[:,0].tolist())
-                    print(hw_l_filtered[:,1].tolist())
-                    print(hw_r_filtered_updated[:,0].tolist())
-                    print(hw_r_filtered_updated[:,1].tolist())
-                    hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)                   
-                    a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary) # compute coupled-hyperplanes 
-                    print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    #print(hw_l_filtered[:,0].tolist())
+                    #print(hw_l_filtered[:,1].tolist())
+                    #print(hw_r_filtered_updated[:,0].tolist())
+                    #print(hw_r_filtered_updated[:,1].tolist())
+                    hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03) 
+                    start = time.time()                  
+                    a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
+                    a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
+                    print(time.time() - start)
+                    #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
             else:
-                print(hw_l_filtered[:,0].tolist())
-                print(hw_l_filtered[:,1].tolist())
-                print(hw_r_filtered[:,0].tolist())
-                print(hw_r_filtered[:,1].tolist())
                 hw_l_filtered = rdp(hw_l_filtered,  epsilon=0.03)
-                hw_r_filtered = rdp(hw_r_filtered,  epsilon=0.03)       
+                hw_r_filtered = rdp(hw_r_filtered,  epsilon=0.03) 
+                #print(hw_l_filtered[:,0].tolist())
+                #print(hw_l_filtered[:,1].tolist())
+                #print(hw_r_filtered[:,0].tolist())
+                #print(hw_r_filtered[:,1].tolist())  
                 start = time.time()   
-                a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary) # compute coupled-hyperplanes  
+                a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
+                a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
+                print(time.time() - start)
                 print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
 
         else:   
             hw_l_filtered = rdp(hw_l_filtered, epsilon=0.03)    
             hw_r_filtered = rdp(hw_r_filtered, epsilon=0.03)   
-            a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary)
+            start = time.time()
+            a0, b0 = find_constraints_left(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners)
+            a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners)
+            print(time.time() - start)
 
   
             
@@ -447,14 +525,14 @@ class MPC:
         self.b1 = b1
 
         # above the left line 
-        print(m,m1,b,b1)
-        print("cons1u:", 0>=((posx*m+b)-posy))
+        #print(m,m1,b,b1)
+        #print("cons1u:", 0>=((posx*m+b)-posy))
         # below the left line
-        print("cons1b:", 0>=(posy)-(posx*m+b))
+        #print("cons1b:", 0>=(posy)-(posx*m+b))
         # above the right line
-        print("cons2u:", 0>=((posx*m1+b1)-posy))
+        #print("cons2u:", 0>=((posx*m1+b1)-posy))
         # below the right line 
-        print("cons2b:", 0>=(posy)-(posx*m1+b1))
+        #print("cons2b:", 0>=(posy)-(posx*m1+b1))
 
         if(0>=((posx*m+b)-posy)):
             self.c1 = 1
