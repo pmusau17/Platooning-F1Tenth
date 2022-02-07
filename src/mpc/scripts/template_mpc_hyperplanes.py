@@ -14,7 +14,7 @@ def template_mpc(model,horizon):
         'n_horizon': horizon,
         'n_robust': 0,                         # Robust horizon for robust scenario-tree MPC,
         'open_loop': 0,
-        't_step': 0.01,
+        't_step': 0.1,
         'state_discretization': 'collocation', # no other option at the moment
         'collocation_type': 'radau',           # no other option at the moment
         'collocation_deg': 2,
@@ -27,19 +27,20 @@ def template_mpc(model,horizon):
 
     _x = model.x
     _tvp = model.tvp
+    _u = model.u
 
-    # change the objective function to a time varying parameter
-    # lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
+    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2) 
+    +  ((_tvp['target_theta'] - _x['car_theta']) ** 2)
 
-    lterm = DM.zeros()
-    mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
+    lterm = mterm - _u['car_v']
+    
 
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    mpc.set_rterm(car_v=0.0 , car_delta=0.0)
+    mpc.set_rterm(car_v=0.5 , car_delta=0.0)
 
     mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 0.7
+    mpc.bounds['upper', '_u', 'car_v'] = 1.3
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
     # left plane constraint, this basically bounds it to the right or to the left

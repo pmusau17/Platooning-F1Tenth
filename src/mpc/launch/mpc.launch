@@ -9,7 +9,7 @@
     <arg name="mpc_model" default="0"/>
     <arg name="enable_dynamic_obstacles" default="false"/>
     <arg name="enable_static_obstacles" default="false"/>
-    <arg name="output" default="log"/>
+    <arg name="output" default="screen"/>
 
     <arg name="world_name" if="$(eval arg('world_number')==0)" value="track_porto"/>
     <arg name="world_name" if="$(eval arg('world_number')==1)" value="racecar_walker"/>
@@ -92,18 +92,22 @@
     </include>
     -->
 
-    <!-- <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)" required="true"/>  -->
+    <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)" 
+          args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/> 
+          
     <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" 
-                    if="$(eval arg('mpc_model')==0)" args="racecar2 $(arg csv_filename) $(arg wall_points)" 
+                    if="$(eval arg('mpc_model')==1)" args="racecar2 $(arg csv_filename) $(arg wall_points)" 
                     required="true"/>
+
+    <!--Uncomment this if you want to run another vehicle with the MPCC formulation-->
     <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="$(arg output)" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->
 
 
-    <!--Launch Pure Pursuit Node
-    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="$(arg output)" required="true"/>-->
+    <!--Launch Pure Pursuit Node-->
+    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="$(arg output)" required="true"/>
 
     <!--Launch Disparity Extender Waypoint Following-->
-    <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2" required="true"/>
+    <!-- <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2" required="true"/> -->
     <!-- <node pkg="race" name="disparity_extender_target_point1" type="disparity_extender_ftg.py" args="racecar" required="true"/> -->
 
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>

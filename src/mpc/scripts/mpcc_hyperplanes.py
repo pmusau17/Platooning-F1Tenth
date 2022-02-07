@@ -25,6 +25,7 @@ import copy
 
 
 from template_model import template_model
+#from template_model_bicycle import template_model
 from template_mpc import template_mpc
 #from computing_hyperplanes_final import find_constraints
 
@@ -90,9 +91,6 @@ class MPCC:
 
         self.left_points = []
         self.right_points = []
-
-        # pt = [1.9937239510681324, 1.2498857949496691]
-        # self.left_points.append(pt)
 
         self.read_waypoints(waypoint_file,obstacle_file)
         self.vis_pub = rospy.Publisher(racecar_name+'/hyper_planes', MarkerArray,queue_size=1)
@@ -252,8 +250,16 @@ class MPCC:
         quaternion_z = pose_msg.pose.pose.orientation.z
         quaternion_w = pose_msg.pose.pose.orientation.w
 
-        # #head_angle = math.atan2(2 * (quaternion_z * quaternion_w), 1 - 2 * (quaternion_z * quaternion_z))
         head_angle = euler[2]
+
+        # linear velocity 
+        velx = pose_msg.twist.twist.linear.x
+        vely = pose_msg.twist.twist.linear.y
+        velz = pose_msg.twist.twist.linear.z
+
+        # magnitude of velocity 
+        speed = np.asarray([velx,vely])
+        speed = np.linalg.norm(speed)
 
         pos_x,pos_y = position[0],position[1]
         pos_1x, pos1_y = pos_x + math.cos(head_angle) * 1.0, pos_y + math.sin(head_angle)*1.0
@@ -448,8 +454,8 @@ class MPCC:
 
 
                 
-        #x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
-        x0 = np.array([pos_x, pos_y, head_angle,1]).reshape(-1, 1)
+        x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
+        # x0 = np.array([pos_x, pos_y,speed,head_angle]).reshape(-1, 1)
 
         # linear velocity 
         velx = pose_msg.twist.twist.linear.x

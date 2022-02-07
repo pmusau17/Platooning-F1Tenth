@@ -42,21 +42,27 @@ from geometry_msgs.msg import Point
 #need to subscribe to the steering message and angle message
 from message_filters import ApproximateTimeSynchronizer, Subscriber
 import tf
-
+import rospkg 
+import csv
 
 class MPC: 
 
     # Constructor
-    def __init__(self):
+    def __init__(self,waypoint_file,obstacle_file,racecar_name="racecar2"):
+
+        self.racecar_name = racecar_name
+        self.read_waypoints(waypoint_file,obstacle_file)
         self.log_hypers = False
 
         self.display_in_rviz = True
         self.use_pure_pursuit = True
+        # self.increment = 10 works reasonably well
         self.increment = 1
 
         # parameters for tvp callback function 
         self.tar_x = 0 
         self.tar_y = 0
+        self.tar_theta = 0 
         self.a0 = 1
         self.b0 = 1
         self.a1 = 1
@@ -124,12 +130,57 @@ class MPC:
         
         self.tar_x =  tarx
         self.tar_y =  tary
+        tar_pos   = np.asarray([tarx,tary]).reshape((1,2))
+        dist_arr3 = np.linalg.norm(self.xy_points - tar_pos,axis=-1)
+        tar_theta = self.eulers[np.argmin(dist_arr3)]
+        self.tar_theta = tar_theta
+
         self.mpc_drive(position[0], position[1], head_angle, tarx, tary,lidar_data,hypes)
 
 
     """
         Helper Functions for most MPC code
     """
+
+
+    # Import waypoints.csv into a list (path_points)
+    def read_waypoints(self,waypoint_file,obstacle_file):
+
+        # get an instance of RosPack with the default search paths
+        rospack = rospkg.RosPack()
+
+        #get the path for the waypoints
+        package_path=rospack.get_path('pure_pursuit')
+        filename=os.path.sep.join([package_path,'waypoints',waypoint_file])
+
+        # list of xy pts 
+        self.xy_points = self.read_points(filename)
+
+        # eulers for 
+        self.eulers  = []
+        with open(filename) as f:
+            self.eulers = [tuple(line)[2] for line in csv.reader(f)]
+        self.eulers = np.asarray(self.eulers).astype('double')
+
+        # get path to obstacle points
+        package_path=rospack.get_path('race')
+        filename=os.path.sep.join([package_path,'maps',obstacle_file])
+
+        # list of wall_points
+        self.wall_points = self.read_points(filename)
+
+    def read_points(self,filename):
+
+        with open(filename) as f:
+            path_points = [tuple(line) for line in csv.reader(f)]
+
+        # Turn path_points into a list of floats to eliminate the need for casts in the code below.
+        path_points_x   = np.asarray([float(point[0]) for point in path_points])
+        path_points_y   = np.asarray([float(point[1]) for point in path_points])
+
+        # list of xy pts 
+        xy_points = np.hstack((path_points_x.reshape((-1,1)),path_points_y.reshape((-1,1)))).astype('double')
+        return xy_points
 
     # this function is for changing the target position without having to 
     # reframe the mpc problem
@@ -144,6 +195,7 @@ class MPC:
         for k in range(self.horizon + 1):
             template["_tvp", k, "target_x"] = self.tar_x
             template["_tvp", k, "target_y"] = self.tar_y
+            template["_tvp",k,"target_theta"] = self.tar_theta
             template["_tvp", k, "a0"] = self.a0
             template["_tvp", k, "b0"] = self.b0
             template["_tvp", k, "a1"] = self.a1
@@ -655,7 +707,11 @@ class MPC:
 
 if __name__ == '__main__':
     rospy.init_node('mpc_node')
-    mpc_node = MPC()
+    args = rospy.myargv()[1:]
+    racecar_name=args[0]
+    waypoint_file=args[1]
+    obstacle_file=args[2]
+    mpc_node = MPC(waypoint_file,obstacle_file,racecar_name)
     r = rospy.Rate(80)
     while not rospy.is_shutdown():
         r.sleep()

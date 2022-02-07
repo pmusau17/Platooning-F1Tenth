@@ -40,6 +40,12 @@ def template_model():
             shape=(1, 1)
     )
 
+    model.set_variable(
+            var_type="_tvp",
+            var_name="target_theta",
+            shape=(1, 1)
+    )
+
     # My Attempt at using time varying parameters to change constraints online
     # Create time-varying-parameters, these will be populated with (potentially) different data at each call
     # These will be leveraged in the non_linear constraints. They will actually be linear but this allows 
