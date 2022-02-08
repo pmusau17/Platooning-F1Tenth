@@ -25,17 +25,17 @@ world_number=0
 # Change this to evaluate different mpc models
 # 0 is mpc with the hyper-plane formulation
 # 1 is the mpcc formulation
-mpc_model=1
+mpc_model=0
 
 # Change this to change the opponent driving model
 # 0 is the disparity extender
 # 1 is pure pursuit
-opponent_model=1
+opponent_model=0
 
 # Change this to change the target point selection
 # 0 is the disparity extender
 # 1 is pure pursuit
-target_model=0
+target_model=1
 
 # Change this to toggle obstacles
 enable_static_obstacles=false

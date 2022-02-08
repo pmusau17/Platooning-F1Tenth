@@ -116,7 +116,7 @@
    
 
     <!--Launch MPC Files-->
-    <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)" required="true"/> 
+    <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)"  args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/> 
     <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==1)" args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/>
 
     <!--Launch Reachability Nodes-->
@@ -125,11 +125,11 @@
 
 
     <!-- controller for opponent vehicle  -->
-    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py"  if="$(eval arg('target_model')==0)" args="racecar 9"/>
-    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" if="$(eval arg('target_model')==0)" args="racecar3 9"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py"  if="$(eval arg('opponent_model')==0)" args="racecar 9"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" if="$(eval arg('opponent_model')==0)" args="racecar3 9"/>
     
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('target_model')==1)" output="$(arg output)" required="true"/> 
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('target_model')==1)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
 
     <!--Spawn Static and Dynamic Obstacles-->
     <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" if="$(arg enable_static_obstacles)" output= "screen" required="true"/>
