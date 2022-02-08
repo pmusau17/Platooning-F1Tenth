@@ -266,7 +266,7 @@ def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, ta
    
   
        
-    solution = minimize(objective, x0, args=(array_left, array_right, ar_ego), method='SLSQP', bounds=bnds, constraints=cons)
+    solution = minimize(objective, x0, args=(array_left, array_right, ar_ego), method='COBYLA', bounds=bnds, constraints=cons)
     x = solution.x
 
     return x 
