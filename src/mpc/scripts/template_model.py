@@ -107,6 +107,18 @@ def template_model():
             shape=(1, 1)
     )
 
+    # Create time-varying-parameters, these will be populated with (potentially) different data at each call
+    model.set_variable(
+            var_type="_tvp",
+            var_name="speed_min",
+            shape=(1, 1)
+    )
+    model.set_variable(
+            var_type="_tvp",
+            var_name="speed_max",
+            shape=(1, 1)
+    )
+
 
     # Build the model
     model.setup()

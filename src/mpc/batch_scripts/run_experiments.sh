@@ -58,7 +58,7 @@ _term() {
 
 trap _term SIGINT
 
-while [ $count -lt 30 ]
+while [ $count -lt 60 ]
 do
 ((count=count+1)) 
 roslaunch mpc mpc_batch.launch mpc_model:=$mpc_model target_model:=$target_model \

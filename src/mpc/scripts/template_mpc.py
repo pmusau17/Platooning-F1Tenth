@@ -59,9 +59,9 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     mpc.set_rterm(car_v=1.0 , car_delta=0.5)
     
 
-    mpc.bounds['lower', '_u', 'car_v'] = 0.0
+    #mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 1.3#1.3
+    #mpc.bounds['upper', '_u', 'car_v'] = 1.3#1.3
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
     #mpc.scaling['_x', 'car_theta'] = 2
@@ -84,6 +84,14 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     mpc.set_nl_cons('x_max_cons',  _tvp['x_max']-_x['car_x'], 0)
     mpc.set_nl_cons('y_min_cons',  _x['car_y']-_tvp['y_min'], 0)
     mpc.set_nl_cons('y_max_cons',  _tvp['y_max']-_x['car_y'], 0)
+
+    # constraints on speed
+    mpc.set_nl_cons('speed_min_cons',  _tvp['speed_min']- _u['car_v'], 0)
+    mpc.set_nl_cons('speed_max_cons',  _u['car_v']-_tvp['speed_max'], 0)
+    # mpc.set_nl_cons('speed_max_cons',_u['car_v']-(((_u['car_v']/_u['car_v'])-fabs(_u['car_delta']) * _tvp['speed_max'])),0)
+    # (((_u['car_v']/_u['car_v'])-fabs(_u['car_delta']) * _tvp['speed_max']))
+
+
 
 
  

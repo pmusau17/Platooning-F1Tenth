@@ -61,6 +61,8 @@ class MPCC:
         self.x_max = -100
         self.y_min = 100
         self.y_max = -100
+        self.speed_min = 0 
+        self.speed_max = 1.2
 
         self.a0 = 1
         self.b0 = 1
@@ -129,10 +131,10 @@ class MPCC:
         point.
         """
         template = self.mpc.get_tvp_template()
-        print("Change_Target:",self.tar_x,self.tar_y)
         for k in range(self.horizon + 1):
             template["_tvp", k, "target_x"] = self.tar_x
             template["_tvp", k, "target_y"] = self.tar_y
+            template["_tvp",k,"target_theta"] = self.tar_theta
             template["_tvp", k, "a0"] = self.a0
             template["_tvp", k, "b0"] = self.b0
             template["_tvp", k, "a1"] = self.a1
@@ -143,7 +145,10 @@ class MPCC:
             template["_tvp", k, "x_max"] = self.x_max
             template["_tvp", k, "y_min"] = self.y_min
             template["_tvp", k, "y_max"] = self.y_max
-            template["_tvp",k,"target_theta"] = self.tar_theta
+            template["_tvp", k, "speed_min"] = self.speed_min
+            template["_tvp", k, "speed_max"] = self.speed_max
+            
+            
 
         return template
 
@@ -415,9 +420,7 @@ class MPCC:
 
             #if(self.count==0 or distance<0.1):
         
-        rospy.logwarn("{},{},{},{}".format(point.pose.position.x,point.pose.position.y,self.tar_x,self.tar_y))
         if(True or self.count==0 or distance<1.9 or (rospy.Time.now()-self.iter_time).to_sec()>15):
-            rospy.logwarn("Change Target")
             self.tar_x =  point.pose.position.x
             self.tar_y =  point.pose.position.y
             self.tar_theta  = tar_theta
@@ -483,7 +486,11 @@ class MPCC:
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = rospy.Time.now()
         drive_msg.drive.steering_angle = float(u0[1])
-        drive_msg.drive.speed = float(u0[0])
+        
+        speed = float(u0[0])
+        # if(abs(float(u0[1]))>0.261799):
+        #     speed = min(1.5,speed)
+        drive_msg.drive.speed = speed
         self.drive_publish.publish(drive_msg)
 
         self.count+=1
@@ -697,7 +704,7 @@ if __name__ == '__main__':
     racecar_name=args[0]
     waypoint_file=args[1]
     obstacle_file=args[2]
-    rospy.sleep(10)
+    rospy.sleep(3)
     mpc = MPCC(waypoint_file,obstacle_file,racecar_name=racecar_name)
     r = rospy.Rate(80)
     while not rospy.is_shutdown():
