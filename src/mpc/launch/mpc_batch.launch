@@ -91,6 +91,8 @@
     <!--Handles selecting mpc version-->
     <arg name="controller_name" if="$(eval arg('mpc_model')==0)" value="mpc_hype"/>
     <arg name="controller_name" if="$(eval arg('mpc_model')==1)" value="mpcc"/>
+    <arg name="controller_name" if="$(eval arg('mpc_model')==2)" value="disparity_extender"/>
+    <arg name="controller_name" if="$(eval arg('mpc_model')==3)" value="pure_pursuit"/>
 
     <!--Handles selecting opponent controller-->
     <arg name="opp_controller" if="$(eval arg('opponent_model')==0)" value="disparity_extender"/>
@@ -118,6 +120,10 @@
     <!--Launch MPC Files-->
     <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)"  args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/> 
     <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==1)" args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/>
+
+     <!-- controller for ego vehicle baseline tests  -->
+    <node pkg="race" name="mpc_node" type="disparity_extender_vanderbilt_gen.py"  args="$(arg car_name) 9"  if="$(eval arg('mpc_model')==2)" output="$(arg output)" required="true"/>
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="mpc_node" args="$(arg car_name) $(arg csv_filename)"  if="$(eval arg('mpc_model')==3)" output="$(arg output)" required="true"/> 
 
     <!--Launch Reachability Nodes-->
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>

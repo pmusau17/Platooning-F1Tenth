@@ -6,9 +6,14 @@ import sys
 sys.path.append('../../')
 import do_mpc
 
+use_linear_model = False
 def template_model():
 
-    model_type = 'continuous'  # either 'discrete' or 'continuous'
+    # either 'discrete' or 'continuous'
+    if(not use_linear_model):
+        model_type = "continuous"
+    else:
+        model_type = "discrete"
     model = do_mpc.model.Model(model_type)
 
     car_x = model.set_variable(var_type='_x', var_name='car_x', shape=(1, 1))
@@ -20,13 +25,24 @@ def template_model():
 
     LR = 0.17145
     LF = 0.15875
-    WHEELBASE_LENGTH = 0.3302   
+    WHEELBASE_LENGTH = 0.3302
+    Ts = 0.1
 
     # Next state equations - these mathematical formulas are the core of the model
     slip_factor = casadi.arctan(LR * casadi.tan(car_delta) / WHEELBASE_LENGTH)
-    model.set_rhs("car_x", car_v * casadi.cos(car_theta + slip_factor))
-    model.set_rhs("car_y", car_v * casadi.sin(car_theta + slip_factor))
-    model.set_rhs("car_theta", car_v * casadi.tan(car_delta)* casadi.cos(slip_factor) / WHEELBASE_LENGTH)
+
+    # nonlinear model 
+    if(not use_linear_model):
+        model.set_rhs("car_x", car_v * casadi.cos(car_theta + slip_factor))
+        model.set_rhs("car_y", car_v * casadi.sin(car_theta + slip_factor))
+        model.set_rhs("car_theta", car_v * casadi.tan(car_delta)* casadi.cos(slip_factor) / WHEELBASE_LENGTH)
+
+    # Linearized Model, Mostly you have to assume that speed is constant
+    # https://iyerkritika.github.io/assets/pdfs/control_report.pdf
+    else:
+        model.set_rhs("car_x", car_x + car_v )
+        model.set_rhs("car_y", car_y + car_v * (car_theta + slip_factor) )
+        model.set_rhs("car_theta", car_theta + (car_v / LR)*slip_factor)
 
     # Create time-varying-parameters, these will be populated with (potentially) different data at each call
     model.set_variable(

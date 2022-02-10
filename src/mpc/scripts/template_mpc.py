@@ -29,48 +29,19 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     _tvp = model.tvp
     _u = model.u
 
-    # change the objective function to a time varying parameter
-
-    #lterm = DM.zeros()
-    #lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)
-    #lterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2)  + (_x["time"])**2
-
-    #lterm = (_x["time"])**2
-
-    # I've tried penalizing theta but it might be that the model theta error is quite large since
-    # it's a linear model ((_tvp['target_theta'] - _x['car_theta']) ** 2)
-    
-    # objective function of euclidean distance in xyz
+    # terminal cost
     mterm = ((_tvp['target_x']- _x['car_x']) ** 2) + ((_tvp['target_y'] - _x['car_y']) ** 2) 
     +  ((_tvp['target_theta'] - _x['car_theta']) ** 2)
 
+    # stage cost: euclidean distance, plus optimizing for speed
     lterm = mterm - _u['car_v']
     
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    # configurations that I've tried
-    # 2.0, 2.0 (pretty smooth, delayed turning)
-    # mpc.set_rterm(car_v=0.0 , car_delta=1.0)
-
-    # the r_term is quite sensitive
-    # use this one if the speed is over 2
-    #mpc.set_rterm(car_v=15.0 , car_delta=0.0)
-    # mpc.set_rterm(car_v=1.0 , car_delta=0.5)
-
+    
     mpc.set_rterm(car_v=1.0 , car_delta=0.5)
     
-
-    #mpc.bounds['lower', '_u', 'car_v'] = 0.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    #mpc.bounds['upper', '_u', 'car_v'] = 1.3#1.3
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
-
-    #mpc.scaling['_x', 'car_theta'] = 2
-    #mpc.scaling['_x', 'car_x'] = 2
-    #mpc.scaling['_x', 'car_y'] = 2
-
-    
-
-
 
     # left plane constraint, this basically bounds it to the right or to the left
     mpc.set_nl_cons('constraint_left_plane',  _tvp['c1'] * ((_tvp['a0'] * _x['car_x'] + _tvp['b0']) - _x['car_y']), 0)
@@ -88,11 +59,5 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
     # constraints on speed
     mpc.set_nl_cons('speed_min_cons',  _tvp['speed_min']- _u['car_v'], 0)
     mpc.set_nl_cons('speed_max_cons',  _u['car_v']-_tvp['speed_max'], 0)
-    # mpc.set_nl_cons('speed_max_cons',_u['car_v']-(((_u['car_v']/_u['car_v'])-fabs(_u['car_delta']) * _tvp['speed_max'])),0)
-    # (((_u['car_v']/_u['car_v'])-fabs(_u['car_delta']) * _tvp['speed_max']))
-
-
-
-
  
     return mpc

@@ -62,7 +62,7 @@ class MPCC:
         self.y_min = 100
         self.y_max = -100
         self.speed_min = 0 
-        self.speed_max = 1.2
+        self.speed_max = 1.5
 
         self.a0 = 1
         self.b0 = 1
@@ -77,8 +77,8 @@ class MPCC:
         # self.horizon = 10 is too much
 
         # The horizon is probably the most important thing
+        self.horizon = 5
         
-        self.horizon = 4
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -323,8 +323,7 @@ class MPCC:
             
             # convert each of the lidar points to cartesian
             self.lidar_to_cart(lidar_data,pos_x,pos_y,head_angle,0)
-            #self.lidar_to_cart(lidar_data[180:901],pos_x,pos_y,head_angle,180)
-
+            
             # convert the points to numpy arrays to make distance computations easier
             self.left_points  = np.asarray(self.left_points).reshape((-1,2))
             self.right_points  = np.asarray(self.right_points).reshape((-1,2))
@@ -341,8 +340,6 @@ class MPCC:
             # compute the distance to the closest waypoint
             dist_arr3 = np.linalg.norm(self.xy_points - curr_pos,axis=-1)
 
-            
-            
             center_angle = self.eulers[np.argmin(dist_arr3)]
 
             # half the distance of the lines
@@ -366,13 +363,6 @@ class MPCC:
             self.left_points = []
             self.right_points = []
             
-            # closest center point 
-            #self.left_points = [p1]
-            #self.visualize_points()
-
-
-        #self.lidar_to_cart(lidar_data[240:840], pos_x, pos_y, head_angle, 240)
-
         # creating inequalities 
         m  = (ly1 - ly) / (lx1 - lx)
         b = ly1 - (m*lx1)
@@ -401,10 +391,6 @@ class MPCC:
         else:
             self.c2 = -1
 
-
-        # print("cons2:",0 <= b1,0<=((pos_x*m1+b1)-pos_y))
-        
-
         point = orig_point.markers[0]
 
         tarx,tary = point.pose.position.x, point.pose.position.y
@@ -413,12 +399,7 @@ class MPCC:
         dist_arr3 = np.linalg.norm(self.xy_points - tar_pos,axis=-1)
         tar_theta = self.eulers[np.argmin(dist_arr3)]
 
-
-        #print(tarx,tary,tar_theta)
         distance = (self.tar_x - pos_x) ** 2 + (self.tar_y - pos_y) ** 2
-            #print("Distance:",distance,"tar_x:",self.tar_x,"tar_y:",self.tar_y,tarx,tary)
-
-            #if(self.count==0 or distance<0.1):
         
         if(True or self.count==0 or distance<1.9 or (rospy.Time.now()-self.iter_time).to_sec()>15):
             self.tar_x =  point.pose.position.x
@@ -698,8 +679,6 @@ class MPCC:
 
 if __name__ == '__main__':
     rospy.init_node('mpcc_node')
-    # waypoint_file = "track_porto_26780.csv"
-    # obstacle_file = "track_porto_obstacles.txt"
     args = rospy.myargv()[1:]
     racecar_name=args[0]
     waypoint_file=args[1]
