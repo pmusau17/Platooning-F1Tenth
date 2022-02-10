@@ -91,6 +91,8 @@
     <!--Handles selecting mpc version-->
     <arg name="controller_name" if="$(eval arg('mpc_model')==0)" value="mpc_hype"/>
     <arg name="controller_name" if="$(eval arg('mpc_model')==1)" value="mpcc"/>
+    <arg name="controller_name" if="$(eval arg('mpc_model')==2)" value="disparity_extender"/>
+    <arg name="controller_name" if="$(eval arg('mpc_model')==3)" value="pure_pursuit"/>
 
     <!--Handles selecting opponent controller-->
     <arg name="opp_controller" if="$(eval arg('opponent_model')==0)" value="disparity_extender"/>
@@ -106,8 +108,8 @@
     <arg name="num_obstacles" unless="$(eval arg('enable_dynamic_obstacles') or arg('enable_static_obstacles'))" value="0"/>
 
     <!-- name of collision log file-->
-    <arg name="collision_file" value ="collisions_$(arg world_name)_$(arg enable_dynamic_obstacles)_mpc_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
-    <node pkg = "mpc" name= "collision_logger_$(arg car_name)" output="$(arg output)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file) $(arg experiment_number)"/>
+    <arg name="collision_file" value ="collisions_$(arg world_name)_$(arg enable_dynamic_obstacles)_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
+    <node pkg = "mpc" name= "collision_logger_$(arg car_name)" output="$(arg output)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) $(arg random_seed) $(arg collision_file) $(arg world_name) $(arg experiment_number)"/>
 
 
     <!--Launch The Node Providing the target point for mpc-->
@@ -116,8 +118,12 @@
    
 
     <!--Launch MPC Files-->
-    <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)" required="true"/> 
+    <node pkg="mpc" type="mpc_drive_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==0)"  args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/> 
     <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node" output="$(arg output)" if="$(eval arg('mpc_model')==1)" args="racecar2 $(arg csv_filename) $(arg wall_points)" required="true"/>
+
+     <!-- controller for ego vehicle baseline tests  -->
+    <node pkg="race" name="mpc_node" type="disparity_extender_vanderbilt_gen.py"  args="$(arg car_name) 9"  if="$(eval arg('mpc_model')==2)" output="$(arg output)" required="true"/>
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="mpc_node" args="$(arg car_name) $(arg csv_filename)"  if="$(eval arg('mpc_model')==3)" output="$(arg output)" required="true"/> 
 
     <!--Launch Reachability Nodes-->
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
@@ -125,11 +131,11 @@
 
 
     <!-- controller for opponent vehicle  -->
-    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py"  if="$(eval arg('target_model')==0)" args="racecar 30"/>
-    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" if="$(eval arg('target_model')==0)" args="racecar3 30"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py"  if="$(eval arg('opponent_model')==0)" args="racecar 9"/>
+    <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" if="$(eval arg('opponent_model')==0)" args="racecar3 9"/>
     
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('target_model')==1)" output="$(arg output)" required="true"/> 
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('target_model')==1)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
 
     <!--Spawn Static and Dynamic Obstacles-->
     <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" if="$(arg enable_static_obstacles)" output= "screen" required="true"/>
@@ -141,7 +147,7 @@
 
 
 
-    <arg name="progression_file" value ="progress_$(arg world_name)_$(arg enable_dynamic_obstacles)_mpc_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
+    <arg name="progression_file" value ="progress_$(arg world_name)_$(arg enable_dynamic_obstacles)_$(arg controller_name)_$(arg opp_controller)_$(arg target_controller).csv"/>
 
     <!--node for computing progress-->
     <node pkg = "mpc" name= "progress_logger_$(arg car_name)" output="screen"

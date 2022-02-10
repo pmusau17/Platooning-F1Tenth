@@ -25,21 +25,26 @@ world_number=0
 # Change this to evaluate different mpc models
 # 0 is mpc with the hyper-plane formulation
 # 1 is the mpcc formulation
+# 2 is disparity extender
+# 3 is pure pursuit
 mpc_model=1
 
 # Change this to change the opponent driving model
 # 0 is the disparity extender
 # 1 is pure pursuit
-opponent_model=1
+opponent_model=0
 
 # Change this to change the target point selection
 # 0 is the disparity extender
 # 1 is pure pursuit
-target_model=0
+target_model=1
 
 # Change this to toggle obstacles
 enable_static_obstacles=false
 enable_dynamic_obstacles=false
+
+# how many cars to run 
+number_of_cars=3
 
 # timeout 
 timeout=60
@@ -66,6 +71,7 @@ opponent_model:=$opponent_model timeout:=$timeout \
 enable_dynamic_obstacles:=$enable_dynamic_obstacles \
 enable_static_obstacles:=$enable_static_obstacles \
 world_number:=$world_number \
+number_of_cars:=$number_of_cars \
 experiment_number:=$count &
 
 

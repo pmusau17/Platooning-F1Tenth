@@ -35,9 +35,10 @@ class CollisionTracker(object):
         Developped by Tim Krentz
         """
 
-        def __init__(self, tf_prefix, num_obstacles,random_seed,log_file, timeout = 2.0,experiment_number=0):
+        def __init__(self, tf_prefix, num_obstacles,random_seed,log_file,track_name, timeout = 2.0,experiment_number=0):
             self.active_collisions = []
             self.timeout = timeout
+            self.track_name = track_name
 
             # We only care about collisions of the ego car
             self.tf_prefix = tf_prefix
@@ -65,11 +66,11 @@ class CollisionTracker(object):
             ob_item2 = list(ob.contacts)[1].split("::")[0]
             if(os.path.exists(self.collision_file)):
                 fi = open(self.collision_file, "a")
-                fi.write("{}, {}, {}, {}, {}\n".format(self.random_seed,self.num_obstacles,ob_item1,ob_item2,self.experiment_number))
+                fi.write("{}, {}, {}, {}, {}, {}\n".format(self.track_name,self.random_seed,self.num_obstacles,ob_item1,ob_item2,self.experiment_number))
                 fi.close()
             else: 
                 fi = open(self.collision_file, "w")
-                fi.write("{}, {}, {}, {}, {}\n".format(self.random_seed,self.num_obstacles,ob_item1,ob_item2,self.experiment_number))
+                fi.write("{}, {}, {}, {}, {}, {}\n".format(self.track_name,self.random_seed,self.num_obstacles,ob_item1,ob_item2,self.experiment_number))
                 fi.close()
             self.safe = False
 
@@ -134,11 +135,12 @@ if __name__ == "__main__":
     num_obstacles = args[1]
     random_seed = args[2]
     log_file = args[3]
-    experiment_number = args[4:]
+    track_name = args[4]
+    experiment_number = args[5:]
     if(experiment_number):
         experiment_number = experiment_number[0]
-    rospy.sleep(1)
-    CollTracker = CollisionTracker(racecar_name,num_obstacles,random_seed,log_file,experiment_number=experiment_number)
+    rospy.sleep(10)
+    CollTracker = CollisionTracker(racecar_name,num_obstacles,random_seed,log_file,track_name,experiment_number=experiment_number)
     contact_sub = rospy.Subscriber(racecar_name+'/contact_link_collisions',ContactsState,CollTracker.callback_func,queue_size=100)
     
     r = rospy.Rate(80)

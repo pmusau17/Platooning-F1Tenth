@@ -159,7 +159,7 @@ class ComputeProgress:
             self.progress = idx/float(self.xy_points.shape[0])
             # prevent from counting laps more than once
             td = rospy.Time.now() - self.start_time
-            if(self.progress>0.97 and td>rospy.Duration(5)):
+            if(self.progress>0.87 and td>rospy.Duration(5)):
                 self.lap_count +=1
                 self.start_time = rospy.Time.now()
 
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     else:
         experiment_number = 0 
     rospy.logwarn("experiment number: "+str(experiment_number))
-    rospy.sleep(10)
+    rospy.sleep(5)
     C = ComputeProgress(racecar_name,waypoint_file,log_file,experiment_number=experiment_number)  
     while not rospy.is_shutdown():
         pass 

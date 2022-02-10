@@ -23,7 +23,6 @@ Panels:
         - /RobotModel4
         - /RobotModel5
         - /RobotModel6
-        - /RobotModel6/Status1
         - /RobotModel7
       Splitter Ratio: 0.5
     Tree Height: 1520
@@ -351,13 +350,13 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /racecar/reach_hull_obs
       Name: MarkerArray
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /racecar2/reach_hull
@@ -387,7 +386,7 @@ Visualization Manager:
       Marker Topic: racecar2/wallpoint_classification
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -411,7 +410,7 @@ Visualization Manager:
       Marker Topic: /opponent/convex_hull
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
