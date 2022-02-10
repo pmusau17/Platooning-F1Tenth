@@ -25,8 +25,10 @@ import copy
 
 
 from template_model import template_model
+#from template_model_black_box import template_model
 #from template_model_bicycle import template_model
 from template_mpc import template_mpc
+# from template_mpc_black_box import template_mpc
 #from computing_hyperplanes_final import find_constraints
 
 
@@ -52,7 +54,6 @@ class MPCC:
         self.use_map  = False
         self.display_in_rviz = False
         self.use_pure_pursuit = True
-        self.increment = 5
 
         self.tar_x = 0 
         self.tar_y = 0
@@ -77,7 +78,7 @@ class MPCC:
         # self.horizon = 10 is too much
 
         # The horizon is probably the most important thing
-        self.horizon = 5
+        self.horizon = 4
         
         # set up the model used for the mpc controller
         self.model =  template_model()
@@ -117,7 +118,7 @@ class MPCC:
         self.u0 = [0,0]
 
         #create the time synchronizer
-        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.reach_sub2,self.pp_sub], queue_size = 1, slop = 0.019,allow_headerless=True)
+        self.main_sub = ApproximateTimeSynchronizer([self.lidar_sub,self.odom_sub,self.reach_sub,self.reach_sub2,self.pp_sub], queue_size = 1, slop = 0.05,allow_headerless=True)
         
         #register the callback to the synchronizer
         self.main_sub.registerCallback(self.main_callback)
@@ -439,23 +440,8 @@ class MPCC:
 
                 
         x0 = np.array([pos_x, pos_y, head_angle]).reshape(-1, 1)
-        # x0 = np.array([pos_x, pos_y,speed,head_angle]).reshape(-1, 1)
+        #x0 = np.array([pos_x, pos_y,speed,head_angle]).reshape(-1, 1)
 
-        # linear velocity 
-        velx = pose_msg.twist.twist.linear.x
-        vely = pose_msg.twist.twist.linear.y
-        velz = pose_msg.twist.twist.linear.z
-
-        #self.visualize_points()
-
-
-        
-
-        # magnitude of velocity 
-        speed = np.asarray([velx,vely])
-        speed = np.linalg.norm(speed)
-
-    
         if(self.count==0):
             self.mpc.x0 = x0
             self.mpc.set_initial_guess()
@@ -469,8 +455,6 @@ class MPCC:
         drive_msg.drive.steering_angle = float(u0[1])
         
         speed = float(u0[0])
-        # if(abs(float(u0[1]))>0.261799):
-        #     speed = min(1.5,speed)
         drive_msg.drive.speed = speed
         self.drive_publish.publish(drive_msg)
 

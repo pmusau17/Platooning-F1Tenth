@@ -104,10 +104,10 @@
 
 
     <!--Launch Pure Pursuit Node-->
-    <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="$(arg output)" required="true"/>
+    <!-- <node pkg="pure_pursuit" type="pure_pursuit_angle.py" name="pure_pursuit" args="$(arg car_name) $(arg csv_filename) none" output="$(arg output)" required="true"/> -->
 
     <!--Launch Disparity Extender Waypoint Following-->
-    <!-- <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2" required="true"/> -->
+    <node pkg="race" name="disparity_extender_target_point" type="disparity_extender_ftg.py" args="racecar2" required="true"/>
     <!-- <node pkg="race" name="disparity_extender_target_point1" type="disparity_extender_ftg.py" args="racecar" required="true"/> -->
 
     <node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>

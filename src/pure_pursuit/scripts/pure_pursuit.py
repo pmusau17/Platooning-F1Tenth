@@ -134,7 +134,7 @@ class pure_pursuit:
 
         # goal point 
         goal_point = pts_infrontofcar[idx]
-        self.visualize_point([goal_point],self.goal_pub)
+        #self.visualize_point([goal_point],self.goal_pub)
 
         
       
