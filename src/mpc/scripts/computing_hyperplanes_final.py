@@ -12,17 +12,17 @@ from scipy.spatial.distance import directed_hausdorff
 
 def objective(x, a, b, c): # Objective function tries to simply minimize constants a,b,c in ax+by+c >= 0
 
-    u0  = a
+    u0  = c
     v0  = np.zeros(shape=(len(u0),2))
     for i in range(len(u0)):
         v0[i] = [u0[i][0], x[0]*u0[i][0] + x[1]]   
 
-    u1 = b
+    u1 = c
     v1 = np.zeros(shape=(len(u1),2))
     for i in range(len(u1)):
         v1[i] = [u1[i][0], x[2]*u1[i][0] + x[3]]  
         
-    return np.sum((u0-v0)**2) + np.sum((u1-v1)**2) 
+    return -np.sum((u0-v0)**2) - np.sum((u1-v1)**2) 
     
 # Objective function based on Hausdorff distance - max(max(directed_hausdorff(u0, v0)[0], directed_hausdorff(v0, u0)[0]), max(directed_hausdorff(u1, v1)[0], directed_hausdorff(v1, u1)[0]))
 
@@ -234,7 +234,7 @@ def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, ta
     
 
     cons = []
-    ar_ego =  np.array([[ego_x, ego_y], [ego_cc[0][0], ego_cc[0][1]], [ego_cc[1][0], ego_cc[1][1]], [ego_cc[2][0], ego_cc[2][1]], [ego_cc[3][0], ego_cc[3][1]]])
+    ar_ego =  np.array([[ego_x, ego_y], [ego_cc[0][0], ego_cc[0][1]], [ego_cc[1][0], ego_cc[1][1]], [ego_cc[2][0], ego_cc[2][1]], [ego_cc[3][0], ego_cc[3][1]], [tarx, tary]])
     ar_tar =  np.array([[tarx, tary]])
 
     tr_x = ego_cc[0][0]
@@ -266,7 +266,7 @@ def find_constraints(ego_x, ego_y, head_angle, array_left, array_right, tarx, ta
    
   
        
-    solution = minimize(objective, x0, args=(array_left, array_right, ar_ego), method='COBYLA', bounds=bnds, constraints=cons)
+    solution = minimize(objective, x0, args=(array_left, array_right, ar_ego), method='SLSQP', bounds=bnds, constraints=cons)
     x = solution.x
 
     return x 

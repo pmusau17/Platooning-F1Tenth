@@ -57,7 +57,7 @@ class MPC:
         self.display_in_rviz = True
         self.use_pure_pursuit = True
         # self.increment = 10 works reasonably well
-        self.increment = 7
+        self.increment = 1
 
         # parameters for tvp callback function 
         self.tar_x = 0 
@@ -70,6 +70,8 @@ class MPC:
         self.c1 = 1
         self.c2 = 1
         self.count = 0
+        
+        self.comp_time = []
 
         # mpc horizon
         self.horizon = 5 
@@ -432,7 +434,7 @@ class MPC:
         
         if (hw_l_filtered.size == 0):
             rad=(45*math.pi)/180
-            distance = 2.3
+            distance = 2
             rotated_angle = rad + head_angle
             x_1 = (distance) * math.cos(rotated_angle) + posx + 0.265*math.cos(head_angle)
             y_1 = (distance) * math.sin(rotated_angle) + posy + 0.265*math.sin(head_angle)
@@ -452,7 +454,7 @@ class MPC:
         
         if (hw_r_filtered.size == 0):
             rad=(45*math.pi)/180
-            distance = 2.3
+            distance = 2
             
             rotated_angle = -rad + head_angle
             x_2 = (distance) * math.cos(rotated_angle) + posx + 0.265*math.cos(head_angle)
@@ -495,33 +497,59 @@ class MPC:
                     
                     hw_l_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)), epsilon=1)                
                     hw_r_filtered = rdp(hw_r_filtered, epsilon=1)
+                    print(hw_l_filtered_updated[:, 0].tolist())
+                    print(hw_l_filtered_updated[:, 1].tolist())
+                    print(hw_r_filtered[:, 0].tolist())
+                    print(hw_r_filtered[:, 1].tolist())
                     start = time.time()
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
-                    print(time.time() - start)
+                    end = time.time() - start
+                    print(posx, posy, head_angle, tarx, tary)
+                    self.comp_time.append(end)
+                    #print(self.comp_time)
 
                 else:
                     rectangle_to_array = np.asarray([[rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_min, rectangle.obstacle_list[rectangle.count-1].y_max], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_min], [rectangle.obstacle_list[rectangle.count-1].x_max, rectangle.obstacle_list[rectangle.count-1].y_max]])
                     
-                    hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_l_filtered)),  epsilon=1)
+                    hw_r_filtered_updated = rdp(np.vstack((rectangle_to_array, hw_r_filtered)),  epsilon=1)                
                     hw_l_filtered = rdp(hw_l_filtered,  epsilon=1) 
+                    print(hw_l_filtered[:, 0].tolist())
+                    print(hw_l_filtered[:, 1].tolist())
+                    print(hw_r_filtered_updated[:, 0].tolist())
+                    print(hw_r_filtered_updated[:, 1].tolist())
                     start = time.time()                  
                     a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
-                    #a1, b1 = find_constraints_right(posx, posy, head_angle, hw_l_filtered, hw_r_filtered_updated, tarx, tary, ego_car_corners) # compute coupled-hyperplanes 
-                    print(time.time() - start)
-                    #print(a0, b0, a1, b1, posx, posy, head_angle, tarx, tary)
+                    end = time.time() - start
+                    print(posx, posy, head_angle, tarx, tary)
+                    self.comp_time.append(end)
+                    #print(self.comp_time)
 
             else:
                 hw_l_filtered = rdp(hw_l_filtered,  epsilon=1)
                 hw_r_filtered = rdp(hw_r_filtered,  epsilon=1) 
+                print(hw_l_filtered[:, 0].tolist())
+                print(hw_l_filtered[:, 1].tolist())
+                print(hw_r_filtered[:, 0].tolist())
+                print(hw_r_filtered[:, 1].tolist())
                 start = time.time()   
                 a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
-                print("TIME", time.time() - start)
+                end = time.time() - start
+                print(posx, posy, head_angle, tarx, tary)
+                self.comp_time.append(end)
+                #print(self.comp_time)
         else:   
             hw_l_filtered = rdp(hw_l_filtered, epsilon=1)    
-            hw_r_filtered = rdp(hw_r_filtered, epsilon=1)   
+            hw_r_filtered = rdp(hw_r_filtered, epsilon=1)  
+            print(hw_l_filtered[:, 0].tolist())
+            print(hw_l_filtered[:, 1].tolist())
+            print(hw_r_filtered[:, 0].tolist())
+            print(hw_r_filtered[:, 1].tolist()) 
             start = time.time()
             a0, b0, a1, b1 = find_constraints(posx, posy, head_angle, hw_l_filtered, hw_r_filtered, tarx, tary, ego_car_corners) # compute coupled-hyperplanes  
-            print(time.time() - start)
+            end = time.time() - start
+            print(posx, posy, head_angle, tarx, tary)
+            self.comp_time.append(end)
+            #print(self.comp_time)
 
   
             
@@ -581,21 +609,21 @@ class MPC:
         if(self.display_in_rviz):
             self.visualize_lines(lines)
 
-        x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
-        if(self.count==0):
-            self.mpc.x0 = x0
-            self.mpc.set_initial_guess()
+        #x0 = np.array([posx, posy, head_angle]).reshape(-1, 1)
+        #if(self.count==0):
+        #    self.mpc.x0 = x0
+        #    self.mpc.set_initial_guess()
 
         
-        u0 = self.mpc.make_step(x0)
-        self.u0 = u0
+        #u0 = self.mpc.make_step(x0)
+        #self.u0 = u0
             
 
-        drive_msg = AckermannDriveStamped()
-        drive_msg.header.stamp = rospy.Time.now()
-        drive_msg.drive.steering_angle = float(u0[1])
-        drive_msg.drive.speed = float(u0[0])
-        self.drive_publish.publish(drive_msg)
+        #drive_msg = AckermannDriveStamped()
+        #drive_msg.header.stamp = rospy.Time.now()
+        #drive_msg.drive.steering_angle = float(u0[1])
+        #drive_msg.drive.speed = float(u0[0])
+        #self.drive_publish.publish(drive_msg)
             
         self.count+=1
         if(self.count>100):
