@@ -11,10 +11,10 @@ def template_mpc(model, horizon, mpc_x_min, mpc_y_min, mpc_x_max, mpc_y_max):
 
     mpc = do_mpc.controller.MPC(model)
     setup_mpc = {
-        'n_horizon': horizon,
+        'n_horizon': horizon+2,
         'n_robust': 0,                         # Robust horizon for robust scenario-tree MPC,
         'open_loop': 0,
-        't_step': 0.1,
+        't_step': 0.01,
         'state_discretization': 'collocation', # no other option at the moment
         'collocation_type': 'radau',           # no other option at the moment
         'collocation_deg': 2,
