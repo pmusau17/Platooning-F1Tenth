@@ -90,7 +90,7 @@ class DisparityExtenderDriving(object):
 
         #self.lookahead = 2.5
 
-        self.lookahead = 0.7
+        self.lookahead = 1.0
 
 
         # subscribers 

@@ -134,8 +134,8 @@
     <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py"  if="$(eval arg('opponent_model')==0)" args="racecar 9"/>
     <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" if="$(eval arg('opponent_model')==0)" args="racecar3 9"/>
     
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
+    <!-- <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/>  -->
 
     <!--Spawn Static and Dynamic Obstacles-->
     <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" if="$(arg enable_static_obstacles)" output= "screen" required="true"/>

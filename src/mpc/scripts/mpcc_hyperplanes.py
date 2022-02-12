@@ -456,7 +456,7 @@ class MPCC:
         
         speed = float(u0[0])
         drive_msg.drive.speed = speed
-        self.drive_publish.publish(drive_msg)
+        #self.drive_publish.publish(drive_msg)
 
         self.count+=1
 
