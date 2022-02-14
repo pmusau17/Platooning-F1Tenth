@@ -1,0 +1,5 @@
+racecar_walker, 15, 0, racecar2, walker_racecourse, 1
+racecar_walker, 15, 0, walker_racecourse, racecar2, 2
+racecar_walker, 15, 0, racecar2, racecar, 4
+racecar_walker, 15, 0, racecar2, racecar, 5
+racecar_walker, 15, 0, racecar, racecar2, 6

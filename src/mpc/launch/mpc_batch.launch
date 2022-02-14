@@ -134,8 +134,8 @@
     <node pkg="race" name="disparity_extender_opponent_vehicle" type="disparity_extender_vanderbilt_gen.py"  if="$(eval arg('opponent_model')==0)" args="racecar 9"/>
     <node pkg="race" name="disparity_extender_opponent_vehicle1" type="disparity_extender_vanderbilt_gen.py" if="$(eval arg('opponent_model')==0)" args="racecar3 9"/>
     
-    <!-- <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
-    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/>  -->
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car2" args="racecar $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
+    <node pkg="pure_pursuit" type="pure_pursuit.py" name="pure_pursuit_opp_car" args="racecar3 $(arg csv_filename)"  if="$(eval arg('opponent_model')==1)" output="$(arg output)" required="true"/> 
 
     <!--Spawn Static and Dynamic Obstacles-->
     <node pkg="racecar_gazebo" name="spawn_cones" type="spawn_zigzag.py" if="$(arg enable_static_obstacles)" output= "screen" required="true"/>
@@ -159,6 +159,9 @@
       args="racecar $(arg csv_filename) $(arg progression_file) $(arg experiment_number)"/>
 
 
+    <node pkg = "mpc" name= "progress_logger_racecar" output="screen"
+      required="true" type ="compute_track_progress.py" if="$(eval arg('number_of_cars')=='3')"
+      args="racecar3 $(arg csv_filename) $(arg progression_file) $(arg experiment_number)"/>
 
     <!--I'll leave this here for now but we can also test if we want both cars to race using the mpc formulation-->
     <!-- <node pkg="mpc" type="mpcc_hyperplanes.py" name="mpc_node2" output="$(arg output)" if="$(eval arg('mpc_model')==0)" args="racecar" required="true"/> -->

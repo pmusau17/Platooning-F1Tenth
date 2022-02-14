@@ -16,74 +16,87 @@
 # for future reference generating a random number within a range
 # $(shuf -i 0-4 -n 1)
 
-# Change this to change the track
-# 0 track_porto
-# 1 racecar_walker
-# 2 track_barca
-world_number=0
-
-# Change this to evaluate different mpc models
-# 0 is mpc with the hyper-plane formulation
-# 1 is the mpcc formulation
-# 2 is disparity extender
-# 3 is pure pursuit
-mpc_model=0
-
-# Change this to change the opponent driving model
-# 0 is the disparity extender
-# 1 is pure pursuit
-opponent_model=1
-
-# Change this to change the target point selection
-# 0 is the disparity extender
-# 1 is pure pursuit
-target_model=1
-
 # Change this to toggle obstacles
+
 enable_static_obstacles=false
 enable_dynamic_obstacles=false
 
 # how many cars to run 
-number_of_cars=3
+number_of_cars=2
 
-# timeout 
-timeout=60
+# Change this to change the opponent driving model
+# 0 is the disparity extender
+# 1 is pure pursuit keep disparity extender if you want the opponent to have 
+# obstacle avoidance capabilities
+opponent_model=0
 
-# ignore this
-exit_status=0
+# Worlds 
+# 0 track_porto
+# 1 racecar_walker
+# 2 track_barca
+worlds="0 1 2"
 
-# this keeps track of how many experiments we have run
-count=0
-_term() {
-  exit_status=$? # = 130 for SIGINT
-  echo "Caught SIGINT signal!"
-  kill -INT "$child" 2>/dev/null
-}
+# Methods
+# 0 is mpc with the hyper-plane formulation
+# 1 is the mpcc formulation
+# 2 is disparity extender
+# 3 is pure pursuit
 
+methods="0 1 2 3"
 
-trap _term SIGINT
-
-while [ $count -lt 30 ]
-do
-((count=count+1)) 
-roslaunch mpc mpc_batch.launch mpc_model:=$mpc_model target_model:=$target_model \
-opponent_model:=$opponent_model timeout:=$timeout \
-enable_dynamic_obstacles:=$enable_dynamic_obstacles \
-enable_static_obstacles:=$enable_static_obstacles \
-world_number:=$world_number \
-number_of_cars:=$number_of_cars \
-experiment_number:=$count &
+# Target Models
+# 0 is the disparity extender
+# 1 is pure pursuit
+target_models="0 1"
 
 
-    
-child=$!
-wait "$child"
-if [ $exit_status -eq 130 ]; then
-    # SIGINT was captured meaning the user
-    # wants full stop instead of start_simulation.launch
-    # terminating normally from end of episode so...
-    echo "stop looping"
-    break
-fi
-echo count: $count
-done
+for world_number in $worlds
+do 
+    for mpc_model in $methods
+    do
+        for target_model in $target_models
+        do
+            # timeout 
+            timeout=60
+
+            # ignore this
+            exit_status=0
+
+            # this keeps track of how many experiments we have run
+            count=0
+            _term() {
+              exit_status=$? # = 130 for SIGINT
+              echo "Caught SIGINT signal!"
+              kill -INT "$child" 2>/dev/null
+            }
+
+
+            trap _term SIGINT
+
+            while [ $count -lt 30 ]
+            do
+            ((count=count+1)) 
+            roslaunch mpc mpc_batch.launch mpc_model:=$mpc_model target_model:=$target_model \
+            opponent_model:=$opponent_model timeout:=$timeout \
+            enable_dynamic_obstacles:=$enable_dynamic_obstacles \
+            enable_static_obstacles:=$enable_static_obstacles \
+            world_number:=$world_number \
+            number_of_cars:=$number_of_cars \
+            experiment_number:=$count &
+
+
+                
+            child=$!
+            wait "$child"
+            if [ $exit_status -eq 130 ]; then
+                # SIGINT was captured meaning the user
+                # wants full stop instead of start_simulation.launch
+                # terminating normally from end of episode so...
+                echo "stop looping"
+                break
+            fi
+            echo count: $count
+            done
+         done
+   done
+done 
