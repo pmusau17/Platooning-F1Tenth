@@ -22,7 +22,7 @@ enable_static_obstacles=false
 enable_dynamic_obstacles=false
 
 # how many cars to run 
-number_of_cars=2
+number_of_cars=3
 
 # Change this to change the opponent driving model
 # 0 is the disparity extender
