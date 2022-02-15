@@ -1,0 +1,15 @@
+racecar_walker, 15, 0, racecar2, walker_racecourse, 1
+racecar_walker, 15, 0, racecar2, racecar, 3
+racecar_walker, 15, 0, walker_racecourse, racecar2, 4
+racecar_walker, 15, 0, walker_racecourse, racecar2, 6
+racecar_walker, 15, 0, walker_racecourse, racecar2, 8
+racecar_walker, 15, 0, racecar, racecar2, 17
+racecar_walker, 15, 0, racecar2, racecar, 20
+racecar_walker, 15, 0, racecar, racecar2, 21
+racecar_walker, 15, 0, racecar, racecar2, 22
+racecar_walker, 15, 0, racecar2, racecar3, 23
+racecar_walker, 15, 0, racecar2, racecar3, 26
+racecar_walker, 15, 0, racecar2, racecar, 27
+racecar_walker, 15, 0, racecar, racecar2, 28
+racecar_walker, 15, 0, racecar2, racecar, 29
+racecar_walker, 15, 0, racecar2, walker_racecourse, 30
