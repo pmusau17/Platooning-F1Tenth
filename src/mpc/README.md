@@ -37,7 +37,13 @@ Step 2: Build and Source Platooning-F1Tenth
 $ cd Platooning-F1Tenth && colcon build --symlink-install && source install/setup.bash
 ```
 
-Step 3: Build rtreach
+Step 3: Run the mpc launch file 
+
+```
+$ roslaunch mpc mpc.launch
+```
+
+<!-- rtreach
 
 **In the same terminal**
 
@@ -56,4 +62,4 @@ $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/src
 $ cd /path/to/rtreach_ros
 $ source install/setup.bash
 $ roslaunch mpc mpc.launch mpc_model....
-```
+``` -->

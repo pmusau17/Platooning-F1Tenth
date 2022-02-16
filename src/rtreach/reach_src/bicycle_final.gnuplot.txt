@@ -1,0 +1,2 @@
+set obj rect from 1.515031, 1.022943 to 1.542535, 1.043383 fc rgbcolor 'red' fs solid 0.3
+set obj rect from 0.000000, 0.000000 to 1.542535, 1.043383 fc rgbcolor 'red' fs solid 0.3

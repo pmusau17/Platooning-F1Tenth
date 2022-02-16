@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+  
+<!--How many boxes to let rviz visualize-->
+<arg name="box_display_limit" default="100"/>
+
+<!-- reach-time is the time we are computing reachability for-->
+<arg name="reach_time" default="0.8"/>
+
+<!--wall-time is the time we allow the reachability algorithm to run for-->
+<arg name="wall_time" default="1.0"/>
+<arg name="debug" default=""/>
+  
+<!-- These are the nodes for publishing the reachability information for each of the vehicles-->
+<node name="vehicle_1" pkg="rtreach" type="visualize_obs" args="racecar   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
+<node name="vehicle_2" pkg="rtreach" type="visualize_obs" args="racecar3  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
+
+<!--Node for Visualizing reachsets that allows customization through parameters-->
+<node name="vis_agent_param" pkg="rtreach"  type="vis_node_param" output="screen" args=" 10 $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
+
+<!--Node for wall points-->
+<node name="wall_points" pkg="rtreach" type="publish_wall_points.py" output="screen" args="porto"/>
+
+<!--Reachability safety node that incorporates dynamic obstacles-->
+<node name="reach_agent_param" pkg="rtreach" type="reach_node_dyn" output="log" args=" $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>
+  
+</launch>

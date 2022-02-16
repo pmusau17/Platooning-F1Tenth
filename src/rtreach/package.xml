@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rtreach</name>
+  <version>1.0.0</version>
+  <description>The real time reachability package</description>
+
+  <!--Maintainer-->
+  <maintainer email="patrick.musau17@gmail.com">Patrick Musau</maintainer>
+
+  <!--License-->
+  <license>MIT</license>
+
+  <!--build tool depend-->
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>  
+  <depend>tf</depend> 
+  
+  <!--package dependencies-->
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>gazebo_ros</depend>
+
+  <export>
+  </export>
+</package>

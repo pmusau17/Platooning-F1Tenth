@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <arg name="obstacles" default = "porto_obstacles.txt"/>
+  
+  <node pkg = "rtreach" name= "reach_node" output="screen" type ="reach_node" args="$(arg obstacles)"/>
+  <node pkg = "rtreach" name= "vis_node" output="screen"   type ="visualize_node" args="$(arg obstacles)"/>
+  
+  </launch>
