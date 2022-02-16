@@ -97,14 +97,6 @@ add_library(RtreachObs SHARED
             reach_src/obstacle_model_plots.c)
 target_compile_definitions(RtreachObs PUBLIC OBSTACLE_MODEL)
 
-
-# FIND_LIBRARY(CUSTOMLIB Rtreach src/)
-# FIND_LIBRARY(CUSTOMLIB2 Rtreachvis src/)
-# FIND_LIBRARY(CUSTOMLIB3 RtreachDynamicvis src/)
-# FIND_LIBRARY(CUSTOMLIB4 RtreachObs src/)
-# FIND_LIBRARY(CUSTOMLIB5 Rtreachdyn src/)
-
-
 add_executable(reach_node src/reach_node_sync.cpp)
 target_link_libraries(reach_node ${catkin_LIBRARIES} Rtreach)
 add_dependencies(reach_node rtreach_generate_messages_cpp)
