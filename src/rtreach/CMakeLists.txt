@@ -56,6 +56,13 @@ add_library(Rtreachdyn SHARED
             reach_src/simulate_bicycle.c 
             reach_src/bicycle_model_parametrizeable.c)
 
+add_library(RtreachUncertain SHARED
+            reach_src/face_lifting_bicycle_uncertainty.c
+            reach_src/dynamics_bicycle_uncertainty.c 
+            reach_src/geometry.c 
+            reach_src/interval.c 
+            reach_src/util.c 
+            reach_src/bicycle_model_uncertainty.c)
 
 add_library(Rtreach SHARED
             reach_src/face_lift_bicycle_model.c 
@@ -144,6 +151,11 @@ add_dependencies(reach_node_dyn rtreach_generate_messages_cpp)
 add_dependencies(reach_node_dyn ${catkin_EXPORTED_TARGETS})
 target_link_libraries(reach_node_dyn  ${catkin_LIBRARIES} Rtreachdyn)
 
+add_executable(reach_node_uncertain src/reach_node_uncertain.cpp)
+add_dependencies(reach_node_uncertain rtreach_generate_messages_cpp)
+add_dependencies(reach_node_uncertain ${catkin_EXPORTED_TARGETS})
+target_link_libraries(reach_node_uncertain  ${catkin_LIBRARIES} RtreachUncertain)
+
 
 add_executable(reach_node_hardware src/reach_node_hardware.cpp)
 add_dependencies(reach_node_hardware rtreach_generate_messages_cpp)
@@ -160,6 +172,7 @@ target_link_libraries(visualize_hardware  ${catkin_LIBRARIES} Rtreachdyn)
 install(TARGETS 
   reach_node
   reach_node_dyn
+  reach_node_uncertain
   reach_node_hardware
   visualize_node
   visualize_node_dynamic
@@ -171,6 +184,14 @@ install(TARGETS
   visualize_hardware
   visualize_obs_particles
   DESTINATION lib/${PROJECT_NAME}
+)
+
+### Install python nodes
+install(PROGRAMS 
+src/publish_wall_points.py
+src/publish_wall_points_v2.py
+src/visualize_relevant_boundaries.py
+DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 # Install launch and other files 
@@ -188,6 +209,8 @@ install(TARGETS
         RtreachDynamicvis
         RtreachObs
         Rtreachdyn
+        RtreachUncertain
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
+
