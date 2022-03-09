@@ -367,7 +367,7 @@ bool face_lifting_iterative_improvement_bicycle_uncertainty(int startMs, Lifting
 
 		// apply error-reducing strategy
 		stepSize /= 2;
-		DEBUG_PRINT("step_size: %f, num_boxes: %d\n",stepSize,*total_intermediate);
+		// DEBUG_PRINT("step_size: %f, num_boxes: %d\n",stepSize,*total_intermediate);
 	}
 	// DEBUG_PRINT("%dms: stepSize = %f\n",	elapsedTotal, stepSize);
 	// DEBUG_PRINT("iterations at quit: %d\n\r", iter);

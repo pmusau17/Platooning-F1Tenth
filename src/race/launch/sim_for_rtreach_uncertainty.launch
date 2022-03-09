@@ -21,7 +21,9 @@
 
     <arg name="debug" default=""/>
 
-    <arg name="parameter_uncertainty" default="0.2"/>
+    <arg name="parameter_uncertainty" default="0.05"/>
+
+    <arg name="use_particles" default="0"/>
 
     <!--number of vehicles to launch in the simulation environment-->
     <arg name='number_of_cars' default='2'/>
@@ -73,12 +75,19 @@
     <node name="wall_points" pkg="rtreach" type="publish_wall_points.py" unless="$(arg docker)" output="screen" args="porto"/>
 
     <!--Reachability safety node that incorporates dynamic obstacles-->
-    <node pkg="rtreach" type="reach_node_uncertain" output="screen" name="reach_node" unless="$(arg docker)" args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty)" required="true"/>
+    <node pkg="rtreach" type="reach_node_uncertain" output="screen" name="reach_node" unless="$(arg docker)" args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty) $(arg use_particles)" required="true"/>
 
     <!--launch rviz to visualize reachable set-->
     <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
 
     
+    <!--GPU based particle filtering from MIT -->
+    <include file="$(find particle_filter)/launch/localize.launch">
+      <arg name="scan_topic" default="racecar/scan"/>
+	    <arg name="odometry_topic" default="racecar/odom"/>
+      <arg name="laser_frame" default="racecar/laser"/>
+    </include>
+
     <!-- Run map server -->
 	<node name="map_server" pkg="map_server" type="map_server"  args="$(arg map_file)" />
     <!--plot reachability results-->
