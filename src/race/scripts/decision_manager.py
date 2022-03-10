@@ -14,12 +14,12 @@ class DecisionManager:
         self.racecar_name=racecar_name
 
         #subscribe to the angle and the speed message
-        self.angle_sub=Subscriber('/'+self.racecar_name+'/angle_msg',angle_msg)
-        self.velocity_sub=Subscriber('/'+self.racecar_name+'/velocity_msg',velocity_msg)
+        self.angle_sub=Subscriber('/'+self.racecar_name+'/angle_msg',angle_msg,queue_size=20)
+        self.velocity_sub=Subscriber('/'+self.racecar_name+'/velocity_msg',velocity_msg,queue_size=20)
         self.pub=rospy.Publisher(self.racecar_name+'/drive_parameters',drive_param,queue_size=20)
 
         #create the time synchronizer
-        self.sub = ApproximateTimeSynchronizer([self.angle_sub,self.velocity_sub], queue_size = 20, slop = 0.019)
+        self.sub = ApproximateTimeSynchronizer([self.angle_sub,self.velocity_sub], queue_size = 5)
         #register the callback to the synchronizer
         self.sub.registerCallback(self.master_callback)
 

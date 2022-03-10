@@ -21,9 +21,13 @@
 
     <arg name="debug" default=""/>
 
-    <arg name="parameter_uncertainty" default="0.05"/>
+    <!--how long to run each experiment before timeout-->
+    <arg name="timeout" default = "-1"/>
 
-    <arg name="use_particles" default="0"/>
+    <arg name="parameter_uncertainty" default="0.15"/>
+    <arg name="use_ground_truth" default="true"/>
+
+    <arg name="use_particles" default="1"/>
 
     <!--number of vehicles to launch in the simulation environment-->
     <arg name='number_of_cars' default='2'/>
@@ -57,7 +61,7 @@
     <node pkg="race" type="safety_controller.py" name="safety_node" args="$(arg car_name)/scan $(arg car_name)/safety" output="screen"/>
 
     <!-- decision manager-->
-    <node pkg="race" type="rtreach_decision_manager.py" name="decision_manager" args="$(arg car_name) vesc" output="screen"/>
+    <!-- <node pkg="race" type="rtreach_decision_manager.py" name="decision_manager" args="$(arg car_name) vesc" output="screen"/> -->
 
 
     <!-- These are the nodes for publishing the reachability information for each of the vehicles-->
@@ -72,17 +76,18 @@
     <node pkg="race" name="disparity_extender_racear3" if="$(eval arg('number_of_cars')==3)" type="disparity_extender_vanderbilt_gen.py" args="racecar3"/>
 
     <!--Node for wall points-->
-    <node name="wall_points" pkg="rtreach" type="publish_wall_points.py" unless="$(arg docker)" output="screen" args="porto"/>
+    <node name="wall_points" pkg="rtreach" type="publish_wall_points_v2.py" unless="$(arg docker)" output="screen" args="porto"/>
 
     <!--Reachability safety node that incorporates dynamic obstacles-->
-    <node pkg="rtreach" type="reach_node_uncertain" output="screen" name="reach_node" unless="$(arg docker)" args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty) $(arg use_particles)" required="true"/>
+    <node pkg="rtreach" type="reach_node_uncertain" output="screen" name="reach_node" unless="$(arg use_ground_truth)" args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty) $(arg use_particles)" required="true"/>
+    <node pkg="rtreach" type="reach_node_uncertain_gt" output="screen" name="reach_node_gt" if="$(arg use_ground_truth)" args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty)" required="true"/>
 
     <!--launch rviz to visualize reachable set-->
     <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
 
     
     <!--GPU based particle filtering from MIT -->
-    <include file="$(find particle_filter)/launch/localize.launch">
+    <include file="$(find particle_filter)/launch/localize.launch" unless="$(arg use_ground_truth)">
       <arg name="scan_topic" default="racecar/scan"/>
 	    <arg name="odometry_topic" default="racecar/odom"/>
       <arg name="laser_frame" default="racecar/laser"/>
@@ -90,6 +95,14 @@
 
     <!-- Run map server -->
 	<node name="map_server" pkg="map_server" type="map_server"  args="$(arg map_file)" />
+
+    <!--kill simulation-->
+    <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
+
+    <arg name="collision_file" value ="collisions_.csv"/>
+    <node pkg = "mpc" name= "collision_logger_$(arg car_name)" required="true" type ="collision_logger.py" args="$(arg car_name) 5 5 5 5 5"/>
+
+
     <!--plot reachability results-->
     <!-- <node pkg="race" type="plot_reachability_results.py" name="res_plot" required="false" output="screen"/> -->
 

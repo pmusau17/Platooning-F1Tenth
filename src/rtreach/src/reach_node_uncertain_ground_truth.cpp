@@ -49,7 +49,6 @@ int rect_count = 0;
 bool safe=true;
 bool debug = true;
 bool log_console_output = false;
-bool use_particles = false;
 ros::Publisher res_pub;
 ros::Publisher vis_pub;
 ros::Publisher ackermann_pub; // control command publisher
@@ -120,6 +119,7 @@ bool check_obstacle_safety(rtreach::reach_tube obs,HyperRectangle VisStates[],in
             safe = check_safety(&hull,cone);
             if(!safe)
             {   
+                printf("offending points x: %f, y: %f, x1: %f, y1: %f",cone[0][0],cone[1][0],hull.dims[0].min,hull.dims[1].min);
                 break;
             }
         }
@@ -128,66 +128,15 @@ bool check_obstacle_safety(rtreach::reach_tube obs,HyperRectangle VisStates[],in
 }
 
 
-std::vector<std::vector<double>> get_particle_position(const geometry_msgs::PoseArray::ConstPtr& pose_msg)
-{
-    int num_particles = pose_msg->poses.size();
-    double roll, pitch, yaw;
-    std::vector<geometry_msgs::Pose> poses = pose_msg->poses;
-    double x_min = 1e9;
-    double x_max =-1e9;
-    double y_min = 1e9;
-    double y_max =-1e9;
-    double yaw_min =1e9;
-    double yaw_max =-1e9;
-
-    for (int i = 0; i< num_particles;i++)
-    {
-
-        x_min = std::min(poses.at(i).position.x,x_min);
-        x_max = std::max(poses.at(i).position.x,x_max);
-        y_min = std::min(poses.at(i).position.y,y_min);
-        y_max = std::max(poses.at(i).position.y,y_max);
-
-        // define the quaternion matrix
-        tf::Quaternion q(
-                poses.at(i).orientation.x,
-                poses.at(i).orientation.y,
-                poses.at(i).orientation.z,
-                poses.at(i).orientation.w);
-        tf::Matrix3x3 m(q);
-        // convert to rpy
-        m.getRPY(roll, pitch, yaw);
-
-        yaw_min = std::min(yaw_min,yaw);
-        yaw_max = std::max(yaw_max,yaw);
-    }
-
-    std::vector<std::vector<double>> vect
-    {
-        // x uncertainty
-        {x_min, x_max},
-       
-        // y uncertainty
-        {y_min, y_max},
-       
-        // yaw uncertainty
-        {yaw_min,yaw_max}
-    };
-
-    return vect;
-}
-
-
 void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_msg::ConstPtr& velocity_msg, 
               const rtreach::angle_msg::ConstPtr& angle_msg, const rtreach::reach_tube::ConstPtr& obs1, const rtreach::reach_tube::ConstPtr& obs2,
-              const rtreach::reach_tube::ConstPtr& wall, const geometry_msgs::PoseArray::ConstPtr& pose_msg,const ackermann_msgs::AckermannDriveStamped::ConstPtr& safety_msg)
+              const rtreach::reach_tube::ConstPtr& wall,const ackermann_msgs::AckermannDriveStamped::ConstPtr& safety_msg)
 {
     using std::cout;
     using std::endl;
 
     double roll, pitch, yaw, lin_speed;
     double x,y,u,delta,qx,qy,qz,qw,uh;
-    std::vector<std::vector<double>> position_uncertainty;
     HyperRectangle hull;
     
     if(log_console_output)
@@ -197,7 +146,6 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
     }
 
     
-    position_uncertainty = get_particle_position(pose_msg);
     x = msg-> pose.pose.position.x;
     y = msg-> pose.pose.position.y;
 
@@ -247,30 +195,16 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
     // as well, the position is defined by uncertainty and any disturbances 
     // that need to be incorporated as well. Need to thin about how though
 
-    if(use_particles)
-    {
-        state[0][0] = position_uncertainty[0][0];
-        state[0][1] = position_uncertainty[0][1];
-        state[1][0] = position_uncertainty[1][0];
-        state[1][1] = position_uncertainty[1][1];
-        state[2][0] = lin_speed;
-        state[2][1] = lin_speed;
-        state[3][0] = position_uncertainty[2][0];
-        state[3][1] = position_uncertainty[2][1];
-    }
-    else
-    {
-        state[0][0] = x;
-        state[0][1] = x;
-        state[1][0] = y;
-        state[1][1] = y;
-        state[2][0] = lin_speed;
-        state[2][1] = lin_speed;
-        state[3][0] = yaw;
-        state[3][1] = yaw;
-    }
     
-
+    state[0][0] = x;
+    state[0][1] = x;
+    state[1][0] = y;
+    state[1][1] = y;
+    state[2][0] = lin_speed;
+    state[2][1] = lin_speed;
+    state[3][0] = yaw;
+    state[3][1] = yaw;
+    
     runReachability_bicycle_uncertain(state, sim_time, wall_time, 0, delta, u, parameter_uncertainty, disturbances, hr_list2,&rect_count,max_hyper_rectangles,true);
     if(log_console_output)
     {
@@ -295,10 +229,11 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
     std_msgs::Float32 res_msg;
     res_msg.data = (double)safe;
     res_pub.publish(res_msg);
-    //if(log_console_output)
-    //    printf("safe: %d\n",safe);
+    
+    //#if(log_console_output)
+    //printf("safe: %d\n",safe);
 
-     if(safe)
+    if(safe)
     {
         time_taken_lec+=1;
     }
@@ -325,8 +260,11 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
         ack_msg.header.stamp = ros::Time::now();
         ackermann_pub.publish(ack_msg);
     }
+    
+
 
     // visualization_debugging
+
     if(debug){
         visualization_msgs::MarkerArray ma;
         // std::min(rect_count-1,max_hyper_rectangles-1)
@@ -343,7 +281,8 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
           
           x = hull.dims[0].max - hull.dims[0].min;
           y = hull.dims[1].max - hull.dims[1].min;
-          area += (x * y);          
+          area += (x * y);
+          
           visualization_msgs::Marker marker;
           marker.header.frame_id = "map";
           marker.header.stamp = ros::Time::now();
@@ -352,8 +291,6 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
           marker.action = visualization_msgs::Marker::ADD;
           marker.pose.position.x = (hull.dims[0].max+hull.dims[0].min)/2.0;
           marker.pose.position.y = (hull.dims[1].max+hull.dims[1].min)/2.0;
-
-          
           marker.pose.position.z = 0.2;
 
     
@@ -367,9 +304,9 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
           marker.color.a = 1.0; 
           if(safe)
           {
-            marker.color.r = 1.0;
-            marker.color.g = 1.0;
-            marker.color.b = 1.0;
+            marker.color.r = 0.02;
+            marker.color.g = 0.66;
+            marker.color.b = 0.25;
           }
           else
           {
@@ -383,6 +320,7 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
 
         // publish marker
         vis_pub.publish( ma );
+
         differential = (area - average_area) / count;
         new_mean = average_area + differential;
         average_area = new_mean;
@@ -431,12 +369,6 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    if(argv[5] == NULL)
-    {
-        std::cout << "Please specify if you want to use ground truth or the particle filter." << std::endl;
-        exit(0);
-    }
-
     
     // wall-time is how long we want the reachability algorithm to run
     wall_time = atoi(argv[1]);
@@ -449,12 +381,12 @@ int main(int argc, char **argv)
     // what level of parameter to consider in the experiments
     parameter_uncertainty = atof(argv[4]);
 
-    use_particles = (bool)atoi(argv[5]);
-
     ackermann_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>("vesc/ackermann_cmd_mux/input/teleop", 10);
 
-    save_path = path + "/"+"particle_uncertainty_truth_"+std::to_string(parameter_uncertainty)+".csv";
- 
+     
+    save_path = path + "/"+"ground_truth_"+std::to_string(parameter_uncertainty)+".csv";
+
+
     // Initialize the list of subscribers 
     message_filters::Subscriber<nav_msgs::Odometry> odom_sub(n, "racecar/odom", 5);
     message_filters::Subscriber<rtreach::velocity_msg> vel_sub(n, "racecar/velocity_msg", 5);
@@ -462,10 +394,6 @@ int main(int argc, char **argv)
     message_filters::Subscriber<rtreach::reach_tube> obs1(n,"racecar2/reach_tube",5);
     message_filters::Subscriber<rtreach::reach_tube> obs2(n,"racecar3/reach_tube",5);
     message_filters::Subscriber<rtreach::reach_tube> wall(n,"wallpoints",5);
-
-    // subscriber for GPU based particles
-    message_filters::Subscriber<geometry_msgs::PoseArray> particles(n,"/pf/viz/particles",5);
-
     message_filters::Subscriber<ackermann_msgs::AckermannDriveStamped> safety_sub(n, "racecar/safety", 10);
 
     res_pub = n.advertise<std_msgs::Float32>(result_topic, 1);
@@ -476,18 +404,20 @@ int main(int argc, char **argv)
 
 
 
+
     // message synchronizer 
-    typedef sync_policies::ApproximateTime<nav_msgs::Odometry, rtreach::velocity_msg, rtreach::angle_msg,rtreach::reach_tube,rtreach::reach_tube,rtreach::reach_tube,geometry_msgs::PoseArray,ackermann_msgs::AckermannDriveStamped> MySyncPolicy; 
+    typedef sync_policies::ApproximateTime<nav_msgs::Odometry, rtreach::velocity_msg, rtreach::angle_msg,rtreach::reach_tube,rtreach::reach_tube,rtreach::reach_tube,ackermann_msgs::AckermannDriveStamped> MySyncPolicy; 
 
     // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-    Synchronizer<MySyncPolicy> sync(MySyncPolicy(100), odom_sub, vel_sub,angle_sub,obs1,obs2,wall,particles,safety_sub);//,interval_sub);
-    sync.registerCallback(boost::bind(&callback, _1, _2,_3,_4,_5,_6,_7,_8));
+    Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), odom_sub, vel_sub,angle_sub,obs1,obs2,wall,safety_sub);//,interval_sub);
+    sync.registerCallback(boost::bind(&callback, _1, _2,_3,_4,_5,_6,_7));
 
     while(ros::ok())
     {
       // call service periodically 
       ros::spinOnce();
     }
+
     int total_periods = time_taken_lec+time_taken_safety_controller;
   
     time_taken_lec = (double(time_taken_lec)/double(total_periods));

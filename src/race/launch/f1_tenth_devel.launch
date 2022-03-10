@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <!--This world name that is spawned in gazebo-->
-  <arg name="world_name" default="track_barca"/>
+  <arg name="world_name" default="track_porto"/>
   <!-- <arg name="world_name" default="track_porto"/> -->
   <!-- <arg name="world_name" default="racecar_walker"/> -->
   <!-- <arg name="world_name" value="lab_track2"/> -->
