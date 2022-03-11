@@ -104,7 +104,7 @@
 
 
     <!--generation of obtacles and visualization in rviz -->
-    <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "15 porto_freespace.txt 10" output="screen"/>
+    <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "1524 porto_freespace.txt 10" output="screen"/>
 
 
     <!--plot reachability results-->

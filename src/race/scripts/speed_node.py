@@ -27,7 +27,7 @@ if __name__=="__main__":
     if(set_speed):
         vel = float(args[1])
     else:
-        vel = 1.0
+        vel = 0.7
     rospy.init_node('speed_manager_'+racecar_name,anonymous=True)
     sp=SpeedManager(racecar_name,speed=vel)
     sp.publish()

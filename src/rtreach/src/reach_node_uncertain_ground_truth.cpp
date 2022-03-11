@@ -211,23 +211,23 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
         printf("num_boxes: %d, obs1 count: %d, obs2 count: %d, \n",rect_count,obs1->count,obs2->count);
     }
     
-
+    safe = true;
     // do the safety checking between the dynamic obstacles here
-    if(obs1->count>0)
+    if(obs1->count>0 && safe)
     {
         safe  = check_obstacle_safety(*obs1,hr_list2,std::min(max_hyper_rectangles,rect_count));
          
     }
-    if(obs2->count>0)
+    if(obs2->count>0 && safe)
     {
         safe  = check_obstacle_safety(*obs2,hr_list2,std::min(max_hyper_rectangles,rect_count));
     }
-    if(wall->count>0)
+    if(wall->count>0 && safe)
     {
         safe  = check_obstacle_safety(*wall,hr_list2,std::min(max_hyper_rectangles,rect_count));
     }
 
-    if(cones->count>0)
+    if(cones->count>0 && safe)
     {
         safe  = check_obstacle_safety(*cones,hr_list2,std::min(max_hyper_rectangles,rect_count));
     }
