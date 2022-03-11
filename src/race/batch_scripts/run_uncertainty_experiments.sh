@@ -53,7 +53,7 @@ do
 
             trap _term SIGINT
 
-            while [ $count -lt 10 ]
+            while [ $count -lt 30 ]
             do
             ((count=count+1)) 
             roslaunch race sim_for_rtreach_uncertainty.launch timeout:=$timeout use_ground_truth:=$gt parameter_uncertainty:=$uncertainty & 
