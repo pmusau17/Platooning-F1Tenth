@@ -130,7 +130,7 @@ bool check_obstacle_safety(rtreach::reach_tube obs,HyperRectangle VisStates[],in
 
 void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_msg::ConstPtr& velocity_msg, 
               const rtreach::angle_msg::ConstPtr& angle_msg, const rtreach::reach_tube::ConstPtr& obs1, const rtreach::reach_tube::ConstPtr& obs2,
-              const rtreach::reach_tube::ConstPtr& wall,const ackermann_msgs::AckermannDriveStamped::ConstPtr& safety_msg)
+              const rtreach::reach_tube::ConstPtr& wall,const rtreach::reach_tube::ConstPtr& cones,const ackermann_msgs::AckermannDriveStamped::ConstPtr& safety_msg)
 {
     using std::cout;
     using std::endl;
@@ -225,6 +225,11 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
     if(wall->count>0)
     {
         safe  = check_obstacle_safety(*wall,hr_list2,std::min(max_hyper_rectangles,rect_count));
+    }
+
+    if(cones->count>0)
+    {
+        safe  = check_obstacle_safety(*cones,hr_list2,std::min(max_hyper_rectangles,rect_count));
     }
     std_msgs::Float32 res_msg;
     res_msg.data = (double)safe;
@@ -394,6 +399,7 @@ int main(int argc, char **argv)
     message_filters::Subscriber<rtreach::reach_tube> obs1(n,"racecar2/reach_tube",5);
     message_filters::Subscriber<rtreach::reach_tube> obs2(n,"racecar3/reach_tube",5);
     message_filters::Subscriber<rtreach::reach_tube> wall(n,"wallpoints",5);
+    message_filters::Subscriber<rtreach::reach_tube> obstacle_locations(n,"obstacle_tubes",5);
     message_filters::Subscriber<ackermann_msgs::AckermannDriveStamped> safety_sub(n, "racecar/safety", 10);
 
     res_pub = n.advertise<std_msgs::Float32>(result_topic, 1);
@@ -406,11 +412,11 @@ int main(int argc, char **argv)
 
 
     // message synchronizer 
-    typedef sync_policies::ApproximateTime<nav_msgs::Odometry, rtreach::velocity_msg, rtreach::angle_msg,rtreach::reach_tube,rtreach::reach_tube,rtreach::reach_tube,ackermann_msgs::AckermannDriveStamped> MySyncPolicy; 
+    typedef sync_policies::ApproximateTime<nav_msgs::Odometry, rtreach::velocity_msg, rtreach::angle_msg,rtreach::reach_tube,rtreach::reach_tube,rtreach::reach_tube, rtreach::reach_tube, ackermann_msgs::AckermannDriveStamped> MySyncPolicy; 
 
     // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-    Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), odom_sub, vel_sub,angle_sub,obs1,obs2,wall,safety_sub);//,interval_sub);
-    sync.registerCallback(boost::bind(&callback, _1, _2,_3,_4,_5,_6,_7));
+    Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), odom_sub, vel_sub,angle_sub,obs1,obs2,wall,obstacle_locations,safety_sub);//,interval_sub);
+    sync.registerCallback(boost::bind(&callback, _1, _2,_3,_4,_5,_6,_7,_8));
 
     while(ros::ok())
     {

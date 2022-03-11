@@ -55,6 +55,7 @@ class publish_wallpoints:
             intv.y_min = float(point[1])
             intv.y_max = float(point[1])
             interval_list.append(intv)
+        
         msg = reach_tube()
         msg.obstacle_list = interval_list
         msg.header.stamp = rospy.Time.now()

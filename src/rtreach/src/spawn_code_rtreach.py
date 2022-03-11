@@ -11,6 +11,8 @@ from gazebo_msgs.srv import GetModelState
 import csv
 from geometry_msgs.msg import Pose
 from visualization_msgs.msg import Marker, MarkerArray
+from rtreach.msg import reach_tube
+from rtreach.msg import interval
 
 
 class SpawnCones():
@@ -30,11 +32,14 @@ class SpawnCones():
 
         self.cone_markers = markerArray = MarkerArray()
         self.cones_pub = rospy.Publisher('obstacle_locations', MarkerArray, queue_size=10)
+        self.obs_pub = rospy.Publisher('obstacle_tubes',reach_tube,queue_size=10)
         self.count =0 
         self.cone_name = "Cone"
         self.robot_namespace  = rospy.get_namespace().replace('/', '')
         self.reference_frame = "/map"
         self.num_obsatcles = obstacle_count
+
+        self.intervals = []
 
 
 
@@ -80,6 +85,12 @@ class SpawnCones():
             m.header.stamp = rospy.Time.now()
         self.cones_pub.publish( self.cone_markers)
 
+        msg = reach_tube()
+        msg.obstacle_list = self.intervals
+        msg.header.stamp = rospy.Time.now()
+        msg.count = len(self.intervals)
+        self.obs_pub.publish(msg)
+
     def calculate_intervals(self,center,width=0.13,height=0.13):
 
         """
@@ -110,6 +121,12 @@ class SpawnCones():
             point = self.free_space[ind].split(',')
             try:
                 x,y = float(point[0]),float(point[1])
+                intv = interval()
+                intv.x_min = x-(0.13)/2
+                intv.x_max = x+(0.13)/2
+                intv.y_min = y-(0.13)/2
+                intv.y_max = y+(0.13)/2
+                self.intervals.append(intv)
             except:
                 print(point)
 

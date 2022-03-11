@@ -24,7 +24,7 @@
     <!--how long to run each experiment before timeout-->
     <arg name="timeout" default = "-1"/>
 
-    <arg name="parameter_uncertainty" default="0.15"/>
+    <arg name="parameter_uncertainty" default="0.0"/>
     <arg name="use_ground_truth" default="true"/>
 
     <arg name="use_particles" default="1"/>
@@ -101,6 +101,10 @@
 
     <arg name="collision_file" value ="collisions_.csv"/>
     <node pkg = "mpc" name= "collision_logger_$(arg car_name)" required="true" type ="collision_logger.py" args="$(arg car_name) 5 5 5 5 5"/>
+
+
+    <!--generation of obtacles and visualization in rviz -->
+    <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "15 porto_freespace.txt 10" output="screen"/>
 
 
     <!--plot reachability results-->

@@ -28,7 +28,7 @@
     <arg name="freespace_file" default ="porto_freespace.txt"/>
 
     <!-- how many obstacles (cones) to allocate in the environment-->
-    <arg name="num_obstacles" default="5"/>
+    <arg name="num_obstacles" default="6"/>
 
     <!--how long to run each experiment before timeout
         a negative number denotes no timeout-->
@@ -64,7 +64,7 @@
     <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
 
     <!--generation of obtacles and visualization in rviz -->
-    <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed) $(arg freespace_file) $(arg num_obstacles)" output="screen"/>
+    <node pkg="racecar_gazebo" type="spawn_cone.py" name="spawn_cones" unless="$(arg lec_only)" args = "$(arg random_seed) $(arg freespace_file) 10" output="screen"/>
 
     <!--time out node-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" unless="$(arg lec_only)" required="true" args = "$(arg timeout)" output="screen"/>
@@ -72,6 +72,8 @@
     <!--Node for wall points-->
     <node name="wall_points" pkg="rtreach" type="publish_wall_points_v2.py" output="screen" args="porto"/>
     <node name="visualize_relevant_boundaries" pkg="rtreach" type="visualize_relevant_boundaries.py" output="screen" args="porto"/>
+
+    <!-- <node pkg="rtreach" type="visualize_node" output="screen" name="vis_node"  args="porto_obstacles.txt 1 1 10" required="true"/> -->
 
      <!--ttc node-->
     <node pkg="race" type="ttc.py" name="ttc" unless="$(arg lec_only)" required="true" args = "$(arg car_name)" output="screen"/>

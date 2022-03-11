@@ -197,6 +197,7 @@ install(PROGRAMS
 src/publish_wall_points.py
 src/publish_wall_points_v2.py
 src/visualize_relevant_boundaries.py
+src/spawn_code_rtreach.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

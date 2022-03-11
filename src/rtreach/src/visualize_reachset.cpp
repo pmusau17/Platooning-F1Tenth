@@ -135,7 +135,7 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
       }
       
       visualization_msgs::Marker marker;
-      marker.header.frame_id = "/map";
+      marker.header.frame_id = "map";
       marker.header.stamp = ros::Time::now();
       marker.id = i;
       marker.type = visualization_msgs::Marker::CUBE;
