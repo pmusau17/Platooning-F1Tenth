@@ -103,8 +103,8 @@
     <node pkg = "mpc" name= "collision_logger_$(arg car_name)" required="true" type ="collision_logger.py" args="$(arg car_name) 5 5 5 5 5"/>
 
 
-    <!--generation of obtacles and visualization in rviz 
-    <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "1524 porto_freespace.txt 10" output="screen"/>-->
+    <!--generation of obtacles and visualization in rviz -->
+    <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "1524 porto_freespace.txt 0" output="screen"/>
 
 
     <!--plot reachability results-->
