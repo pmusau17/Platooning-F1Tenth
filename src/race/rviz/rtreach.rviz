@@ -67,6 +67,8 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        laser:
+          Value: true
         map:
           Value: true
         racecar/base_link:
@@ -109,6 +111,8 @@ Visualization Manager:
       Show Names: true
       Tree:
         map:
+          laser:
+            {}
           racecar/odom:
             racecar/base_link:
               racecar/chassis:
@@ -154,7 +158,7 @@ Visualization Manager:
       Marker Topic: /obstacle_locations
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -170,8 +174,25 @@ Visualization Manager:
       Marker Topic: /reach_verify
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
+      Name: PoseArray
+      Queue Size: 10
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
+      Shape: Arrow (Flat)
+      Topic: /pf/viz/particles
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:

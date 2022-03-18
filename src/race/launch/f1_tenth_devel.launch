@@ -7,7 +7,7 @@
   <!-- <arg name="world_name" value="lab_track2"/> -->
   <!--<arg name="world_name" value="track_levine"/>-->
   <arg name="use_sim_time" default = "true"/>
-  <arg name="gui" default="true" />
+  <arg name="gui" default="false" />
   <arg name="run_camera" default="false"/>
   <arg name="reset_on_crash" default = "false"/>
   <arg name="verbose" default="false"/>
@@ -25,6 +25,7 @@
     <arg name="gui" value="$(arg gui)"/>
     <arg name="use_sim_time" value="$(arg use_sim_time)"/>
     <arg name="verbose" value="$(arg verbose)"/>
+
   </include>
 
 
@@ -84,5 +85,22 @@
   <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" if = "$(arg reset_on_crash)" type ="collision_tracker.py" args="$(arg car_name1) 1"/>
 
   <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" unless = "$(arg reset_on_crash)" type ="collision_tracker.py" args="$(arg car_name1)"/>
+
+   <!--GPU based particle filtering from MIT -->
+    <include file="$(find particle_filter)/launch/localize.launch">
+      <arg name="scan_topic" default="racecar/scan"/>
+	    <arg name="odometry_topic" default="racecar/odom"/>
+      <arg name="laser_frame" default="racecar/laser"/>
+    </include>
+
+    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+
+    <!-- Run map server -->
+	  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+
+    <!--launch rviz to visualize reachable set-->
+    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz"  output="log"/>
+
   
   </launch>
