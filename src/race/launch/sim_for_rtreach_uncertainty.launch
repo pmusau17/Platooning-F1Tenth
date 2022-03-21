@@ -107,6 +107,9 @@
     <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "1524 porto_freespace.txt 0" output="screen"/>
 
 
+    <node pkg="race" type="send_initial_pose.py" name="send_initial_pose"  args="$(arg car_name)" output="screen"/>
+
+
     <!--plot reachability results-->
     <!-- <node pkg="race" type="plot_reachability_results.py" name="res_plot" required="false" output="screen"/> -->
 

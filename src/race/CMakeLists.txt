@@ -143,6 +143,7 @@ scripts/wall_follower.py
 scripts/lidar_to_cartesian.py
 scripts/disparity_extender_ftg.py
 scripts/dynamic_box_oscillation.py
+scripts/send_initial_pose.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

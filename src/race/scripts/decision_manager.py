@@ -40,3 +40,32 @@ if __name__=="__main__":
     rospy.init_node('decision_manager_'+racecar_name, anonymous=True)
     rospy.spin()
 
+
+
+'uncertainty_0_0_0_0_0_0_0_0_0.025.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.05.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.075.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.125.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.15.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.175.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.1.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.225.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.25.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.2.csv',
+'uncertainty_0_0_0_0_0_0_0_0_0.csv',
+'uncertainty_0_0_0_0_0_0_-0.01_0.01_0.csv',
+'uncertainty_0_0_0_0_0_0_-0.02_0.02_0.csv',
+'uncertainty_0_0_0_0_0_0_-0.04_0.04_0.csv',
+"uncertainty_0_0_0_0_0_0_-0.05_0.05_0.csv",
+"uncertainty_0_0_0_0_0_0_-0.1_0.1_0.csv",
+"uncertainty_0_0_0_0_-0.01_0.01_0_0_0.csv",
+"uncertainty_0_0_0_0_-0.01_0.01_-0.01_0.01_0.csv",
+"uncertainty_0_0_0_0_-0.02_0.02_0_0_0.csv",
+'uncertainty_0_0_0_0_-0.02_0.02_-0.02_0.02_0.csv',
+'uncertainty_0_0_0_0_-0.03_0.03_0_0_0.csv',
+'uncertainty_0_0_0_0_-0.03_0.03_-0.03_0.03_0.csv',
+'uncertainty_0_0_0_0_-0.04_0.04_0_0_0.csv',
+'uncertainty_0_0_0_0_-0.04_0.04_-0.04_0.04_0.csv',
+'uncertainty_0_0_0_0_-0.05_0.05_0_0_0.csv',
+'uncertainty_0_0_0_0_-0.05_0.05_-0.05_0.05_0.csv',
+'uncertainty_0_0_0_0_-0.1_0.1_0_0_0.csv'

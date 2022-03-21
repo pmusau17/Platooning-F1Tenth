@@ -86,21 +86,21 @@
 
   <node pkg = "race" name= "contact_listener_$(arg car_name1)" output="screen" unless = "$(arg reset_on_crash)" type ="collision_tracker.py" args="$(arg car_name1)"/>
 
-   <!--GPU based particle filtering from MIT -->
+   <!-- GPU based particle filtering from MIT
     <include file="$(find particle_filter)/launch/localize.launch">
       <arg name="scan_topic" default="racecar/scan"/>
 	    <arg name="odometry_topic" default="racecar/odom"/>
       <arg name="laser_frame" default="racecar/laser"/>
-    </include>
+    </include> -->
 
-    <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/>
+    <!-- <arg name="map_file" default="$(find race)/maps/porto_track.yaml"/> -->
 
     <!-- Run map server -->
-	  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+	  <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" /> -->
 
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz"  output="log"/>
+    <!-- <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz"  output="log"/> -->
 
   
   </launch>

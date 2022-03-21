@@ -22,7 +22,7 @@ number_of_cars=2
 
 # Whether to use the ground truth or particle filtering
 #use_gt="true false"
-use_gt="true"
+use_gt="false"
 
 # Methods
 # 0 is mpc with the hyper-plane formulation
@@ -30,8 +30,8 @@ use_gt="true"
 # 2 is disparity extender
 # 3 is pure pursuit
 
-#methods="0.0 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80"
-methods="0.45 0.85 0.90 0.95"
+methods="0.0 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95"
+#methods="0.45 0.85 0.90 0.95"
 
 
 for gt in $use_gt

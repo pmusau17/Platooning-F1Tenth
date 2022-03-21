@@ -45,8 +45,8 @@
 		<param name="angle_step" value="$(arg angle_step)"/>
 		<param name="max_particles" value="$(arg max_particles)"/>
 		<param name="max_viz_particles" value="60"/>
-		<param name="range_method" value="pcddt"/>
-		<!-- <param name="range_method" value="rmgpu"/> -->
+		<!-- <param name="range_method" value="pcddt"/> -->
+		<param name="range_method" value="rmgpu"/>
 		<param name="squash_factor" value="$(arg squash_factor)"/>
 		<param name="theta_discretization" value="112"/>
 		<!-- max sensor range in meters -->
