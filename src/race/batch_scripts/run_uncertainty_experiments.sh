@@ -39,7 +39,7 @@ do
     for uncertainty in $methods
     do
             # timeout 
-            timeout=60
+            timeout=90
 
             # ignore this
             exit_status=0
