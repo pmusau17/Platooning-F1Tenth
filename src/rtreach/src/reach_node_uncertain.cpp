@@ -453,7 +453,7 @@ int main(int argc, char **argv)
 
     ackermann_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>("vesc/ackermann_cmd_mux/input/teleop", 10);
 
-    save_path = path + "/"+"particle_uncertainty_truth_"+std::to_string(parameter_uncertainty)+".csv";
+    save_path = path + "/"+"particle_uncertainty_truth_"+std::to_string(parameter_uncertainty)+"_"+std::to_string(sim_time)+"_"+".csv";
  
     // Initialize the list of subscribers 
     message_filters::Subscriber<nav_msgs::Odometry> odom_sub(n, "racecar/odom", 5);
