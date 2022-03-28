@@ -104,6 +104,15 @@ add_library(RtreachObs SHARED
             reach_src/obstacle_model_plots.c)
 target_compile_definitions(RtreachObs PUBLIC OBSTACLE_MODEL)
 
+add_library(RtreachObsUncertain SHARED
+            reach_src/face_lift_obstacle_uncertain.c 
+            reach_src/dynamics_obstacle_uncertain.c 
+            reach_src/geometry.c 
+            reach_src/interval.c  
+            reach_src/util.c 
+            reach_src/uncertain_obstacle_model.c)
+target_compile_definitions(RtreachObsUncertain PUBLIC OBSTACLE_MODEL)
+
 add_executable(reach_node src/reach_node_sync.cpp)
 target_link_libraries(reach_node ${catkin_LIBRARIES} Rtreach)
 add_dependencies(reach_node rtreach_generate_messages_cpp)
@@ -138,6 +147,11 @@ add_executable(visualize_obs_particles src/visualize_obstacle_particles.cpp)
 add_dependencies(visualize_obs_particles rtreach_generate_messages_cpp)
 set_target_properties(visualize_obs_particles PROPERTIES COMPILE_FLAGS "-DOBSTACLE_MODEL")
 target_link_libraries(visualize_obs_particles ${catkin_LIBRARIES} RtreachObs)
+
+add_executable(visualize_obstacle_uncertain src/visualize_obstacle_uncertain.cpp)
+add_dependencies(visualize_obstacle_uncertain rtreach_generate_messages_cpp)
+set_target_properties(visualize_obstacle_uncertain PROPERTIES COMPILE_FLAGS "-DOBSTACLE_MODEL")
+target_link_libraries(visualize_obstacle_uncertain ${catkin_LIBRARIES} RtreachObsUncertain)
 
 
 add_executable(vis_node_param src/vis_dynamic_param.cpp)
@@ -195,6 +209,7 @@ install(TARGETS
   benchmark_hardware_node
   visualize_hardware
   visualize_obs_particles
+  visualize_obstacle_uncertain
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -223,6 +238,7 @@ install(TARGETS
         RtreachObs
         Rtreachdyn
         RtreachUncertain
+        RtreachObsUncertain
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
