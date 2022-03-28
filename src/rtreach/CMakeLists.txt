@@ -161,6 +161,11 @@ add_dependencies(reach_node_uncertain_gt rtreach_generate_messages_cpp)
 add_dependencies(reach_node_uncertain_gt ${catkin_EXPORTED_TARGETS})
 target_link_libraries(reach_node_uncertain_gt  ${catkin_LIBRARIES} RtreachUncertain)
 
+add_executable(reach_node_uncertain_simplex src/reach_node_uncertain_simplex.cpp)
+add_dependencies(reach_node_uncertain_simplex rtreach_generate_messages_cpp)
+add_dependencies(reach_node_uncertain_simplex ${catkin_EXPORTED_TARGETS})
+target_link_libraries(reach_node_uncertain_simplex  ${catkin_LIBRARIES} RtreachUncertain)
+
 
 add_executable(reach_node_hardware src/reach_node_hardware.cpp)
 add_dependencies(reach_node_hardware rtreach_generate_messages_cpp)
@@ -179,6 +184,7 @@ install(TARGETS
   reach_node_dyn
   reach_node_uncertain
   reach_node_uncertain_gt
+  reach_node_uncertain_simplex
   reach_node_hardware
   visualize_node
   visualize_node_dynamic
