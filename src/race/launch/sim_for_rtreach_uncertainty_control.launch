@@ -30,7 +30,7 @@
     <!--how long to run each experiment before timeout-->
     <arg name="timeout" default = "-1"/>
 
-    <!--uncertainty_parameters-->
+    <!--uncertainty parameters-->
     <arg name="parameter_uncertainty" default="0.0"/>
     <arg name="position_uncertainty" default="0.0"/>
     <arg name="velocity_uncertainty" default="0.0"/>
@@ -81,17 +81,9 @@
     <!-- generation of safety controller-->
     <node pkg="race" type="safety_controller.py" name="safety_node" args="$(arg car_name)/scan $(arg car_name)/safety" output="screen"/>
 
-    <!-- decision manager-->
-    <!-- <node pkg="race" type="rtreach_decision_manager.py" name="decision_manager" args="$(arg car_name) vesc" output="screen"/> -->
-
-
     <!-- These are the nodes for publishing the reachability information for each of the vehicles-->
-    <node name="vehicle_1" pkg="rtreach" type="visualize_obs" unless="$(arg docker)" args="racecar2   $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
-    <node name="vehicle_2" pkg="rtreach" type="visualize_obs" unless="$(arg docker)" args="racecar3  $(arg wall_time) $(arg reach_time) $(arg box_display_limit)" output="log"/>
-
-    <!--Node for Visualizing reachsets that allows customization through parameters
-    <node name="vis_agent_param" pkg="rtreach" unless="$(arg docker)" type="vis_node_param" output="screen" args=" 10 $(arg reach_time) $(arg box_display_limit) $(arg debug)"/>-->
-
+    <node name="vehicle_1" pkg="rtreach" type="visualize_obstacle_uncertain" unless="$(arg docker)" args="racecar2   $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg position_uncertainty) $(arg velocity_uncertainty)" output="log"/>
+    <node name="vehicle_2" pkg="rtreach" type="visualize_obstacle_uncertain" unless="$(arg docker)" args="racecar3  $(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg position_uncertainty) $(arg velocity_uncertainty)" output="log"/>
 
     <node pkg="race" name="disparity_extender_racear" type="disparity_extender_vanderbilt_gen.py" args="racecar2"/>
     <node pkg="race" name="disparity_extender_racear3" if="$(eval arg('number_of_cars')==3)" type="disparity_extender_vanderbilt_gen.py" args="racecar3"/>
@@ -100,15 +92,14 @@
     <node name="wall_points" pkg="rtreach" type="publish_wall_points_v2.py" unless="$(arg docker)" output="screen" args="porto"/>
 
     <!--Reachability safety node that incorporates dynamic obstacles-->
-    <node pkg="rtreach" type="reach_node_uncertain_simplex" output="screen" name="reach_node_simplex"  args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty) $(arg algorithm_name) $(arg number_of_cars) $(arg num_obstacles) $(arg position_uncertainty) $(arg velocity_uncertainty)" required="true"/>
-
+    <node pkg="rtreach" type="reach_node_no_simplex" output="screen" name="reach_node_simplex"  args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty) $(arg algorithm_name) $(arg number_of_cars) $(arg num_obstacles) $(arg position_uncertainty) $(arg velocity_uncertainty)" required="true"/>
     <!--launch rviz to visualize reachable set-->
     <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
 
     <!--kill simulation-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
 
-    <arg name="collision_file" value ="collisions_$(arg algorithm_name)_$(arg number_of_cars)_$(arg num_obstacles)_cones.csv"/>
+    <arg name="collision_file" value ="nosimplex_collisions_$(arg algorithm_name)_$(arg number_of_cars)_$(arg num_obstacles)_$(arg position_uncertainty)_$(arg velocity_uncertainty)_cones.csv"/>
 
     <node pkg = "mpc" name= "collision_logger_$(arg car_name)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) 1524 $(arg collision_file) track_porto $(arg experiment_number)"/>
 

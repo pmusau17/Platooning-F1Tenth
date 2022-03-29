@@ -189,8 +189,7 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
         cout << "u: " << u << endl; 
         cout << "delta: " << delta << endl;
     }
-
-
+    
 
     // if the positions are determined by uncertainty we can parameterize that 
     // as well, the position is defined by uncertainty and any disturbances 
@@ -239,55 +238,22 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
 
     count+=1;
 
-    if(!safe and !stop)
+    if(safe)
     {
-        stop = true;
-    }
-
-
-
-
-    if (safe && (!stop))
-    {
-        ack_msg.drive.steering_angle = delta;
-        ack_msg.drive.speed = u;
-        ack_msg.header.stamp = ros::Time::now();
-        ackermann_pub.publish(ack_msg);
         time_taken_lec+=1;
-    }
-    else if(safety_msg->drive.speed == 0.0)
-    {
-      stop = true;
-      safePeriods=0;
-      time_taken_safety_controller+=1;
-      ROS_WARN("Safety controller issuing stop command.");
-      
     }
     else
     {
-        // cout << "safe: angle: " << safety_msg->drive.steering_angle << " safe speed: " << safety_msg->drive.speed << endl;
-        ack_msg.drive.steering_angle = safety_msg->drive.steering_angle;
-        ack_msg.drive.speed = safety_msg->drive.speed;
-        ack_msg.header.stamp = ros::Time::now();
-        ackermann_pub.publish(ack_msg);
         time_taken_safety_controller+=1;
     }
 
-    if(stop & safe)
-    {
-      safePeriods+=1;
-    }
-    else
-    {
-      safePeriods = 0;
-    }
-    
 
-    if(stop && safePeriods>30)
-    {
-      stop = false;
-    }
-
+    ack_msg.drive.steering_angle = delta;
+    ack_msg.drive.speed = u;
+    ack_msg.header.stamp = ros::Time::now();
+    ackermann_pub.publish(ack_msg);
+        
+   
 
     // visualization_debugging
 
@@ -455,7 +421,7 @@ int main(int argc, char **argv)
     ackermann_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>("vesc/ackermann_cmd_mux/input/teleop", 10);
 
      
-    save_path = path + "/"+"simplex_"+controller_name+"_"+std::to_string(sim_time)+"_"+number_of_opponents+"_"+number_of_obstacles+"_"+position_uncertainty+"_"+velocity_uncertainty+".csv";
+    save_path = path + "/"+"nosimplex_"+controller_name+"_"+std::to_string(sim_time)+"_"+number_of_opponents+"_"+number_of_obstacles+"_"+position_uncertainty+"_"+velocity_uncertainty+".csv";
 
 
     // Initialize the list of subscribers 

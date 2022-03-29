@@ -139,7 +139,7 @@ if __name__ == "__main__":
     experiment_number = args[5:]
     if(experiment_number):
         experiment_number = experiment_number[0]
-    rospy.sleep(10)
+    rospy.sleep(5)
     CollTracker = CollisionTracker(racecar_name,num_obstacles,random_seed,log_file,track_name,experiment_number=experiment_number)
     contact_sub = rospy.Subscriber(racecar_name+'/contact_link_collisions',ContactsState,CollTracker.callback_func,queue_size=100)
     
