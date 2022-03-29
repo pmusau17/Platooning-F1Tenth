@@ -55,7 +55,7 @@ do
             while [ $count -lt 10 ]
             do
             ((count=count+1)) 
-            roslaunch race sim_for_rtreach_dynamic_obstacle_uncertainty.launch timeout:=$timeout number_of_cars:=$cars num_obstacles:=$obs experiment_number:=$count & 
+            roslaunch race sim_for_rtreach_dynamic_obstacle_uncertainty.launch timeout:=$timeout number_of_cars:=$cars num_obstacles:=$obs position_uncertainty:=$posu velocity_uncertainty:=$velu experiment_number:=$count & 
                 
             child=$!
             wait "$child"
