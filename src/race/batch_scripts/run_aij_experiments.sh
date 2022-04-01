@@ -42,10 +42,10 @@ do
     do
         for obs in $obstacles
         do
-
             for vel in $velocities
-
+            do 
                 for cntrl in $control
+                do
                         # timeout 
                         timeout=60
 
@@ -78,9 +78,9 @@ do
                             exit 0 
                         fi
                         echo count: $count
-                done
-            done 
+                        done
+                done 
+            done
         done
     done
-  done
 done

@@ -113,7 +113,7 @@
     <!--kill simulation-->
     <node pkg="racecar_gazebo" type="kill_simulation.py" name="timeout" required="true" args = "$(arg timeout)" output="screen"/>
 
-    <arg name="collision_file" value ="collisions_$(arg algorithm_name)_$(arg number_of_cars)_$(arg num_obstacles)_$(arg velocity)_cones.csv"/>
+    <arg name="collision_file" value ="collisions_$(arg algorithm_name)_$(arg number_of_cars)_$(arg num_obstacles)_$(arg velocity)_$(arg control)_cones.csv"/>
 
     <node pkg = "mpc" name= "collision_logger_$(arg car_name)" required="true" type ="collision_logger.py" args="$(arg car_name) $(arg num_obstacles) 1524 $(arg collision_file) track_porto $(arg experiment_number)"/>
 
