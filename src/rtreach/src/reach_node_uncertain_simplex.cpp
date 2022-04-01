@@ -83,6 +83,7 @@ double average_area = 0.0;
 double differential=0.0;
 double new_mean=0.0;
 int safePeriods =0;
+double speed_setpoint = 0.0;
 
 ackermann_msgs::AckermannDriveStamped ack_msg;
 
@@ -182,6 +183,8 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
 
 
     u = velocity_msg->velocity;
+
+    speed_setpoint = u;
     delta = angle_msg->steering_angle;
 
     if(log_console_output)
@@ -455,7 +458,8 @@ int main(int argc, char **argv)
     ackermann_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>("vesc/ackermann_cmd_mux/input/teleop", 10);
 
      
-    save_path = path + "/"+"simplex_"+controller_name+"_"+std::to_string(sim_time)+"_"+number_of_opponents+"_"+number_of_obstacles+"_"+position_uncertainty+"_"+velocity_uncertainty+".csv";
+    save_path = path + "/"+"simplex_"+controller_name+"_"+std::to_string(sim_time)+"_"+number_of_opponents+"_"+number_of_obstacles+"_"+position_uncertainty+"_"+velocity_uncertainty+"_"+std::to_string(speed_setpoint)+".csv";
+
 
 
     // Initialize the list of subscribers 
