@@ -458,7 +458,7 @@ int main(int argc, char **argv)
     ackermann_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>("vesc/ackermann_cmd_mux/input/teleop", 10);
 
      
-    save_path = path + "/"+"simplex_"+controller_name+"_"+std::to_string(sim_time)+"_"+number_of_opponents+"_"+number_of_obstacles+"_"+position_uncertainty+"_"+velocity_uncertainty+"_"+std::to_string(speed_setpoint)+".csv";
+    
 
 
 
@@ -493,6 +493,8 @@ int main(int argc, char **argv)
       // call service periodically 
       ros::spinOnce();
     }
+
+    save_path = path + "/"+"simplex_"+controller_name+"_"+std::to_string(sim_time)+"_"+number_of_opponents+"_"+number_of_obstacles+"_"+position_uncertainty+"_"+velocity_uncertainty+"_"+std::to_string(speed_setpoint)+".csv";
 
     int total_periods = time_taken_lec+time_taken_safety_controller;
   
