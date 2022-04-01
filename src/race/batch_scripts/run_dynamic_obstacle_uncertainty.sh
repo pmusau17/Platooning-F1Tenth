@@ -20,8 +20,8 @@
 # how many cars to run 
 number_of_cars="2 3"
 
-position_uncertainty="0.025 0.05 0.075 0.1 0.125 0.15 0.175 0.2"
-velocity_uncertainty="0.025 0.05 0.075 0.1 0.125 0.15 0.175 0.2"
+position_uncertainty="0 0.025 0.05 0.075 0.1 0.125 0.15 0.175 0.2"
+velocity_uncertainty="0 0.025 0.05 0.075 0.1 0.125 0.15 0.175 0.2"
 
 # Methods
 # 0 is end to end
