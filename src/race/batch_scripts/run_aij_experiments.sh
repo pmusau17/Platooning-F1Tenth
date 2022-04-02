@@ -34,7 +34,7 @@ control="true false"
 # 1 disparity
 # 2 is pp
 
-controller_type="0 1 2"
+controller_type="2 1 0"
 
 for alg in $controller_type
 do 
