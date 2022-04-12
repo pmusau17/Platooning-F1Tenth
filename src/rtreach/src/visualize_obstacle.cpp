@@ -110,7 +110,7 @@ void timer_callback(const ros::TimerEvent& event)
 
     // publish some of the markers,
     // don't freeze gazebo
-    for(int i= 0; i<std::min(max_hyper_rectangles,rect_count); i+=display_count)
+    for(int i= 0; i<std::min(max_hyper_rectangles,rect_count-1); i+=display_count)
     {
         
         hull = hr_list[i];

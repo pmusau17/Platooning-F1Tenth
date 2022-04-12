@@ -367,9 +367,9 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
           marker.color.a = 1.0; 
           if(safe)
           {
-            marker.color.r = 1.0;
-            marker.color.g = 1.0;
-            marker.color.b = 1.0;
+            marker.color.r = 0.02;
+            marker.color.g = 0.66;
+            marker.color.b = 0.25;
           }
           else
           {

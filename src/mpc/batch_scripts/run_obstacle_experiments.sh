@@ -42,7 +42,7 @@ worlds="0"
 # 2 is disparity extender
 # 3 is pure pursuit
 
-methods="0 1 2 3"
+methods="2 3 0 1"
 
 # Target Models
 # 0 is the disparity extender

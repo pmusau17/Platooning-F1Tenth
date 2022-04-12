@@ -55,7 +55,7 @@
     </include>
 
     <!--launch the speed node it will be constant in this case-->
-    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py"  args='$(arg car_name)'/>
+    <node name="speed_node_$(arg car_name)" pkg="race" type="speed_node.py"  args='$(arg car_name) 0.7'/>
 
     <!-- generation of safety controller-->
     <node pkg="race" type="safety_controller.py" name="safety_node" args="$(arg car_name)/scan $(arg car_name)/safety" output="screen"/>
