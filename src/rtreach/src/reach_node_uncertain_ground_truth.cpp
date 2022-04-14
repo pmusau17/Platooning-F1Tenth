@@ -284,8 +284,8 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg, const rtreach::velocity_m
           hull.dims[1].max = hull.dims[1].max  + 0.15;
 
           
-          x = hull.dims[0].max - hull.dims[0].min;
-          y = hull.dims[1].max - hull.dims[1].min;
+          x = std::abs(hull.dims[0].max - hull.dims[0].min);
+          y = std::abs(hull.dims[1].max - hull.dims[1].min);
           area += (x * y);
           
           visualization_msgs::Marker marker;
