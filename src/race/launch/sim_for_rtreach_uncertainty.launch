@@ -83,7 +83,7 @@
     <node pkg="rtreach" type="reach_node_uncertain_gt" output="screen" name="reach_node_gt" if="$(arg use_ground_truth)" args="$(arg wall_time) $(arg reach_time) $(arg box_display_limit) $(arg parameter_uncertainty)" required="true"/>
 
     <!--launch rviz to visualize reachable set-->
-    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach.rviz" if="$(arg gui)" output="log"/>
+    <node pkg="rviz" type="rviz" name="rviz_display"  args="-d $(find race)/rviz/rtreach2.rviz" if="$(arg gui)" output="log"/>
 
     
     <!--GPU based particle filtering from MIT -->
@@ -104,7 +104,7 @@
 
 
     <!--generation of obtacles and visualization in rviz -->
-    <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "1524 porto_freespace.txt 0" output="screen"/>
+    <node pkg="rtreach" type="spawn_code_rtreach.py" name="spawn_cones" args = "1524 porto_freespace.txt 20" output="screen"/>
 
 
     <node pkg="race" type="send_initial_pose.py" name="send_initial_pose"  args="$(arg car_name)" output="screen"/>

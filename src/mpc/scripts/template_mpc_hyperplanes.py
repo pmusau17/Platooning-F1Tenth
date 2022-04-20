@@ -36,11 +36,11 @@ def template_mpc(model,horizon):
     
 
     mpc.set_objective(mterm=mterm, lterm=lterm)
-    mpc.set_rterm(car_v=0.5 , car_delta=0.0)
+    mpc.set_rterm(car_v=0.00 , car_delta=0.3)
 
-    mpc.bounds['lower', '_u', 'car_v'] = 0.0
+    mpc.bounds['lower', '_u', 'car_v'] = 1.0
     mpc.bounds['lower', '_u', 'car_delta'] = -0.6189
-    mpc.bounds['upper', '_u', 'car_v'] = 1.3
+    mpc.bounds['upper', '_u', 'car_v'] = 1.35
     mpc.bounds['upper', '_u', 'car_delta'] = 0.6189
 
     # left plane constraint, this basically bounds it to the right or to the left

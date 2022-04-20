@@ -57,7 +57,7 @@ class MPC:
         self.display_in_rviz = True
         self.use_pure_pursuit = True
         # self.increment = 10 works reasonably well
-        self.increment = 1
+        self.increment = 10
 
         # parameters for tvp callback function 
         self.tar_x = 0 
@@ -74,7 +74,7 @@ class MPC:
         self.comp_time = []
 
         # mpc horizon
-        self.horizon = 5 
+        self.horizon = 4
         # set up the model used for the mpc controller
         self.model =  template_model()
 
@@ -87,7 +87,7 @@ class MPC:
         self.mpc.set_tvp_fun(self.change_target_position_template)
         self.mpc.setup()
 
-        self.vis_pub = rospy.Publisher('lidar_pts', MarkerArray,queue_size=1)
+        self.vis_pub2 = rospy.Publisher('lidar_pts', MarkerArray,queue_size=1)
         self.drive_publish = rospy.Publisher('/vesc2/ackermann_cmd_mux/input/teleop', AckermannDriveStamped, queue_size=1)
         self.vis_pub = rospy.Publisher("racecar2/hyper_planes", MarkerArray, queue_size=1)
 
@@ -339,7 +339,7 @@ class MPC:
                 markerArray.markers.append(marker)
 
         if(self.display_in_rviz):
-            self.vis_pub.publish(markerArray)
+            self.vis_pub2.publish(markerArray)
 
 
         return points
@@ -626,11 +626,11 @@ class MPC:
             
             marker.color.a = 1.0
             marker.color.r = 1.0
-            marker.color.g = 0.7
-            marker.color.b = 0.8
+            marker.color.g = 0.843
+            marker.color.b = 0.0
             
-            marker.scale.x = 0.05
-            marker.scale.y = 0.05
+            marker.scale.x = 0.1
+            marker.scale.y = 0.1
             marker.scale.z = 0.05
 
 
