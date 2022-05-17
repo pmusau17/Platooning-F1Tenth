@@ -351,11 +351,7 @@ To build the docker image use the Dockerfile located in this repository.
 $ docker build -t simulator -f docker/Dockerfile .
 ```
 
-Test if the image builds correctly by running: 
 
-```bash
-$ docker container run --rm --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix simulator
-```
 
 In order to  enable the use of graphical user interfaces within Docker containers such as Gazebo and Rviz give docker the rights to access the X-Server with:
 
@@ -364,6 +360,7 @@ $ xhost +local:docker
 ``` 
 
 This command allows one to connect a container to a host's X server for display **but it is not secure.** It compromises the access control to X server on your host. So with a little effort, someone could display something on your screen, capture user input, in addition to making it easier to exploit other vulnerabilities that might exist in X.
+
  
 **So When you are done run :** 
 
@@ -371,24 +368,26 @@ This command allows one to connect a container to a host's X server for display 
 $ xhost -local:docker 
 ``` 
 
-to return the access controls that were disabled with the previous command
+to return the access controls that were disabled with the previous command.
+
+Test if the image builds correctly by running: 
+
+```bash
+$ source docker/run_docker.sh
+```
 
 To run the simulation: 
 
 ```bash
-$ docker container run --rm --name=sim --runtime=nvidia -it -e DISPLAY --net=host --env="QT_X11_NO_MITSHM=1" -v /tmp/.X11-unix:/tmp/.X11-unix simulator
+$ source docker/run_docker.sh
 ```
 
-To teleoperate the car or run experiments run the following:
-
-```bash
-$ docker container exec -it sim bash 
+This will open up a terminal in interactive mode, to run any of the experiments. Source the setup file: 
+```
+$ source install/setup.bash
 ```
 
-Then run: 
-```bash 
-$ source devel/setup.bash && rosrun race keyboard.py
-```
+and run any of the commands found in the instructions for each package.
 
 # Developers <a name="Developers"></a> 
 
