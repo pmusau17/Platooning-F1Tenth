@@ -18,8 +18,8 @@
 
 # Change this to toggle obstacles
 
-enable_static_obstacles=true
-enable_dynamic_obstacles=false
+enable_static_obstacles=false
+enable_dynamic_obstacles=True
 
 # how many cars to run 
 number_of_cars=2
@@ -42,12 +42,12 @@ worlds="0"
 # 2 is disparity extender
 # 3 is pure pursuit
 
-methods="2 3 0 1"
+methods="0 1 3 2 "
 
 # Target Models
 # 0 is the disparity extender
 # 1 is pure pursuit
-target_models="0 1"
+target_models="1 0"
 
 
 for world_number in $worlds
@@ -57,7 +57,7 @@ do
         for target_model in $target_models
         do
             # timeout 
-            timeout=60
+            timeout=700
 
             # ignore this
             exit_status=0
@@ -93,7 +93,7 @@ do
                 # wants full stop instead of start_simulation.launch
                 # terminating normally from end of episode so...
                 echo "stop looping"
-                break
+                exit 0 
             fi
             echo count: $count
             done

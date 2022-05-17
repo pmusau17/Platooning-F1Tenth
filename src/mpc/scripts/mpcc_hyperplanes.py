@@ -63,7 +63,7 @@ class MPCC:
         self.y_min = 100
         self.y_max = -100
         self.speed_min = 0 
-        self.speed_max = 1.5
+        self.speed_max = 1.3
 
         self.a0 = 1
         self.b0 = 1
@@ -592,7 +592,7 @@ class MPCC:
             
             marker.color.a = 1.0
             marker.color.r = 1.0
-            marker.color.g = 0.0
+            marker.color.g = 0.843
             marker.color.b = 0.0
             
             marker.scale.x = 0.1
