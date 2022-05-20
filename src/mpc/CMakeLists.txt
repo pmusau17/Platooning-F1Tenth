@@ -29,23 +29,33 @@ include_directories(
 
 ### Install python nodes
 install(PROGRAMS 
-scripts/constants.py
-scripts/mpc_drive.py
-scripts/mpc_drive_hyperplanes.py
-scripts/mpcc_hyperplanes.py
-scripts/mpc_gen.py
-scripts/point.py
-scripts/solving_bottom.py
-scripts/solving_upper.py
-scripts/template_model.py
-scripts/template_mpc.py
-scripts/template_mpc_hyperplanes.py
+scripts/collision_logger.py             
+scripts/constants.py              
+scripts/point.py                     
+scripts/template_model_hype.py       
 scripts/visualize_point_2.py
+scripts/compute_track_progress.py       
+scripts/mpc_bicycle.py            
+scripts/solving_bottom.py            
+scripts/template_model.py            
 scripts/visualize_point.py
+scripts/computing_hyperplanes_final.py  
+scripts/mpcc_hyperplanes.py       
+scripts/solving.py                   
+scripts/template_mpc_black_box.py    
 scripts/visualize_points.py
-scripts/mpc_bicycle.py
-scripts/collision_logger.py
-scripts/compute_track_progress.py
+scripts/computing_hyperplanes_left.py   
+scripts/mpc_drive_hyperplanes.py  
+scripts/solving_upper.py             
+scripts/template_mpc_hyperplanes.py
+scripts/computing_hyperplanes.py        
+scripts/mpc_drive.py              
+scripts/template_model_bicycle.py    
+scripts/template_mpc.py
+scripts/computing_hyperplanes_right.py  
+scripts/mpc_gen.py                
+scripts/template_model_black_box.py  
+scripts/test.py
 DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

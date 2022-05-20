@@ -49,3 +49,4 @@ WORKDIR Platooning-F1Tenth
 RUN git pull && rosdep install --from-paths src --ignore-src -r -y --rosdistro noetic
 RUN /bin/bash -c "apt install -y python3-colcon-common-extensions ros-noetic-ackermann-msgs && source /opt/ros/noetic/setup.bash &&  colcon build"
 RUN apt-get install python-is-python3 && pip install imutils 
+RUN pip install rdp do-mpc
