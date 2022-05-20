@@ -395,6 +395,14 @@ $ source install/setup.bash
 
 and run any of the commands found in the instructions for each package.
 
+### Reproducing Experiments for the following papers: 
+1. ["On Using Real-Time Reachability for the Safety Assurance of Machine Learning Controllers"](http://taylortjohnson.com/research/musau2022icaa.pdf), Musau et al. ICAA 2022.
+2. ["Zero-Shot Policy Transfer in Autonomous Racing:Reinforcement Learning vs Imitation Learning"](http://taylortjohnson.com/research/hamilton2022icaa.pdf), Hamilton et al. ICAA 2022.
+3. ["An Empirical Analysis of the Use of Real-Time Reachability for the Safety Assurance of Autonomous Vehicles"](https://arxiv.org/abs/2205.01419), Musau et al. Submitted to Artificial Intelligence Special Issue on Risk-aware Autonomous Systems: Theory and Practice April 2022.
+4. ["Integrating Online Reachability Analysis with Model Predictive Control for Dynamic Obstacle Avoidance"](https://pmusau17.github.io/), Stankaitis et al. Submitted to Memcode 2022. 
+
+There are batch scripts that reproduce each table contained in the above papers. These scripts are located in two directories [here](https://github.com/pmusau17/Platooning-F1Tenth/tree/noetic-port/src/race/batch_scripts), [here](https://github.com/pmusau17/Platooning-F1Tenth/tree/noetic-port/src/rtreach/batch_scripts), and [here](https://github.com/pmusau17/Platooning-F1Tenth/tree/noetic-port/src/mpc/batch_scripts). Each script will produce a series of log files that are stored in the log directory within each package.  Once the experiments have been run, they can be summarized using jupyter notebooks. One such example is the following [notebook](https://github.com/pmusau17/Platooning-F1Tenth/blob/noetic-port/src/mpc/logs/IFM.ipynb). For our most recent submission to AIJ, the notebook summarizing the experiments can be found [here](https://github.com/pmusau17/Platooning-F1Tenth/blob/noetic-port/src/rtreach/logs/uncertainty_experiments/UncertaintyExperiments.ipynb). Feel free to reach out if you have any trouble reproducing the experiments. I look forward to any comments and questions. 
+
 # Developers <a name="Developers"></a> 
 
 This work was made possible by the following team of graduate and undergraduate students from Vanderbilt University working at the [Institute for Software Integrated Systems](https://www.isis.vanderbilt.edu/).
