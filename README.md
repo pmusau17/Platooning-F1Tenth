@@ -122,10 +122,9 @@ cd rtreach_ft1enth
 
 With that you are now ready to run the experiments. 
 
-### Docker 
-<hr /> 
+### Docker
 
-Instruction for building and running the dockerized version of the runtime-verification approach are provided [here](https://github.com/pmusau17/rtreach_f1tenth).
+Docker installation instructions can be found [here](#Docker).
 
 
 ### Running the Experiments (Native Installation)
@@ -160,7 +159,7 @@ Build the docker containers as described here: [Docker](#Docker).
 Run the experiments as follows: **make sure you've run +xhost: docker**
 
 ```
-./docker/run_docker.sh
+./docker/run_docker.sh or ./docker/run_docker_cpu.sh
 ```
 
 This should open a terminal within the docker container. Run the following in the terminal:
@@ -348,7 +347,7 @@ Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/ins
 To build the docker image use the Dockerfile located in this repository. 
 
 ```bash
-$ docker build -t simulator -f docker/Dockerfile .
+$ ./build_docker.sh
 ```
 
 

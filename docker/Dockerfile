@@ -31,7 +31,7 @@ RUN apt-get install -y python3-pip
 RUN apt-get install -y nano
 RUN apt-get install -y net-tools
 
-RUN pip install --upgrade pip && pip install numpy scipy &&  pip install tensorflow-gpu==2.2 && pip install pathlib
+RUN apt-get install python-is-python3 && pip install --upgrade pip && pip install imutils  numpy scipy rdp do-mpc &&  pip install tensorflow-gpu==2.2 && pip install pathlib
 
 #navigate to the home directory
 WORKDIR home
@@ -46,7 +46,5 @@ WORKDIR ..
 RUN git clone https://github.com/pmusau17/Platooning-F1Tenth
 WORKDIR Platooning-F1Tenth 
 
-RUN git pull && rosdep install --from-paths src --ignore-src -r -y --rosdistro noetic
+RUN git pull && apt-get update && rosdep install --from-paths src --ignore-src -r -y --rosdistro noetic
 RUN /bin/bash -c "apt install -y python3-colcon-common-extensions ros-noetic-ackermann-msgs && source /opt/ros/noetic/setup.bash &&  colcon build"
-RUN apt-get install python-is-python3 && pip install imutils 
-RUN pip install rdp do-mpc
