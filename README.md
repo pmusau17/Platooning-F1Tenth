@@ -341,7 +341,7 @@ $ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
 
 # Docker <a name="Docker"></a>
 
-The first thing you will need to install is [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) which is used to containerize and run GPU accelerated workloads. The computer vision packages in this repository will run faster if you have a GPU. Visit the above link to do so.
+The first thing you will need to install is [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) which is used to containerize and run GPU accelerated workloads. The computer vision packages in this repository will run faster if you have a GPU. Visit the above link to do so. If you don't have a GPU enabled computer don't fret. Skip the above step and follow the rest of the instructions.
 
 Additionally we make use of [Docker-Compose](https://docs.docker.com/compose/install/)  to define and run the simulation. Kindly install this as well. 
 
@@ -376,11 +376,17 @@ Test if the image builds correctly by running:
 $ source docker/run_docker.sh
 ```
 
-To run the simulation: 
+To run the simulation (if you have a GPU enabled computer): 
 
 ```bash
 $ source docker/run_docker.sh
 ```
+Otherwise run: 
+
+```bash
+$ source docker/run_docker_cpu.sh
+```
+
 
 This will open up a terminal in interactive mode, to run any of the experiments. Source the setup file: 
 ```
