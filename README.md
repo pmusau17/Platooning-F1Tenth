@@ -124,7 +124,7 @@ With that you are now ready to run the experiments.
 
 ### Docker
 
-Docker installation instructions can be found [here](#Docker).
+Docker installation instructions can be found [here](#DockerInstall).
 
 
 ### Running the Experiments (Native Installation)
@@ -154,7 +154,7 @@ The controllers were evaluated through a variety of scenarios that test their ab
 ### Docker 
 <hr /> 
 
-Build the docker containers as described here: [Docker](#Docker).
+Build the docker containers as described here: [Docker](#DockerInstall).
 
 Run the experiments as follows: **make sure you've run +xhost: docker**
 
@@ -338,7 +338,7 @@ Additionally if using the f1_tenth_devel.launch file, simply type the following:
 $ roslaunch race f1_tenth_devel.launch enable_keyboard:=true
 ```
 
-# Docker <a name="Docker"></a>
+# Docker <a name="DockerInstall"></a>
 
 The first thing you will need to install is [NVIDIA-Docker](https://github.com/NVIDIA/nvidia-docker) which is used to containerize and run GPU accelerated workloads. The computer vision packages in this repository will run faster if you have a GPU. Visit the above link to do so. If you don't have a GPU enabled computer don't fret. Skip the above step and follow the rest of the instructions.
 
