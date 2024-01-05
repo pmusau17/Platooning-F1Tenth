@@ -60,8 +60,6 @@
     <!--experiment_number this parameter helps associate collisions with particular experiments-->
     <arg name="experiment_number" default="0"/>
 
-
-
     <!--docker requirements-->
     <arg name="use_sim_time" default = "true"/>
     <arg name="verbose" default ="false"/>

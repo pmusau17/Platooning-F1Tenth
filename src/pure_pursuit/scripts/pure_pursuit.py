@@ -186,7 +186,8 @@ class pure_pursuit:
         msg = drive_param()
         msg.header.stamp = rospy.Time.now()
         msg.angle = angle
-        msg.velocity = 0.5
+        # msg.velocity = 0.5
+        msg.velocity = 1.0
         self.pub.publish(msg)
 
     # find the angle bewtween two vectors    

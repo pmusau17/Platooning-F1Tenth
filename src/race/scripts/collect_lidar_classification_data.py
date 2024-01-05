@@ -38,7 +38,7 @@ class MessageSynchronizer:
         self.indices = [180, 300, 360, 420, 540, 660, 720, 780, 900]
 
 
-        self.filename=self.save_path_root+'{}.csv'.format("lidar_classification_data")
+        self.filename=self.save_path_root+'{}.csv'.format("/lidar_classification_data_1ms_walker")
         self.file = open(self.filename, 'a')
         print(self.filename)
         #create the time synchronizer
